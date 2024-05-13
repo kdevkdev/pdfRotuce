@@ -4,12 +4,13 @@
 #' @param src_docx
 #' @param working_folder
 #' @param meta_csv
+#' @param reference_parsing Default `TRUE`. IF `FALSE`, copy references as is without automated parsing using anystyle.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = T){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = TRUE){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
