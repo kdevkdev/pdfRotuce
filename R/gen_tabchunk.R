@@ -91,7 +91,7 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
 
 tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
 ncol =  NCOL(tab_dat)
-tex = rabulify(tab_dat, wide = " %+%  tab_wide %+% ", caption = '" %+% tab_caption %+% "',
+tex = pdfRotuce::rabulify(tab_dat, wide = " %+%  tab_wide %+% ", caption = '" %+% tab_caption %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
               fullgrid = " %+% tab_fullgrid %+% ")

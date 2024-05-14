@@ -60,7 +60,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # combine metadata specified in parsed document with metadata provided in CSV
   metadata = c(predef_meta, parsed_meta)
 
-  preamble_yaml = gen_yaml_header(md =metadata)
+  preamble_yaml = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
 
   # delete  title page from document
   doc_summar = doc_summar[-title_page_inds,]

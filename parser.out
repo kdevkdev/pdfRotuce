@@ -45142,3 +45142,687 @@ INFO [2024-05-13 22:24:38]     TEXT            reduce using rule 3 (emphboldgrou
 INFO [2024-05-13 22:24:38]     LBREAK          reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
 INFO [2024-05-13 22:24:38]     $end            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
 INFO [2024-05-13 22:24:38] 
+INFO [2024-05-14 11:02:36] Created by RLY (https://github.com/systemincloud/rly)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] Grammar
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] Rule 0     S' -> expressions
+INFO [2024-05-14 11:02:36] Rule 1     expressions -> expression
+INFO [2024-05-14 11:02:36] Rule 2     expressions -> expressions expression
+INFO [2024-05-14 11:02:36] Rule 3     emphboldgroup -> EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:02:36] Rule 4     boldgroup -> BOLD expression BOLD
+INFO [2024-05-14 11:02:36] Rule 5     emphgroup -> EMPH expression EMPH
+INFO [2024-05-14 11:02:36] Rule 6     text -> TEXT
+INFO [2024-05-14 11:02:36] Rule 7     lbreak -> LBREAK
+INFO [2024-05-14 11:02:36] Rule 8     expression -> emphboldgroup
+INFO [2024-05-14 11:02:36] Rule 9     expression -> boldgroup
+INFO [2024-05-14 11:02:36] Rule 10    expression -> emphgroup
+INFO [2024-05-14 11:02:36] Rule 11    expression -> text
+INFO [2024-05-14 11:02:36] Rule 12    expression -> lbreak
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] Terminals, with rules where they appear
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] BOLD                 : 4 4
+INFO [2024-05-14 11:02:36] EMPH                 : 5 5
+INFO [2024-05-14 11:02:36] EMPHBOLD             : 3 3
+INFO [2024-05-14 11:02:36] error                : 
+INFO [2024-05-14 11:02:36] LBREAK               : 7
+INFO [2024-05-14 11:02:36] TEXT                 : 6
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] Nonterminals, with rules where they appear
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] boldgroup            : 9
+INFO [2024-05-14 11:02:36] emphboldgroup        : 8
+INFO [2024-05-14 11:02:36] emphgroup            : 10
+INFO [2024-05-14 11:02:36] expression           : 1 2 3 4 5
+INFO [2024-05-14 11:02:36] expressions          : 2 0
+INFO [2024-05-14 11:02:36] lbreak               : 12
+INFO [2024-05-14 11:02:36] text                 : 11
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] Parsing method: LALR
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 1
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (0) S' -> . expressions
+INFO [2024-05-14 11:02:36]     (1) expressions -> . expression
+INFO [2024-05-14 11:02:36]     (2) expressions -> . expressions expression
+INFO [2024-05-14 11:02:36]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:02:36]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:02:36]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:02:36]     (11) expression -> . text
+INFO [2024-05-14 11:02:36]     (12) expression -> . lbreak
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:02:36]     (6) text -> . TEXT
+INFO [2024-05-14 11:02:36]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:02:36]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:02:36]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:02:36]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:02:36]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     expression                     shift and go to state 3
+INFO [2024-05-14 11:02:36]     expressions                    shift and go to state 4
+INFO [2024-05-14 11:02:36]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:02:36]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:02:36]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:02:36]     text                           shift and go to state 10
+INFO [2024-05-14 11:02:36]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 2
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> EMPH . expression EMPH
+INFO [2024-05-14 11:02:36]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:02:36]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:02:36]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:02:36]     (11) expression -> . text
+INFO [2024-05-14 11:02:36]     (12) expression -> . lbreak
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:02:36]     (6) text -> . TEXT
+INFO [2024-05-14 11:02:36]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:02:36]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:02:36]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:02:36]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:02:36]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     expression                     shift and go to state 14
+INFO [2024-05-14 11:02:36]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:02:36]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:02:36]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:02:36]     text                           shift and go to state 10
+INFO [2024-05-14 11:02:36]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 3
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (1) expressions -> expression .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 4
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (0) S' -> expressions .
+INFO [2024-05-14 11:02:36]     (2) expressions -> expressions . expression
+INFO [2024-05-14 11:02:36]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:02:36]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:02:36]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:02:36]     (11) expression -> . text
+INFO [2024-05-14 11:02:36]     (12) expression -> . lbreak
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:02:36]     (6) text -> . TEXT
+INFO [2024-05-14 11:02:36]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:02:36]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:02:36]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:02:36]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:02:36]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     expression                     shift and go to state 15
+INFO [2024-05-14 11:02:36]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:02:36]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:02:36]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:02:36]     text                           shift and go to state 10
+INFO [2024-05-14 11:02:36]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 5
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (8) expression -> emphboldgroup .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 6
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (12) expression -> lbreak .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 7
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (7) lbreak -> LBREAK .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 8
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> BOLD . expression BOLD
+INFO [2024-05-14 11:02:36]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:02:36]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:02:36]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:02:36]     (11) expression -> . text
+INFO [2024-05-14 11:02:36]     (12) expression -> . lbreak
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:02:36]     (6) text -> . TEXT
+INFO [2024-05-14 11:02:36]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:02:36]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:02:36]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:02:36]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:02:36]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     expression                     shift and go to state 16
+INFO [2024-05-14 11:02:36]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:02:36]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:02:36]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:02:36]     text                           shift and go to state 10
+INFO [2024-05-14 11:02:36]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 9
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (10) expression -> emphgroup .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 10
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (11) expression -> text .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 11
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (6) text -> TEXT .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 12
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> EMPHBOLD . expression EMPHBOLD
+INFO [2024-05-14 11:02:36]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:02:36]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:02:36]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:02:36]     (11) expression -> . text
+INFO [2024-05-14 11:02:36]     (12) expression -> . lbreak
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:02:36]     (6) text -> . TEXT
+INFO [2024-05-14 11:02:36]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:02:36]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:02:36]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:02:36]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:02:36]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     expression                     shift and go to state 17
+INFO [2024-05-14 11:02:36]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:02:36]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:02:36]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:02:36]     text                           shift and go to state 10
+INFO [2024-05-14 11:02:36]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 13
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (9) expression -> boldgroup .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 14
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> EMPH expression . EMPH
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            shift and go to state 18
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 15
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (2) expressions -> expressions expression .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 16
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> BOLD expression . BOLD
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     BOLD            shift and go to state 19
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 17
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> EMPHBOLD expression . EMPHBOLD
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        shift and go to state 20
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 18
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (5) emphgroup -> EMPH expression EMPH .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 19
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (4) boldgroup -> BOLD expression BOLD .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36] state 20
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     (3) emphboldgroup -> EMPHBOLD expression EMPHBOLD .
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:02:36]     EMPHBOLD        reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:02:36]     BOLD            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:02:36]     EMPH            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:02:36]     TEXT            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:02:36]     LBREAK          reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:02:36]     $end            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:02:36] 
+INFO [2024-05-14 11:03:54] Created by RLY (https://github.com/systemincloud/rly)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] Grammar
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] Rule 0     S' -> expressions
+INFO [2024-05-14 11:03:54] Rule 1     expressions -> expression
+INFO [2024-05-14 11:03:54] Rule 2     expressions -> expressions expression
+INFO [2024-05-14 11:03:54] Rule 3     emphboldgroup -> EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:03:54] Rule 4     boldgroup -> BOLD expression BOLD
+INFO [2024-05-14 11:03:54] Rule 5     emphgroup -> EMPH expression EMPH
+INFO [2024-05-14 11:03:54] Rule 6     text -> TEXT
+INFO [2024-05-14 11:03:54] Rule 7     lbreak -> LBREAK
+INFO [2024-05-14 11:03:54] Rule 8     expression -> emphboldgroup
+INFO [2024-05-14 11:03:54] Rule 9     expression -> boldgroup
+INFO [2024-05-14 11:03:54] Rule 10    expression -> emphgroup
+INFO [2024-05-14 11:03:54] Rule 11    expression -> text
+INFO [2024-05-14 11:03:54] Rule 12    expression -> lbreak
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] Terminals, with rules where they appear
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] BOLD                 : 4 4
+INFO [2024-05-14 11:03:54] EMPH                 : 5 5
+INFO [2024-05-14 11:03:54] EMPHBOLD             : 3 3
+INFO [2024-05-14 11:03:54] error                : 
+INFO [2024-05-14 11:03:54] LBREAK               : 7
+INFO [2024-05-14 11:03:54] TEXT                 : 6
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] Nonterminals, with rules where they appear
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] boldgroup            : 9
+INFO [2024-05-14 11:03:54] emphboldgroup        : 8
+INFO [2024-05-14 11:03:54] emphgroup            : 10
+INFO [2024-05-14 11:03:54] expression           : 1 2 3 4 5
+INFO [2024-05-14 11:03:54] expressions          : 2 0
+INFO [2024-05-14 11:03:54] lbreak               : 12
+INFO [2024-05-14 11:03:54] text                 : 11
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] Parsing method: LALR
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 1
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (0) S' -> . expressions
+INFO [2024-05-14 11:03:54]     (1) expressions -> . expression
+INFO [2024-05-14 11:03:54]     (2) expressions -> . expressions expression
+INFO [2024-05-14 11:03:54]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:03:54]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:03:54]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:03:54]     (11) expression -> . text
+INFO [2024-05-14 11:03:54]     (12) expression -> . lbreak
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:03:54]     (6) text -> . TEXT
+INFO [2024-05-14 11:03:54]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:03:54]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:03:54]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:03:54]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:03:54]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     expression                     shift and go to state 3
+INFO [2024-05-14 11:03:54]     expressions                    shift and go to state 4
+INFO [2024-05-14 11:03:54]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:03:54]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:03:54]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:03:54]     text                           shift and go to state 10
+INFO [2024-05-14 11:03:54]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 2
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> EMPH . expression EMPH
+INFO [2024-05-14 11:03:54]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:03:54]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:03:54]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:03:54]     (11) expression -> . text
+INFO [2024-05-14 11:03:54]     (12) expression -> . lbreak
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:03:54]     (6) text -> . TEXT
+INFO [2024-05-14 11:03:54]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:03:54]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:03:54]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:03:54]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:03:54]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     expression                     shift and go to state 14
+INFO [2024-05-14 11:03:54]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:03:54]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:03:54]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:03:54]     text                           shift and go to state 10
+INFO [2024-05-14 11:03:54]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 3
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (1) expressions -> expression .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 1 (expressions -> expression .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 4
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (0) S' -> expressions .
+INFO [2024-05-14 11:03:54]     (2) expressions -> expressions . expression
+INFO [2024-05-14 11:03:54]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:03:54]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:03:54]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:03:54]     (11) expression -> . text
+INFO [2024-05-14 11:03:54]     (12) expression -> . lbreak
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:03:54]     (6) text -> . TEXT
+INFO [2024-05-14 11:03:54]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:03:54]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:03:54]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:03:54]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:03:54]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     expression                     shift and go to state 15
+INFO [2024-05-14 11:03:54]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:03:54]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:03:54]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:03:54]     text                           shift and go to state 10
+INFO [2024-05-14 11:03:54]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 5
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (8) expression -> emphboldgroup .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 8 (expression -> emphboldgroup .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 6
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (12) expression -> lbreak .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 12 (expression -> lbreak .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 7
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (7) lbreak -> LBREAK .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 7 (lbreak -> LBREAK .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 8
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> BOLD . expression BOLD
+INFO [2024-05-14 11:03:54]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:03:54]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:03:54]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:03:54]     (11) expression -> . text
+INFO [2024-05-14 11:03:54]     (12) expression -> . lbreak
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:03:54]     (6) text -> . TEXT
+INFO [2024-05-14 11:03:54]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:03:54]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:03:54]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:03:54]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:03:54]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     expression                     shift and go to state 16
+INFO [2024-05-14 11:03:54]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:03:54]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:03:54]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:03:54]     text                           shift and go to state 10
+INFO [2024-05-14 11:03:54]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 9
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (10) expression -> emphgroup .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 10 (expression -> emphgroup .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 10
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (11) expression -> text .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 11 (expression -> text .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 11
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (6) text -> TEXT .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 6 (text -> TEXT .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 12
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> EMPHBOLD . expression EMPHBOLD
+INFO [2024-05-14 11:03:54]     (8) expression -> . emphboldgroup
+INFO [2024-05-14 11:03:54]     (9) expression -> . boldgroup
+INFO [2024-05-14 11:03:54]     (10) expression -> . emphgroup
+INFO [2024-05-14 11:03:54]     (11) expression -> . text
+INFO [2024-05-14 11:03:54]     (12) expression -> . lbreak
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> . EMPHBOLD expression EMPHBOLD
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> . BOLD expression BOLD
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> . EMPH expression EMPH
+INFO [2024-05-14 11:03:54]     (6) text -> . TEXT
+INFO [2024-05-14 11:03:54]     (7) lbreak -> . LBREAK
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        shift and go to state 12
+INFO [2024-05-14 11:03:54]     BOLD            shift and go to state 8
+INFO [2024-05-14 11:03:54]     EMPH            shift and go to state 2
+INFO [2024-05-14 11:03:54]     TEXT            shift and go to state 11
+INFO [2024-05-14 11:03:54]     LBREAK          shift and go to state 7
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     expression                     shift and go to state 17
+INFO [2024-05-14 11:03:54]     emphboldgroup                  shift and go to state 5
+INFO [2024-05-14 11:03:54]     lbreak                         shift and go to state 6
+INFO [2024-05-14 11:03:54]     emphgroup                      shift and go to state 9
+INFO [2024-05-14 11:03:54]     text                           shift and go to state 10
+INFO [2024-05-14 11:03:54]     boldgroup                      shift and go to state 13
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 13
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (9) expression -> boldgroup .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 9 (expression -> boldgroup .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 14
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> EMPH expression . EMPH
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            shift and go to state 18
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 15
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (2) expressions -> expressions expression .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 2 (expressions -> expressions expression .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 16
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> BOLD expression . BOLD
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     BOLD            shift and go to state 19
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 17
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> EMPHBOLD expression . EMPHBOLD
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        shift and go to state 20
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 18
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (5) emphgroup -> EMPH expression EMPH .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 5 (emphgroup -> EMPH expression EMPH .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 19
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (4) boldgroup -> BOLD expression BOLD .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 4 (boldgroup -> BOLD expression BOLD .)
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54] state 20
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     (3) emphboldgroup -> EMPHBOLD expression EMPHBOLD .
+INFO [2024-05-14 11:03:54] 
+INFO [2024-05-14 11:03:54]     EMPHBOLD        reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:03:54]     BOLD            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:03:54]     EMPH            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:03:54]     TEXT            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:03:54]     LBREAK          reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:03:54]     $end            reduce using rule 3 (emphboldgroup -> EMPHBOLD expression EMPHBOLD .)
+INFO [2024-05-14 11:03:54] 

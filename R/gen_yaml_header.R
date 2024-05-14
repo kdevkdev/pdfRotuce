@@ -4,7 +4,7 @@ yml_qt = function(x) {
   attr(x, "quoted") = T
   x
 }
-gen_yaml_header = function(md){
+gen_yaml_header = function(md, reference_parsing = T){
 
   # md : metadata to fill in
 
@@ -15,7 +15,9 @@ gen_yaml_header = function(md){
   md$journal_title_short = "J Community Systems for Healt"
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
                                                                       latex_engine   = "lualatex" |> yml_qt()))
-  md$bibliography              = 'references.bib'  |> yml_qt()
+  if(reference_parsing == TRUE){
+     md$bibliography              = 'references.bib'  |> yml_qt()
+  }
   md$csl                      = 'plos-2020.csl'  |> yml_qt()
 
   # yml_data = list(title_full = md$title,
