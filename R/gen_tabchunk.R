@@ -1,3 +1,9 @@
+escape_caption <- function(str){
+  str = stringr::str_replace_all(str, pattern = "\\@", replacement = "\\\\\\\\@")
+  str = stringr::str_replace_all(str, pattern = "\\%", replacement = "\\\\\\\\%")
+  str = stringr::str_replace_all(str, pattern = "\\$", replacement = "\\\\\\\\$")
+  str
+}
 #' Title
 #'
 #' @param ct_csv
@@ -37,18 +43,29 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
   if(startsWith(trimws(tab_opts_raw$mrkdwn), "[[table")){
 
     tab_opts = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
+  } else{
+
+    warning("No table tag found")
   }
 
 
   # manual label overrriade?
   if('label' %in% names(tab_opts)){
     tab_chunk_label = tab_opts['label']
+
+    if(!grepl(x = tab_chunk_label, pattern = "^[a-zA-Z0-9]{1,}$")){
+      stop(paste0("table label '", tab_chunk_label, "' contains other chars than letters (A-z) or numbers"))
+    }
   }
 
   # caption provided?
   tab_caption = ""
   if('caption' %in% names(tab_opts)){
     tab_caption = tab_opts['caption']
+
+    # escape %, @, $
+    tab_caption = escape_caption(tab_caption)
+
   }
 
   # whole page stretch or single columns?
@@ -91,7 +108,7 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
 
 tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
 ncol =  NCOL(tab_dat)
-tex = pdfRotuce::rabulify(tab_dat, wide = " %+%  tab_wide %+% ", caption = '" %+% tab_caption %+% "',
+  tex = pdfRotuce::rabulify(tab_dat, wide = " %+%  tab_wide %+% ", caption = '" %+% tab_caption %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
               fullgrid = " %+% tab_fullgrid %+% ")

@@ -18,12 +18,18 @@ gen_figchunk = function(fig_opts, fig_counter){
   # manual label overrriade?
   if('label' %in% names(fig_opts)){
     fig_chunk_label = fig_opts['label']
+
+    if(!grepl(x = fig_chunk_label, pattern = "^[a-zA-Z0-9]{1,}$")){
+      stop(paste0("figure label '", fig_chunk_label, "' contains other chars than letters (A-z) or numbers"))
+    }
   }
 
   # caption provided?
   fig_caption = ""
   if('caption' %in% names(fig_opts)){
     fig_caption = fig_opts['caption']
+
+    fig_caption <-escape_caption(fig_caption)
   }
 
   # label provided?

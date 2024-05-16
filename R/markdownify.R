@@ -230,7 +230,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
         }
         # construct string to return
-        replacement = paste0("[", paste0("@", unlist(locrefs_keys),collapse = ";") , "]")
+        replacement = paste0("[", paste0("========protectedat========", unlist(locrefs_keys),collapse = ";") , "]")
         replacement
       })
 
@@ -266,8 +266,19 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   for(cti in cudoc_tabinds){
 
 
+    # detect empty paragraphs ahead
+    empties = cpart[, doc_index > cti & !grepl(x = mrkdwn, pattern = "$\\s?^")]
+    ind_next_nonempty = min(which(empties)) # first non-empty
 
-    tab_opts_raw = cpart[content_type == "paragraph" & doc_index == (cti+1)]
+    tab_opts_raw = cpart[ind_next_nonempty,]
+
+    if(tab_opts_raw$content_type != "paragraph" && !startsWith(trimws(tab_opts_raw$mrkdwn, "[[table"))){
+      warning("Table " %+% cti %+% " does nto seem to have have a table tag")
+    }else{
+
+
+    }
+
 
     ct_dat = cpart[content_type == "table cell" & doc_index == cti]
 
@@ -276,9 +287,10 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
     ctab_chunk = gen_tabchunk(ct_csv, tab_opts_raw, tab_counter, folder = working_folder)
 
+    # delete table rows and table options form document structure
     cpart = data.table::rbindlist(l = list(cpart[doc_index < cti],
                                          data.table::data.table(doc_index = cti, content_type = "paragraph", text = ctab_chunk, mrkdwn = ctab_chunk, is_heading1 = F, is_header = F),
-                                         cpart[doc_index > cti]), fill = T)
+                                         cpart[doc_index > cti &doc_index != tab_opts_raw$doc_index]), fill = T)
 
     tab_counter = tab_counter +1
 
@@ -294,17 +306,20 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
   ########################################### command parsing ####################################################
 
-  #inline paragraph commands
-  # inline mathc(
+  # inline paragraph commands
+  # put protected dollar fo rinline mathc(
   cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", replacement = "========protecteddollar========\\1========protecteddollar========")]
 
+  # put protected at for refs
+  cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]
 
   # look for commands [[]]
   command_inds =  which(startsWith(trimws(cpart$mrkdwn), "[[") & endsWith(trimws(cpart$mrkdwn),"]]"))
 
   # escape dollar in suitable paragraphs
-  cpart[!startsWith(mrkdwn, "$") & !startsWith(mrkdwn, "```{r") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\$", replacement = "\\\\$")]
-  cpart[!startsWith(mrkdwn, "$") & !startsWith(mrkdwn, "```{r") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
+  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\$", replacement = "\\\\$")]
+  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\@", replacement = "\\\\@")]
+  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
   fig_counter = 1
 
 
@@ -375,8 +390,9 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
   ########################################### postprocessing  & writing file ####################################################
-  # replace back protected dollars
+  # replace back protected dollars , @, etc
   cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protecteddollar========", replacement = "$")]
+  cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protectedat========", replacement = "@")]
 
   cpart$sep = "\n\n"
 

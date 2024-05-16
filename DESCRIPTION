@@ -13,4 +13,6 @@ RoxygenNote: 7.3.1
 Imports:
     data.table,
     rly,
-    processx
+    processx,
+    stringr,
+

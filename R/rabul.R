@@ -149,14 +149,14 @@ rabulify = function(d, linesep = "\newline",wide = F, caption = NULL, label = NU
 
   }
 
-  rowhline = ""
+  rowhline = "\n\\hline"
   if(fullgrid == TRUE){
-    rowhline = "\n\\hline"
+    body = paste0(rowhline, paste0(rows, rowhline, collapse = "\n"))
+  } else{
+    body = paste0(rowhline, paste0(rows, collapse = "\n"),    rowhline = "\n\\hline")
   }
 
 
-
-  body = paste0(rowhline, paste0(rows, rowhline, collapse = "\n"))
 
 
   row_specspan = paste0("1-",NROW(d))

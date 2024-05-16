@@ -8,11 +8,12 @@ markdownify(
   src_docx,
   working_folder = ".",
   meta_csv = NULL,
-  rmd_outpath = NULL
+  rmd_outpath = NULL,
+  reference_parsing = TRUE
 )
 }
 \arguments{
-\item{meta_csv}{}
+\item{reference_parsing}{Default \code{TRUE}. IF \code{FALSE}, copy references as is without automated parsing using anystyle.}
 }
 \description{
 Converts word .docx files to .Rmd files that can be rendered to PDFs using latex
