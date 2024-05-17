@@ -238,7 +238,32 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
    else { # end condition refernce_parsing
 
       # do not change in text citations
+     if(is.numeric(ref_inds[1])){
 
+       #doc_summar$mrkdwn[ref_inds] = paste0("\\setlength{\\parindent}{0em}\n", doc_summar$mrkdwn[ref_inds])
+       refs <- doc_summar$mrkdwn[ref_inds]
+
+       # remove empty paragraphs
+       refs <- refs[!grepl(x = refs, pattern = "^\\s?$")]
+
+       # extract marker 1., 2., .... using regex
+       markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
+
+       refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
+
+       # delete markers from refs
+       stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
+
+       doc_summar$mrkdwn[ref_inds[1]] = gen_list(items = refs, label = "_", markers = markers,
+                                                 options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
+
+
+       # remove from document
+       rem_inds = ref_inds[-1]
+       if(length(rem_inds) > 0){
+         doc_summar = doc_summar[-rem_inds,]
+       }
+     }
    }
   }
 
@@ -362,7 +387,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                  # cap = c_command['cap']
 
 
-                 c_result = gen_figchunk(fig_opts = c_command, fig_counter = fig_counter)
+                 c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
 #
 #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
 # knitr::include_graphics(path='" %+% src %+% "')

@@ -12,7 +12,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   # few hardcoded values
   md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia. J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
   md$journal_title = "JOURNAL OF COMMUNITY SYSTEMS FOR HEALTH"
-  md$journal_title_short = "J Community Systems for Healt"
+  md$journal_title_short = "J Community Systems for Health"
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
                                                                       latex_engine   = "lualatex" |> yml_qt()))
   if(reference_parsing == TRUE){
