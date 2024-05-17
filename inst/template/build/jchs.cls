@@ -106,8 +106,8 @@ BoldItalicFont  = OpenSans-BoldItalic.ttf]
 %\twocolumn
 \RequirePackage[left=1.5cm,%
 right=1.5cm,%
-top=1.25cm,%
-bottom=1.25	cm,%
+top=2.5cm,%
+bottom=2.5cm,%
 headheight=12pt,%
 a4paper]{geometry}%
 
@@ -260,14 +260,14 @@ justification=raggedright]{caption}
 
 % dates
 %\newcommand{\articledates}[3]{
-%	\def\thearticledates{
-%		{\fontsize{9}{12}\selectfont#1 #2 #3\par}
-%	}
-%}
+	%	\def\thearticledates{
+		%		{\fontsize{9}{12}\selectfont#1 #2 #3\par}
+		%	}
+	%}
 % version with one  argument
 \newcommand{\articledates}[1]{\def\thearticledates{
-				{\fontsize{9}{12}\selectfont#1\par}
-		}}
+		{\fontsize{9}{12}\selectfont#1\par}
+}}
 \newcommand{\journalvolume}[1]{\def\thejournalvolume{#1}}
 \newcommand{\journaltitle}[1]{\def\thejournaltitle{#1}}
 \newcommand{\journaldoi}[1]{\def\thejournaldoi{#1}}
@@ -311,14 +311,14 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		\thejournaldoi}
 \end{minipage}
 \begin{minipage}[t][][t]{0.37\textwidth}% align both the minipage itself and its contents on top
-\textls[-14]{%
-	\begin{flushright}%
-		\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
-		\colorlet{varlinkcolor}{blue}%
-		\begin{tcolorbox}[colframe=jchsorange, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
-			We are a \href{https://www.fairopenaccess.org/}{\underline{\smash{Fair Open Access}}} journal
-		\end{tcolorbox}%
-		\colorlet{varlinkcolor}{black}%
+	\textls[-14]{%
+		\begin{flushright}%
+			\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
+			\colorlet{varlinkcolor}{blue}%
+			\begin{tcolorbox}[colframe=jchsorange, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
+				We are a \href{https://www.fairopenaccess.org/}{\underline{\smash{Fair Open Access}}} journal
+			\end{tcolorbox}%
+			\colorlet{varlinkcolor}{black}%
 	\end{flushright}}%
 \end{minipage}
 
@@ -327,7 +327,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 {% we do not want a intent for the title, and we want it centered
 	\setstretch{1.18}\setlength{\JustifyingParindent}{0pt}%
-	\justifying\bfseries\fontsize{16}{18}\selectfont{\textls[20]{\@title}}\par%
+	\justifying\bfseries\fontsize{16}{18}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
 }
 
 
@@ -344,16 +344,16 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		\noindent
 		{\textbf{ABSTRACT}}
 	}
-	\vskip1.5mm
+	\vskip 1.5mm
 	{
 		\noindent
-
+		
 		\parbox{\dimexpr\linewidth-2\fboxsep\relax}
 		{
 			{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
 		}
-
-		\vskip6mm
+		
+		\vskip 0mm
 		\noindent
 		\parbox{\dimexpr\linewidth-2\fboxsep\relax}
 		{

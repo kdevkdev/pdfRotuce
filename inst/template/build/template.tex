@@ -223,6 +223,7 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 }
 
 \begin{document}
+\enlargethispage{-2\baselineskip}
 %\begin{strip}
 
 
@@ -249,8 +250,8 @@ $endfor$\\
 %\let\thefootnote\relax\footnote{© $copyright.year$ $copyright.text$\\\\}
 
 % newpage
-\vfill
-\null\clearpage
+%\vfill
+%\null\clearpage
 %\null\newpage %check textpos manual , the newpage section on why this is needed
 
 
@@ -258,12 +259,12 @@ $endfor$\\
 
 
 % update geometry
-\newgeometry{
-	left=1.5cm,
-	right=1.5cm,
-	top=2.5cm,%
-	bottom=2.75cm,%
-	headheight=15mm}
+% \newgeometry{
+% 	left=1.5cm,
+% 	right=1.5cm,
+% 	top=2.5cm,%
+% 	bottom=2.75cm,%
+% 	headheight=15mm}
 
 \begin{multicols}{2}
 $body$
