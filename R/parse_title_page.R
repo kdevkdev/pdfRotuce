@@ -79,7 +79,7 @@ parse_title_page = function(docdat){
         # parse tables - authors and affiliations
         if(table_type == "author"){
 
-          retlist[["authors"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcdid = x[["orcid"]] |> yml_qt())})
+          retlist[["authors"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcid = x[["orcid"]] |> yml_qt())})
 
         } else if(table_type == "affiliation"){
 

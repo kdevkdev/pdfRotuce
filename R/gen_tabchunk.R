@@ -69,9 +69,11 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
   }
 
   # whole page stretch or single columns?
-  tab_wide = F
+  tab_mode = "twocolumn" # default
   if('wide' %in% tab_opts){
-    tab_wide = TRUE
+      tab_mode = "wide"
+  } else if('landscape' %in% tab_opts){
+      tab_mode = "landscape"
   }
 
   # longtable?
@@ -108,7 +110,7 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
 
 tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
 ncol =  NCOL(tab_dat)
-  tex = pdfRotuce::rabulify(tab_dat, wide = " %+%  tab_wide %+% ", caption = '" %+% tab_caption %+% "',
+  tex = pdfRotuce::rabulify(tab_dat, mode = '" %+%  tab_mode %+% "', caption = '" %+% tab_caption %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
               fullgrid = " %+% tab_fullgrid %+% ")

@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = TRUE){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -74,6 +74,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   refparind = which(tolower(doc_summar$mrkdwn) == 'references' & tolower(doc_summar$style_name) == "heading 1")
 
 
+  rmd_references = ""
   if(length(refparind) == 0)   warning("No references found!!!")
   else{
 
@@ -114,7 +115,8 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
       # remove from document
-      doc_summar = doc_summar[- ref_inds, ]
+      doc_summar = doc_summar[-c(refparind, ref_inds), ]
+      rmd_references = "# References\n\n  \n"
 
 
 
@@ -238,7 +240,48 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
    else { # end condition refernce_parsing
 
       # do not change in text citations
+     if(is.numeric(ref_inds[1])){
 
+       #doc_summar$mrkdwn[ref_inds] = paste0("\\setlength{\\parindent}{0em}\n", doc_summar$mrkdwn[ref_inds])
+       refs <- doc_summar$mrkdwn[ref_inds]
+
+       # remove empty paragraphs
+       refs <- refs[!grepl(x = refs, pattern = "^\\s?$")]
+
+       # extract marker 1., 2., .... using regex
+       markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
+
+       refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
+
+       # delete markers from refs
+       stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
+
+       # remove dots
+       markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
+
+
+       # [] need to be grouped in latex optional options bec of parsing (https://tex.stackexchange.com/questions/84595/latex-optional-arguments-with-square-brackets)
+#       doc_summar$mrkdwn[ref_inds[1]] = gen_list(items = refs, label = "{[_]}", markers = markers,
+#                                                 options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
+
+
+       # https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+       #[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+
+
+       rmd_references = "# References\n\n"
+       rmd_references = rmd_references %+% gen_list(items = refs, label = "{[_]}", markers = markers,
+                options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
+
+       doc_summar = doc_summar[-c(refparind, ref_inds),]
+
+
+       # remove from document
+       #rem_inds = ref_inds[-1]
+       # if(length(rem_inds) > 0){
+       #   doc_summar = doc_summar[-c(refparind, rem_inds),]
+       # }
+     }
    }
   }
 
@@ -362,7 +405,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                  # cap = c_command['cap']
 
 
-                 c_result = gen_figchunk(fig_opts = c_command, fig_counter = fig_counter)
+                 c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
 #
 #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
 # knitr::include_graphics(path='" %+% src %+% "')
@@ -399,7 +442,28 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   outmrkdwn = cpart[, paste0(rbind(mrkdwn, sep), collapse = "")]
 
 
-  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn)
+  # put orcid section
+  author_orcinds <- sapply(X = metadata$authors, FUN = \(x){
+
+     grepl(x = gsub(x = x$orcid, pattern = "[^0-9X]", replacement= ""), pattern = "[0-9X]{16}")
+  })
+
+  # if any orcids present, put all authors with oricds in a separate section before the references
+  rmd_orcinds = ""
+  if(!is.null(author_orcinds) & length(author_orcinds) > 0){
+
+    td <- metadata$authors[author_orcinds] |> as.data.frame()
+
+
+    rmd_orcinds = "# ORCID\n\n"
+
+
+    rmd_orcinds = rmd_orcinds %+% paste0("\\noindent ", paste0(td$name , " \\orcidaffil{", td$orcid, "} [", td$orcid, "](https://orcid.org/", td$orcid), ")\n")
+
+  }
+
+
+  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn, rmd_orcinds, rmd_references)
 
 
   # write rmd file if filename provided

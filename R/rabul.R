@@ -88,7 +88,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @export
 #'
 #' @examples
-rabulify = function(d, linesep = "\newline",wide = F, caption = NULL, label = NULL, long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
+rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, label = NULL, long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -208,7 +208,7 @@ rabulify = function(d, linesep = "\newline",wide = F, caption = NULL, label = NU
 
 
   # for double column stretching tables
-  if(wide == T){
+  if(mode  == "wide"){
     # pre_envouter = "\\end{multicols}"
     # post_envouter = "\\begin{multicols}{2}"
 
@@ -238,14 +238,25 @@ rabulify = function(d, linesep = "\newline",wide = F, caption = NULL, label = NU
     end_envinner = "\\end{xltabular}}"
 
 
-    if(wide ==T){
+    if(mode == "wide"){
       pre_envouter = "\\end{multicols}"
       post_envouter = "\\begin{multicols}{2}"
     }
-    else{
+    else if(mode == "landscape"){
+      # https://tex.stackexchange.com/questions/19017/how-to-place-a-table-on-a-new-page-with-landscape-orientation-without-clearing-t
+
+      pre_envouter = "\\end{multicols}\\begin{landscape}\\centering"
+      post_envouter = "\\end{landscape}\\clearpage\\begin{multicols}{2}"
+    }
+    else if(mode == "twocolumn"){ # default
       pre_envouter = "\\begin{multicolslongtable}"
       post_envouter = "\\end{multicolslongtable}"
     }
+    else{
+      browser()
+      stop("rabulify: unkown table mode")
+    }
+
 
     if(!is.null(label) && is.character(label)){
 
@@ -253,7 +264,7 @@ rabulify = function(d, linesep = "\newline",wide = F, caption = NULL, label = NU
     }
     tex = paste0(pre_envouter,
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
-                 "\\caption{", caption, "}", lab,"\\\\\n",
+                 "\\caption{\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  body, "\n",
                  end_envinner,"\n",
                  post_envouter,"\n")

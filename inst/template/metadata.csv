@@ -1,5 +1,6 @@
-articledates,Received 26 April 2022,  Editorial decision 19 July 2022,  Accepted 22 July 2022
-volume,"2022, VOL. 2",,
-copyright_year,"2022, VOL. 2",,
-doi,https://doi.org/10.1000/182,,
-pageheader,Muller et al. ,,
+name,value,comment
+articledates,Received 26 April 2022; Editorial decision 19 July 2022; Accepted 22 July 2022,Articledates for titlepage
+volume,"2024, VOL. 2",Volume for title page top banner besides logo
+copyright_year,"2024, VOL. 2",Year and other text to prepepend to footnote on title page
+doi,https://doi.org/10.1000/182,DOI
+pageheader,Muller et al. ,Author name for title page

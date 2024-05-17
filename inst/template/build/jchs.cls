@@ -110,6 +110,8 @@ top=2.5cm,%
 bottom=2.5cm,%
 headheight=12pt,%
 a4paper]{geometry}%
+\RequirePackage{pdflscape}
+\RequirePackage{afterpage}
 
 \RequirePackage{multicol}
 
@@ -136,8 +138,8 @@ justification=raggedright]{caption}
 
 % https://tex.stackexchange.com/questions/496334/including-orcid-in-plain-latex-using-authblk
 \newbox{\myorcidaffilbox}
-\sbox{\myorcidaffilbox}{\large\smash{\includegraphics[height=14.5pt]{ORCIDiD_iconvector}}}
-\newcommand{\orcidaffil}[1]{%
+\sbox{\myorcidaffilbox}{\large\smash{\includegraphics[height=9pt]{ORCIDiD_iconvector}}}
+	\newcommand{\orcidaffil}[1]{%
 	\href{https://orcid.org/#1}{\hspace*{1pt}\usebox{\myorcidaffilbox}}}
 
 
@@ -159,7 +161,7 @@ justification=raggedright]{caption}
 \RequirePackage{lastpage}  % Number of pages in the document
 \RequirePackage{fancyhdr}  % custom headers/footers
 \pagestyle{fancy}
-\fancyhf{}% Clear all headers/footers
+%\fancyhf{}% Clear all headers/footers
 
 %% Headers
 %\lhead{}%

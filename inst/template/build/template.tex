@@ -48,7 +48,7 @@ $if(csl-refs)$
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.5em}
 \newlength{\csllabelwidth}
-\setlength{\csllabelwidth}{3em}
+\setlength{\csllabelwidth}{2.4em}% 3em before
 \newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
 {\begin{list}{}{%
 			\setlength{\itemindent}{0pt}
@@ -132,7 +132,7 @@ $endfor$
 \setcounter{Maxaffil}{0}% always footnote mode
 
 $for(authors)$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{$authors.name$$if(authors.orcid)$\orcidaffil{$authors.orcid$}$endif$}
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{$authors.name$} %$if(authors.orcid)$\orcidaffil{$authors.orcid$}$endif$}
 $endfor$
 
 $for(affiliations)$
@@ -235,7 +235,7 @@ $endfor$\\
 
 
 \maketitle
-\thispagestyle{empty} % no page numbers
+\thispagestyle{empty} % no page number on first page
 
 %\end{strip}
 
@@ -244,7 +244,7 @@ $endfor$\\
 \textblockorigin{0mm}{0mm}
 
 \begin{textblock}{18}(1.5,27.2)
-\footnotesize{© $copyright.year$ $copyright.text$}
+\footnotesize{\noindent © $copyright.year$ $copyright.text$}
 \end{textblock}
 
 %\let\thefootnote\relax\footnote{© $copyright.year$ $copyright.text$\\\\}
