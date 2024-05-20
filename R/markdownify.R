@@ -256,6 +256,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
        # delete markers from refs
        stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
+
        # remove dots
        markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
 
