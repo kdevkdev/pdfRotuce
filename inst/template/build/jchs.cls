@@ -30,6 +30,8 @@
 %\RequirePackage{wrapfig}
 \RequirePackage{adjustbox}
 \RequirePackage{cuted}
+\RequirePackage{abspos}
+
 
 
 
@@ -161,7 +163,7 @@ justification=raggedright]{caption}
 \RequirePackage{lastpage}  % Number of pages in the document
 \RequirePackage{fancyhdr}  % custom headers/footers
 \pagestyle{fancy}
-%\fancyhf{}% Clear all headers/footers
+\fancyhf{}% Clear all headers/footers
 
 %% Headers
 %\lhead{}%
@@ -293,54 +295,47 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \go}
 
 
-
 %
 % custom title page
 %
 \renewcommand{\@maketitle}{
-{
-\raggedright%left align
-%osfamily % use open sans
-%\fontspec{Open Sans}
-\sffamily
+{\absput[pg-tl, tl, x=1cm, y=-1.2cm,width=1\textwidth]{
 \begin{minipage}{0.13\textwidth}
-	{\includegraphics[width = 20mm]{jchs.pdf}}
+	\includegraphics[width = 20mm]{jchs.pdf}
 \end{minipage}
-\begin{minipage}[]{0.49\textwidth}
-	{\footnotesize
+\begin{minipage}{0.49\textwidth}
+	{\sffamily\footnotesize\color{black}
 		\thejournaltitle\\
 		\thejournalvolume\\
 		\thejournaldoi}
 \end{minipage}
 \begin{minipage}[t][][t]{0.37\textwidth}% align both the minipage itself and its contents on top
 	\textls[-14]{%
-		\begin{flushright}%
-			\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
-			\colorlet{varlinkcolor}{blue}%
-			\begin{tcolorbox}[colframe=jchsorange, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
-				We are a \href{https://www.fairopenaccess.org/}{\underline{\smash{Fair Open Access}}} journal
-			\end{tcolorbox}%
-			\colorlet{varlinkcolor}{black}%
-	\end{flushright}}%
-\end{minipage}
-
-\vskip5.2mm
-
-
+	\begin{flushright}%
+		\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
+		\colorlet{varlinkcolor}{blue}%
+		\begin{tcolorbox}[colframe=jchsorange, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
+			\sffamily We are a \href{https://www.fairopenaccess.org/}{\underline{\smash{Fair Open Access}}} journal
+		\end{tcolorbox}%
+		\colorlet{varlinkcolor}{black}%
+\end{flushright}}%
+\end{minipage}}}
+\leavevmode
+\\[7mm]
+{\sffamily\raggedright%left align
+%osfamily % use open sans
+%\fontspec{Open Sans}%
 {% we do not want a intent for the title, and we want it centered
 	\setstretch{1.18}\setlength{\JustifyingParindent}{0pt}%
-	\justifying\bfseries\fontsize{16}{18}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
+	\justifying\bfseries\fontsize{17}{19}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
 }
-
-
-\vskip7.5mm
+\vskip5.5mm
 {  \@author}
 \vskip5mm
 {\thecorrauthor}
 \vskip5mm
 {\thearticledates}
 \vskip3mm
-
 \begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]
 	{
 		\noindent

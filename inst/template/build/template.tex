@@ -162,6 +162,7 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 
 \fancyhead[LE]{$pageheader.even$}
 \fancyhead[RO]{$pageheader.odd$}
+\fancyfoot[C]{\thepage\ } % add back page number
 
 
 % disable conthead from longtrr
@@ -223,19 +224,15 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 }
 
 \begin{document}
+\thispagestyle{empty}
 \enlargethispage{-2\baselineskip}
 %\begin{strip}
-
-
 \begin{abstract}
 $for(abstractparts)$
 {\bfseries $abstractparts.title$} $abstractparts.text$$sep$\\
 $endfor$\\
 \end{abstract}
-
-
-\maketitle
-\thispagestyle{empty} % no page number on first page
+\maketitle\thispagestyle{empty} % no page number on first page
 
 %\end{strip}
 
