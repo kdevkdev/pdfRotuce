@@ -106,8 +106,8 @@ BoldItalicFont  = OpenSans-BoldItalic.ttf]
 
 
 %\twocolumn
-\RequirePackage[left=1.5cm,%
-right=1.5cm,%
+\RequirePackage[left=1.6cm,%
+right=1.6cm,%
 top=2.5cm,%
 bottom=2.5cm,%
 headheight=12pt,%
@@ -118,7 +118,7 @@ a4paper]{geometry}%
 \RequirePackage{multicol}
 
 
-\setlength{\columnsep}{12mm}%distance between columns
+\setlength{\columnsep}{8mm}%distance between columns
 
 \RequirePackage[labelfont={bf,sf},%
 labelsep=period,%
@@ -184,25 +184,25 @@ justification=raggedright]{caption}
 {\color{jchsheadercolor}\Large\bfseries}
 % {\thesection} with numbers
 {}
-{1pt}
+{0pt}
 {\MakeUppercase{#1}}
 []
 \titleformat{name=\section,numberless}
 {\color{jchsheadercolor}\Large\bfseries}
 {}
-{0em}
+{-0.5pt}
 {\MakeUppercase{#1}}
 []
 \titleformat{\subsection}
 {\color{jchsheadercolor}\bfseries}
 {}
-{1pt}
+{-0.5pt} % not sure why needed but otherwise 	subsections sem to have some  indent. 
 {#1}
 []
 \titleformat{\subsubsection}
 {\color{jchsheadercolor}\small\bfseries\itshape}
 {}
-{1pt}
+{-0.5pt}
 {#1}
 []
 \titleformat{\paragraph}[runin]
@@ -327,7 +327,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 %\fontspec{Open Sans}%
 {% we do not want a intent for the title, and we want it centered
 	\setstretch{1.18}\setlength{\JustifyingParindent}{0pt}%
-	\justifying\bfseries\fontsize{17}{19}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
+	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
 }
 \vskip5.5mm
 {  \@author}

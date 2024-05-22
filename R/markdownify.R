@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F, url_parsing = T, orcid_parsing = T){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -269,10 +269,43 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
        # https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
        #[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
 
+#       refs = stringr::str_replace_all(string = refs,
+#                                pattern = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
+#                                replacement = "\\\\url{\\0}")
 
-       rmd_references = "# References\n\n"
-       rmd_references = rmd_references %+% gen_list(items = refs, label = "{[_]}", markers = markers,
-                options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
+       if(url_parsing){
+
+         # pattern from qdapRegex
+         refs = stringr::str_replace_all(string = refs,
+                                         pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
+                                         replacement = function(m){
+
+                                            r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                            r  = paste0("\\url{", r,"}.")
+                                            r
+                                            #browser()
+                                            })#"\\\\url{\\0}"
+
+       }
+
+
+       if(orcid_parsing){
+
+
+         # pattern from qdapRegex
+         refs = stringr::str_replace_all(string = refs,
+                                         pattern = stringr::regex("\\b10.\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                         replacement = function(m){
+
+                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                           r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
+                                           r
+                                           #browser()
+                                         })#"\\\\url{\\0}"
+       }
+
+       rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
+                options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))
 
        doc_summar = doc_summar[-c(refparind, ref_inds),]
 
@@ -289,12 +322,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
   # there seems to be a problem with case sensitivity and style names between libreoffice and word, use tolowe (word uses capital, libreoffice not)
-  doc_summar[tolower(style_name) == "heading 1" & !startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", mrkdwn)]
-  doc_summar[tolower(style_name) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")]
+  # doc_summar[tolower(style_name) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")] # do not put in TOC
 
 
 
   # convert headings to markdown up to level 5
+  doc_summar[tolower(style_name) == "heading 1", mrkdwn := paste0("# ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 2", mrkdwn := paste0("##  ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 3", mrkdwn := paste0("###  ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 4", mrkdwn := paste0("####  ", mrkdwn)]
@@ -357,7 +390,11 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # put protected at for refs
   cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]
 
-  # look for commands [[]]
+  # noindent
+  cpart[, mrkdwn:= gsub(x = trimws(mrkdwn), pattern = "^\\[\\[noindent\\]\\](.?)", replacement = "\\\\noindent \\1")]
+
+
+  # look for commands whole para tag commands [[]]
   command_inds =  which(startsWith(trimws(cpart$mrkdwn), "[[") & endsWith(trimws(cpart$mrkdwn),"]]"))
 
   # escape dollar in suitable paragraphs
@@ -433,6 +470,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
+
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
   cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protecteddollar========", replacement = "$")]
@@ -449,17 +487,20 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
      grepl(x = gsub(x = x$orcid, pattern = "[^0-9X]", replacement= ""), pattern = "[0-9X]{16}")
   })
 
+
   # if any orcids present, put all authors with oricds in a separate section before the references
   rmd_orcinds = ""
   if(!is.null(author_orcinds) & length(author_orcinds) > 0){
 
-    td <- metadata$authors[author_orcinds] |> as.data.frame()
+    td <- metadata$authors[author_orcinds] |> rbindlist()
 
 
-    rmd_orcinds = "# ORCID\n\n"
+    rmd_orcinds = "# ORCID\n\n\\noindent\n"
 
 
-    rmd_orcinds = rmd_orcinds %+% paste0("\\noindent ", paste0(td$name , " \\orcidaffil{", td$orcid, "} [", td$orcid, "](https://orcid.org/", td$orcid), ")\n")
+    rmd_orcinds = rmd_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} [",
+                                                 td$orcid, "](https://orcid.org/",
+                                                 td$orcid, ") "), collapse = "\\linebreak\n") %+% "\n\n"
 
   }
 

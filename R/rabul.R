@@ -237,7 +237,6 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 \\begin{xltabular}"
     end_envinner = "\\end{xltabular}}"
 
-
     if(mode == "wide"){
       pre_envouter = "\\end{multicols}"
       post_envouter = "\\begin{multicols}{2}"
@@ -253,7 +252,6 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
       post_envouter = "\\end{multicolslongtable}"
     }
     else{
-      browser()
       stop("rabulify: unkown table mode")
     }
 
@@ -264,7 +262,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     }
     tex = paste0(pre_envouter,
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
-                 "\\caption{\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
+                 "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  body, "\n",
                  end_envinner,"\n",
                  post_envouter,"\n")

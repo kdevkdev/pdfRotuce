@@ -79,6 +79,12 @@ parse_title_page = function(docdat){
         # parse tables - authors and affiliations
         if(table_type == "author"){
 
+          # remove emptpy
+          if(NROW(ct_tab[!is.null(author) | is.character(author) | nchar(author) == 0, ])>0){
+            warning("Empty lines in authors table")
+          }
+          ct_tab = ct_tab[!is.null(author) & is.character(author) &nchar(author) > 0, ]
+
           retlist[["authors"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcid = x[["orcid"]] |> yml_qt())})
 
         } else if(table_type == "affiliation"){
@@ -90,6 +96,7 @@ parse_title_page = function(docdat){
         }
 
       }
+
 
 
       # tables already parsed
