@@ -55,7 +55,7 @@ parse_title_page = function(docdat){
       # first tables
       cudoc_tabinds = unique(cdat[content_type == "table cell"]$doc_index)
 
-      stopifnot("two tables in metadata section of titlepage needed, one for affiliations and one for authors" =  length(cudoc_tabinds) == 2)
+      stopifnot("two tables in metadata section of titlepage needed, one for affiliations and one for authors" =  length(cudoc_tabinds) == 4)
       stopifnot("metadata part empty" = NROW(cdat) > 1)
 
       # parse authors and affiliations in tables
@@ -90,32 +90,41 @@ parse_title_page = function(docdat){
         } else if(table_type == "affiliation"){
 
           retlist[["affiliations"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(id = x[["id"]] |> yml_qt(), address = x[["affiliation"]] |> yml_qt())})
+        } else if(table_type == "attribute"){
+          l = apply(X = ct_tab, MARGIN = 1, FUN = \(x){x[["value"]]  |> yml_qt()}, simplify = F)
+          names(l) = ct_tab$attribute
+          retlist[["attributes"]] = l
+        } else if(table_type == "statement"){
+          l = apply(X = ct_tab, MARGIN = 1, FUN = \(x){x[["text"]]  |> yml_qt()}, simplify = F)
+          names(l) = ct_tab$statement
+          retlist[["statements"]] = l
         }
         else {
-          stop("parseing title page, metadata section: unkown table type")
+          stop("parseing title page, metadata section: unkown table type. Make sure that you provide the correct header row for all tables in the metadata section. f")
         }
 
       }
 
 
 
-      # tables already parsed
-      cdat_notabs  = cdat[content_type != "table cell"]
-      stopifnot("metadata part without tables empty" = NROW(cdat_notabs) > 1)
-      # we parse all paragraphs
-      for(cr in 2:NROW(cdat_notabs)){
-
-
-        # command. Delinated by a colon.
-        cmd = tolower(stringi::stri_match_first(cdat_notabs$text[cr], regex = "^[A-Za-z0-9_]{1,}\\s?(?=:)"))
-        val = trimws(stringi::stri_replace_first(str = cdat_notabs$text[cr], regex = "^[A-Za-z0-9_]{1,}\\s?:", replacement = ""))
-
-        switch(cmd,
-               #articledates = { retlist[["articledates"]] = trimws(val) }, # could be split further, separated by semilcon
-               keywords = { retlist[["keywords"]] =  trimws(strsplit(val, split = ",")[[1]] |> yml_qt())  },
-               corresponding_email = { retlist[["corresponding_email"]] =  trimws(val) |> yml_qt()}
-        )
-      }
+#       # old metadata parsing code
+#       # tables already parsed
+#       cdat_notabs  = cdat[content_type != "table cell"]
+#       stopifnot("metadata part without tables empty" = NROW(cdat_notabs) > 1)
+#       # we parse all paragraphs
+#       for(cr in 2:NROW(cdat_notabs)){
+#
+#
+#         # command. Delinated by a colon.
+#         cmd = tolower(stringi::stri_match_first(cdat_notabs$text[cr], regex = "^[A-Za-z0-9_]{1,}\\s?(?=:)"))
+#         val = trimws(stringi::stri_replace_first(str = cdat_notabs$text[cr], regex = "^[A-Za-z0-9_]{1,}\\s?:", replacement = ""))
+#
+#         switch(cmd,
+#                #articledates = { retlist[["articledates"]] = trimws(val) }, # could be split further, separated by semilcon
+#                keywords = { retlist[["keywords"]] =  trimws(strsplit(val, split = ",")[[1]] |> yml_qt())  },
+#                corresponding_email = { retlist[["corresponding_email"]] =  trimws(val) |> yml_qt()}
+#         )
+#       }
     }
   }
   return(retlist)

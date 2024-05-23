@@ -473,6 +473,19 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
+  # statements and declarations
+  rmd_statements = ''
+
+  # any statements? populate corresponding article part, each with its own subheading
+  if(length(metadata$statements) > 0){
+
+    rmd_statements = "\n\n# Declarations\n\n"
+    for(cn in names(metadata$statements)){
+
+      cstat <- metadata$statements[[cn]]
+      rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat %+% "\n\n"
+    }
+  }
 
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
@@ -508,7 +521,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
-  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn, rmd_orcinds, rmd_references)
+  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn, rmd_statements, rmd_orcinds, rmd_references)
 
 
   # write rmd file if filename provided

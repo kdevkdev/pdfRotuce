@@ -60,6 +60,7 @@ gen_yaml_header = function(md, reference_parsing = T){
 
 
 
+
   # copy over -> to it this way to have default values availabvlw
   yml_data$title_full                = md$title |> yml_qt()
   yml_data$copyright$year            = md$copyright_year |> yml_qt()
@@ -69,10 +70,10 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$journalinfo$doi           = md$doi  |> yml_qt() # ideally if the doi is the article specific one this should be restructured
   yml_data$journalinfo$article_type  = md$article_type  |> yml_qt()
   yml_data$abstractparts             = md$abstractparts
-  yml_data$keywords                  = md$keywords
+  yml_data$keywords                  = md$attributes$keywords
   yml_data$authors                   = md$authors
   yml_data$affiliations              = md$affiliations
-  yml_data$correspondingauthor$email = md$corresponding_email |> yml_qt()
+  yml_data$correspondingauthor$email = md$attributes$corresponding_email |> yml_qt()
   yml_data$articledates              = md$articledates |> yml_qt()
   yml_data$pageheader$odd            = md$journal_title_short |> yml_qt()
   yml_data$pageheader$even           = md$pageheader |> yml_qt()
@@ -80,6 +81,5 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$bibliography              = md$bibliography |> yml_qt()
   yml_data$csl                       = md$csl |> yml_qt()
 
-  browser()
   return(paste0("---\n",yaml::as.yaml(yml_data), "\n---\n"))
 }
