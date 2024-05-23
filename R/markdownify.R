@@ -510,8 +510,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
     td <- metadata$authors[author_orcinds] |> rbindlist()
 
+    plural = ""
+    if(NROW(td)> 1){
+      plural = "s"
+    }
 
-    rmd_orcinds = "# ORCID\n\n\\noindent\n"
+    rmd_orcinds = "## ORCID" %+% plural %+%"\n\n\\noindent\n"
 
 
     rmd_orcinds = rmd_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} [",
