@@ -9,7 +9,9 @@ markdownify(
   working_folder = ".",
   meta_csv = NULL,
   rmd_outpath = NULL,
-  reference_parsing = TRUE
+  reference_parsing = F,
+  url_parsing = T,
+  orcid_parsing = T
 )
 }
 \arguments{

@@ -41,7 +41,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   # first create empty structure
   yml_data = list(title_full = '',
                   copyright = list(year = '', text = ''),
-                  journalinfo = list(title = '', volume = '', doi = ''),
+                  journalinfo = list(title = '', volume = '', doi = '', article_type = '_'),
                   abstractparts = list(list(title = '', text = ''),
                                        list(title = '', text = '')),
                   keywords = c(),
@@ -67,6 +67,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$journalinfo$title         = md$journal_title |> yml_qt()
   yml_data$journalinfo$volume        = md$volume |> yml_qt()
   yml_data$journalinfo$doi           = md$doi  |> yml_qt() # ideally if the doi is the article specific one this should be restructured
+  yml_data$journalinfo$article_type  = md$article_type  |> yml_qt()
   yml_data$abstractparts             = md$abstractparts
   yml_data$keywords                  = md$keywords
   yml_data$authors                   = md$authors
@@ -79,5 +80,6 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$bibliography              = md$bibliography |> yml_qt()
   yml_data$csl                       = md$csl |> yml_qt()
 
+  browser()
   return(paste0("---\n",yaml::as.yaml(yml_data), "\n---\n"))
 }

@@ -7,7 +7,7 @@
 rabulify(
   d,
   linesep = "\\newline",
-  wide = F,
+  mode = "twocolumn",
   caption = NULL,
   label = NULL,
   long = F,

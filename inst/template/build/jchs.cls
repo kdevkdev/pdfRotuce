@@ -275,6 +275,8 @@ justification=raggedright]{caption}
 \newcommand{\journalvolume}[1]{\def\thejournalvolume{#1}}
 \newcommand{\journaltitle}[1]{\def\thejournaltitle{#1}}
 \newcommand{\journaldoi}[1]{\def\thejournaldoi{#1}}
+\newcommand{\journalarticletype}[1]{\def\thejournalarticletype{#1}}
+
 
 %
 % article meta data
@@ -301,13 +303,14 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \renewcommand{\@maketitle}{
 {\absput[pg-tl, tl, x=1cm, y=-1.2cm,width=1\textwidth]{
 \begin{minipage}{0.13\textwidth}
-	\includegraphics[width = 20mm]{jchs.pdf}
+	\href{https://journals.ub.umu.se/index.php/jcsh}{\includegraphics[width = 20mm]{jchs.pdf}}
 \end{minipage}
 \begin{minipage}{0.49\textwidth}
 	{\sffamily\footnotesize\color{black}
 		\thejournaltitle\\
 		\thejournalvolume\\
-		\thejournaldoi}
+		\thejournaldoi \vspace*{2mm}\\
+		{\normalsize \textbf{\thejournalarticletype}}}
 \end{minipage}
 \begin{minipage}[t][][t]{0.37\textwidth}% align both the minipage itself and its contents on top
 	\textls[-14]{%
