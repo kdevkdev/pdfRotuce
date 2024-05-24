@@ -519,13 +519,13 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       plural = "s"
     }
 
-    rmd_orcinds = "## ORCID" %+% plural %+%"\n\n\\noindent\n"
+    rmd_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
+    rmd_orcinds = rmd_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
+    rmd_orcinds = rmd_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
+                                                 td$orcid, "}{",
+                                                 td$orcid,"}"), collapse = " \\\\\n") %+% "}\n\n"
 
-
-    rmd_orcinds = rmd_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} [",
-                                                 td$orcid, "](https://orcid.org/",
-                                                 td$orcid, ") "), collapse = "\\linebreak\n") %+% "\n\n"
-
+    rmd_orcinds = rmd_orcinds %+% "\n```"
   }
 
 
