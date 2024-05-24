@@ -31,6 +31,7 @@
 \RequirePackage{adjustbox}
 \RequirePackage{cuted}
 \RequirePackage{abspos}
+\RequirePackage{hyphenat}
 
 
 
@@ -258,7 +259,7 @@ justification=raggedright]{caption}
 % for  author
 \newcommand{\corrauthor}[3][]{%
 	\def\thecorrauthor{%
-		{\fontsize{9}{12}\selectfont{\bfseries $^{#1}$} #2 \mbox{#3}\par}
+		{\fontsize{9}{12}\selectfont{\bfseries $^{#1}$} #2  \nohyphens{\sloppy #3}\par}
 	}
 }
 
