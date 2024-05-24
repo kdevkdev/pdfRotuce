@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F, url_parsing = T, orcid_parsing = T){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F, url_parsing = T, orcid_parsing = T, guess_refnumbers = T){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -253,6 +253,10 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
        # extract marker 1., 2., .... using regex
        markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
+
+       if(any(is.na(markers)) && guess_refnumbers == TRUE){
+          markers = as.character(1:length(refs))
+       }
 
        refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
 

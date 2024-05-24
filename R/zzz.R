@@ -33,6 +33,7 @@ parser = NULL
         c('left', 'EMPH'),
         c('left', 'BOLD'),
         c('left', 'EMPHBOLD'),
+        c('left', 'LBREAK'),
         c('left', 'TEXT')
         #c('left', 'DSPACE')
 

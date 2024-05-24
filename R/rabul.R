@@ -265,7 +265,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
                  "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  body, "\n",
                  end_envinner,"\n",
-                 post_envouter,"\n")
+                 post_envouter,"\n\\vspace{3mm}")
   }
   else{
 
