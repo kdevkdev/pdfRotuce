@@ -55,7 +55,7 @@ parse_title_page = function(docdat){
       # first tables
       cudoc_tabinds = unique(cdat[content_type == "table cell"]$doc_index)
 
-      stopifnot("two tables in metadata section of titlepage needed, one for affiliations and one for authors" =  length(cudoc_tabinds) == 4)
+      stopifnot("four tables in metadata section of titlepage needed: one for affiliations, one for authors, one for statements, and one for other attributes" =  length(cudoc_tabinds) == 4)
       stopifnot("metadata part empty" = NROW(cdat) > 1)
 
       # parse authors and affiliations in tables
@@ -70,10 +70,10 @@ parse_title_page = function(docdat){
         ct_dat = cdat[content_type == "table cell" & doc_index == cti]
         ct_tab = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "text")[,-1] # not first
 
-        table_type = trimws(ct_tab[1,1])
+        table_type = trimws(tolower(ct_tab[1,1]))
         cn = unlist(ct_tab[1,])
         ct_tab = ct_tab[-1, ]
-        colnames(ct_tab) = cn
+        colnames(ct_tab) = trimws(tolower(cn))
 
 
         # parse tables - authors and affiliations

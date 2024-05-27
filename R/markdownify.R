@@ -49,13 +49,13 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     names(tvals) = pd_tab[[1]]
 
 
-    # copy over provided values
-    if(is.element("articledates", names(tvals)))     predef_meta$articledates     = tvals["articledates"]         else warning("'articledates' missing in meta csv")
-    if(is.element("volume", names(tvals)))           predef_meta$volume           = tvals["volume"]               else warning("'volume' missing in meta csv")
-    if(is.element("copyright_year", names(tvals)))   predef_meta$copyright_year   = tvals["copyright_year"]       else warning("'copyright_year' missing in meta csv")
-    if(is.element("doi", names(tvals)))              predef_meta$doi              = tvals["doi"]                  else warning("'doi' missing in meta csv")
-    if(is.element("pageheader", names(tvals)))       predef_meta$pageheader       = tvals["pageheader"]           else warning("'pageheader' missing in meta csv")
-    if(is.element("article_type", names(tvals)))     predef_meta$article_type     = tvals["article_type"]         else warning("'article_type' missing in meta csv")
+    # copy over provided values, uppercase for article typer
+    if(is.element("articledates", names(tvals)))     predef_meta$articledates              = tvals["articledates"]           else warning("'articledates' missing in meta csv")
+    if(is.element("volume", names(tvals)))           predef_meta$volume                    = tvals["volume"]                 else warning("'volume' missing in meta csv")
+    if(is.element("copyright_year", names(tvals)))   predef_meta$copyright_year            = tvals["copyright_year"]         else warning("'copyright_year' missing in meta csv")
+    if(is.element("doi", names(tvals)))              predef_meta$doi                       = tvals["doi"]                    else warning("'doi' missing in meta csv")
+    if(is.element("pageheader", names(tvals)))       predef_meta$pageheader                = tvals["pageheader"]             else warning("'pageheader' missing in meta csv")
+    if(is.element("article_type", names(tvals)))     predef_meta$article_type              = toupper(tvals["article_type"])  else warning("'article_type' missing in meta csv")
   }
 
 
