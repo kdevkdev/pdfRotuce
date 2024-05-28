@@ -491,6 +491,27 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     }
   }
 
+  # other language astracts
+  rmd_multilang_abstracts = ""
+  if(any(names(metadata$abstractparts)!="en")){
+      olang_abs = metadata$abstractparts[setdiff(names(metadata$abstractparts),"en")]
+
+
+
+      rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n\\begin{multicols}{2}\\sffamily\n\n"
+
+
+      for(cab in olang_abs){
+
+        for(cp in cab){
+
+          rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% cp$title %+% "} " %+% cp$text %+% "\n\n"
+        }
+      }
+      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{multicols}\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n\\begin{multicols}{2}\n```\n\n"
+  }
+
+
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
   cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protecteddollar========", replacement = "$")]
@@ -529,7 +550,11 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
-  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn, rmd_statements, rmd_orcinds, rmd_references)
+  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn,
+               rmd_statements,
+               rmd_orcinds,
+               rmd_multilang_abstracts,
+               rmd_references)
 
 
   # write rmd file if filename provided

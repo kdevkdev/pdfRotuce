@@ -265,8 +265,8 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     }
     tex = paste0(pre_envouter,
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
-                 "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  body, "\n",
+                 "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  end_envinner,"\n",
                  post_envouter,"\n\\vspace{3mm}")
   }
