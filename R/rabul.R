@@ -233,13 +233,14 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   }
   if(xltabular == T){
 
-    begin_envinner  = "\\setlength\\arrayrulewidth{1pt}{\\renewcommand{\\arraystretch}{1.2}\\sffamily\\fontsize{8.5}{11}\\selectfont
-\\begin{xltabular}"
-    end_envinner = "\\end{xltabular}}"
+    tbl_env = "xltabular"
+
 
     if(mode == "wide"){
       pre_envouter = "\\end{multicols}"
-      post_envouter = "\\begin{multicols}{2}"
+      post_envouter = "\\begin{multicols}{2}\\raggedcolumns"
+      # pre_envouter = "\\begin{table*}\\begin{multicolslongtable}" # put for floating table. Only works with non-long tables
+      # post_envouter = "\\end{multicolslongtable}\\end{table*}"
     }
     else if(mode == "landscape"){
       # https://tex.stackexchange.com/questions/19017/how-to-place-a-table-on-a-new-page-with-landscape-orientation-without-clearing-t
@@ -254,7 +255,9 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     else{
       stop("rabulify: unkown table mode")
     }
-
+    begin_envinner  = "\\setlength\\arrayrulewidth{1pt}{\\renewcommand{\\arraystretch}{1.2}\\sffamily\\fontsize{8.5}{11}\\selectfont
+\\begin{"%+% tbl_env %+%"}"
+    end_envinner = "\\end{"%+% tbl_env %+%"}}"
 
     if(!is.null(label) && is.character(label)){
 

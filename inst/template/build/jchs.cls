@@ -32,6 +32,7 @@
 \RequirePackage{cuted}
 \RequirePackage{abspos}
 \RequirePackage{hyphenat}
+\usepackage{wrapfig}
 
 
 
@@ -310,8 +311,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	{\sffamily\footnotesize\color{black}
 		\thejournaltitle\\
 		\thejournalvolume\\
-		\thejournaldoi \vspace*{2mm}\\
-		{\normalsize \textbf{\thejournalarticletype}}}
+		\thejournaldoi \vspace*{3mm}\\
+		{\fontsize{11}{13}\selectfont\textbf{\thejournalarticletype}}}
 \end{minipage}
 \begin{minipage}[t][][t]{0.37\textwidth}% align both the minipage itself and its contents on top
 	\textls[-14]{%

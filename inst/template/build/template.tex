@@ -209,6 +209,16 @@ $for(keywords)$$keywords$$sep$, $endfor$%
  }
 {\end{figure*}}
 
+% does not work
+%\newenvironment{FigureMC}[2]
+%{\vfill
+%\begin{wrapfigure}{l}{0.5\linewidth}
+%\includegraphics[width=1\linewidth]{#1}
+%\caption{figure}{\raggedright #2}}
+%{\end{wrapfigure}}
+
+
+
 % for multicol  longtblrs
 % https://tex.stackexchange.com/questions/555318/environment-to-balance-a-table-in-a-multicol
 \makeatletter
@@ -224,13 +234,17 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 	\unvbox\ltmcbox
 }
 
+\newenvironment{multicolslongtable*}{\col@number\@ne
+}{
+}
+
 \begin{document}
 \thispagestyle{empty}
 \enlargethispage{-2\baselineskip}
 %\begin{strip}
 \begin{abstract}
-$for(abstractparts)$
-{\bfseries $abstractparts.title$} $abstractparts.text$$sep$\\
+$for(abstractparts.en)$
+{\bfseries $abstractparts.en.title$} $abstractparts.en.text$ $sep$\\
 $endfor$\\
 \end{abstract}
 \maketitle\thispagestyle{empty} % no page number on first page
@@ -265,6 +279,7 @@ $endfor$\\
 % 	headheight=15mm}
 
 \begin{multicols}{2}
+\raggedcolumns
 $body$
 \end{multicols}
 

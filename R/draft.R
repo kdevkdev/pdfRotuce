@@ -27,7 +27,7 @@ draft <- function(folder, overwrite = "none"){
   template_path <- system.file("./template", package = "pdfRotuce")
 
 
-  # only overwrite if specified. Will still copy build directy as its deleted above
+  # only overwrite if specified. Will still copy build directory as its deleted above
   ow = overwrite %in% c("all")
   r = file.copy(from = list.files(template_path, full.names = TRUE), to = folder, recursive = T, overwrite = ow)
 

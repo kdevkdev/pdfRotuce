@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F, url_parsing = T, orcid_parsing = T, guess_refnumbers = T){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F, url_parsing = T, doi_parsing = T, guess_refnumbers = T){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -296,12 +296,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
        }
 
 
-       if(orcid_parsing){
+       if(doi_parsing){
 
 
          # pattern from qdapRegex
          refs = stringr::str_replace_all(string = refs,
-                                         pattern = stringr::regex("\\b10.\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                         pattern = stringr::regex("\\b(?<!/)10.\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
                                          replacement = function(m){
 
                                            r = gsub(pattern = "\\.$", replacement = "", x = m)

@@ -13,8 +13,8 @@ parse_title_page = function(docdat){
 
 
   # check for level 2 heading METADATA and ABSTRACT
-  stopifnot(sum("not exactly 1 ABSTRACT level 2 heading" = tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "abstract")==1)
-  stopifnot(sum("not ecactly 1 METADATA level 2 heading" = tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "metadata") == 1)
+  stopifnot("Check that there is exactly one heading 'ABSTRACT' with style 'heading 2' on the manuscript titlepage " = sum( tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "abstract")==1)
+  stopifnot("Check that there is exactly one heading 'METADATA' with style 'heading 2' on the manuscxript titlepage"  = sum(tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "metadata") == 1)
 
   # first heading 1 is title
 
@@ -26,13 +26,15 @@ parse_title_page = function(docdat){
   # divide into parts
   docdat[, part_id := cumsum(tolower(style_name) == "heading 2")]
 
-
+  # prereserver
+  retlist[["abstractparts"]] = list()
 
   # parse parts
   for(cpi in unique(docdat$part_id)){
 
     cdat = docdat[part_id == cpi]
-    if(tolower(trimws(cdat$text[1])) == "abstract")# since
+    section_heading=tolower(trimws(cdat$text[1]))
+    if(section_heading %in%  c("abstract", "abstract_es"))# since
     {
 
       abdat = cdat[-1,] # without first row
@@ -48,9 +50,18 @@ parse_title_page = function(docdat){
       abdat[is.na(text),   text   := ""]
       abdat[is.na(titles), titles := ""]
 
-      retlist[["abstractparts"]] = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
+      # detect which abstract language it is
+      langname = "en"
+
+      if(section_heading == "abstract_es"){
+        langname = "es"
+      }
+      tl = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
+      retlist[["abstractparts"]][[langname]] = tl
+
+
     }
-    else if(tolower(trimws(cdat$text[1])) == "metadata"){
+    else if(section_heading == "metadata"){
 
       # first tables
       cudoc_tabinds = unique(cdat[content_type == "table cell"]$doc_index)
