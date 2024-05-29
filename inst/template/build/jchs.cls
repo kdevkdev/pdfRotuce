@@ -344,7 +344,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]
 	{
 		\noindent
-		{\Centering\bfseries ABSTRACT\par}
+		{\raggedright\bfseries ABSTRACT\par}
 	}
 	\vskip 1.5mm
 	{

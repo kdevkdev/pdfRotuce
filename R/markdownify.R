@@ -505,7 +505,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
         cab = olang_abs[[can]]
 
-        cab_tit = toupper(switch(can, "", "es" = "Resumén")) # default empty
+        cab_tit = toupper(switch(can, "", "es" = "RESUMEN")) # Resumén, default empty
 
         if(first){ # but horizontal rule
           #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
@@ -513,7 +513,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
           first <- FALSE
         }
 
-        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\Centering\\bfseries " %+% cab_tit %+% "\\par}"
+        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "\\par}"
         #rmd_multilang_abstracts = rmd_multilang_abstracts %+%"\\vspace{-4mm}\n\\begin{multicols}{2}\n"
 
         for(cp in cab){
