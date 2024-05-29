@@ -498,7 +498,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
 
-      rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\n"
+      rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\n\\vspace{2mm}"
       first <- TRUE
 
       for(can in names(olang_abs)){
@@ -524,7 +524,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{multicols}"
       #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
 
-      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\begin{multicols}{2}\n```\n\n"
+      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\\begin{multicols}{2}\n```\n\n"
   }
 
 

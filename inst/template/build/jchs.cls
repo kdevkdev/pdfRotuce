@@ -178,6 +178,10 @@ justification=raggedright]{caption}
 \renewcommand{\headrulewidth}{0pt}% % No header rule
 \renewcommand{\footrulewidth}{0pt}% % No footer rule
 
+
+
+
+
 %
 % section/subsection/paragraph set-up
 %

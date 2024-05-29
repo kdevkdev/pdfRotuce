@@ -245,7 +245,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     else if(mode == "landscape"){
       # https://tex.stackexchange.com/questions/19017/how-to-place-a-table-on-a-new-page-with-landscape-orientation-without-clearing-t
 
-      pre_envouter = "\\end{multicols}\\begin{landscape}\\centering"
+      pre_envouter = "\\end{multicols}\\begin{landscape}\\centering\\thispagestyle{lscape}\\pagestyle{lscape}"
       post_envouter = "\\end{landscape}\\clearpage\\begin{multicols}{2}"
     }
     else if(mode == "twocolumn"){ # default
