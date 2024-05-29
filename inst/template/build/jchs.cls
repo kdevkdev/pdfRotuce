@@ -344,7 +344,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]
 	{
 		\noindent
-		{\textbf{ABSTRACT}}
+		{\Centering\bfseries ABSTRACT\par}
 	}
 	\vskip 1.5mm
 	{
@@ -374,8 +374,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 \definecolor{jchsorange}{HTML}{ffc000} % color aroiund 'we are a fair open access journal'
 \definecolor{urlcolor}{HTML}{0563c1} % url color
-\definecolor{jchslightorange}{HTML}{fbe5d6} % abstract background color
-\definecolor{jchsheadercolor}{HTML}{ed7d31} % abstract background color
+\definecolor{jchslightorange}{HTML}{ffe8d9} %{fbe5d6} % abstract background color
+\definecolor{jchsheadercolor}{HTML}{ed7d31} % orange title text color
 
 \definecolor{jchshlightgray}{HTML}{d9d9d9}
 

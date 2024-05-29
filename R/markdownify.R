@@ -498,17 +498,33 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
 
-      rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n\\begin{multicols}{2}\\sffamily\n\n"
+      rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\n"
+      first <- TRUE
 
+      for(can in names(olang_abs)){
 
-      for(cab in olang_abs){
+        cab = olang_abs[[can]]
+
+        cab_tit = toupper(switch(can, "", "es" = "Resumén")) # default empty
+
+        if(first){ # but horizontal rule
+          #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
+          rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
+          first <- FALSE
+        }
+
+        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\Centering\\bfseries " %+% cab_tit %+% "\\par}"
+        #rmd_multilang_abstracts = rmd_multilang_abstracts %+%"\\vspace{-4mm}\n\\begin{multicols}{2}\n"
 
         for(cp in cab){
 
           rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% cp$title %+% "} " %+% cp$text %+% "\n\n"
         }
       }
-      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{multicols}\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n\\begin{multicols}{2}\n```\n\n"
+      #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{multicols}"
+      #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
+
+      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\begin{multicols}{2}\n```\n\n"
   }
 
 
