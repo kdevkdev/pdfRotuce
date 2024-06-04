@@ -97,6 +97,10 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
     tab_fullgrid = "TRUE"
   }
 
+  tab_footnote = NULL
+  if('footnote' %in% names(tab_opts)){
+    tab_footnote = escape_caption(tab_opts['footnote'])
+  }
 
 
   print(paste0("Writing table: ", tab_fname))
@@ -110,7 +114,9 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
 
 tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
 ncol =  NCOL(tab_dat)
-  tex = pdfRotuce::rabulify(tab_dat, mode = '" %+%  tab_mode %+% "', caption = '" %+% tab_caption %+% "',
+  tex = pdfRotuce::rabulify(tab_dat, mode = '" %+%  tab_mode %+% "',
+              caption = '" %+% tab_caption %+% "',
+              footnote = '" %+% tab_footnote %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
               fullgrid = " %+% tab_fullgrid %+% ")

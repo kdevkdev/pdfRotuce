@@ -4,7 +4,7 @@
 \alias{draft}
 \title{Title}
 \usage{
-draft(folder, overwrite = F)
+draft(folder, overwrite = "none")
 }
 \arguments{
 \item{folder}{}

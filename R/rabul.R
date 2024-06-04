@@ -88,7 +88,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @export
 #'
 #' @examples
-rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, label = NULL, long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
+rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -173,8 +173,9 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   #l_innerspecs[["valign"]] = "column{2}={c}"
 
-  if(!is.null(caption))
+  if(!is.null(caption)){
       l_outerspecs[["caption"]] = "caption={" %+% caption %+% "}"
+  }
 
 
   #https://tex.stackexchange.com/questions/45980/balancing-long-table-inside-multicol-in-latex
@@ -235,6 +236,12 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
     tbl_env = "xltabular"
 
+    lt_footnote = NULL
+    if(!is.null(footnote)){
+      lt_footnote = "\\caption*{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont " %+% footnote %+%"}"
+    }
+
+
 
     if(mode == "wide"){
       pre_envouter = "\\end{multicols}"
@@ -265,8 +272,9 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     }
     tex = paste0(pre_envouter,
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
-                 body, "\n",
                  "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
+                 body,
+                 lt_footnote,
                  end_envinner,"\n",
                  post_envouter,"\n\\vspace{3mm}")
   }

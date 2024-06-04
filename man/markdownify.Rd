@@ -11,7 +11,8 @@ markdownify(
   rmd_outpath = NULL,
   reference_parsing = F,
   url_parsing = T,
-  orcid_parsing = T
+  doi_parsing = T,
+  guess_refnumbers = T
 )
 }
 \arguments{

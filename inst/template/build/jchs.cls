@@ -124,7 +124,7 @@ a4paper]{geometry}%
 
 \RequirePackage[labelfont={bf,sf},%
 labelsep=period,%
-justification=raggedright]{caption}
+justification=raggedright, skip = 2pt]{caption}
 
 
 
