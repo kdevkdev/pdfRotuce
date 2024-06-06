@@ -93,7 +93,7 @@ BoldItalicFont  = OpenSans-BoldItalic.ttf]
 
 \RequirePackage[hang,flushmargin]{footmisc}
 
-\RequirePackage{tcolorbox}
+\RequirePackage[breakable]{tcolorbox}
 
 
 
@@ -345,7 +345,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \vskip5mm
 {\thearticledates}
 \vskip3mm
-\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]
+\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm,breakable]
 	{
 		\noindent
 		{\raggedright\bfseries ABSTRACT\par}

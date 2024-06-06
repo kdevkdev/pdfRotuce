@@ -92,6 +92,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   l_innerspecs = list()
   l_outerspecs = list()
 
+
   # detect header rows
   header_inds = which(startsWith(d[[1]], "#"))
   # remove those '#'
@@ -238,7 +239,8 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
     lt_footnote = NULL
     if(!is.null(footnote)){
-      lt_footnote = "\\caption*{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont " %+% footnote %+%"}"
+      lt_footnote = "\\caption*{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont " %+% gsub("\\n" , "\\\\newline ", footnote) %+%"}"
+
     }
 
 
