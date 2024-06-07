@@ -131,7 +131,7 @@ justification=raggedright, skip = 2pt]{caption}
 % author/ affil setup
 \RequirePackage{authblk}
 \setcounter{Maxaffil}{0}% always footnote mode
-\setlength{\affilsep}{6.5mm}%distance between authors and affiliations
+\setlength{\affilsep}{4.5mm}%distance between authors and affiliations
 \renewcommand\Authsep{, }% author separation string
 \renewcommand\Authand{ and }% if two authors
 \renewcommand\Authands{, }% before last author if more than two
@@ -276,7 +276,7 @@ justification=raggedright, skip = 2pt]{caption}
 	%}
 % version with one  argument
 \newcommand{\articledates}[1]{\def\thearticledates{
-		{\fontsize{9}{12}\selectfont#1\par}
+		{\fontsize{9}{12}\selectfont#1}
 }}
 \newcommand{\journalvolume}[1]{\def\thejournalvolume{#1}}
 \newcommand{\journaltitle}[1]{\def\thejournaltitle{#1}}
@@ -335,29 +335,26 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 %osfamily % use open sans
 %\fontspec{Open Sans}%
 {% we do not want a intent for the title, and we want it centered
-	\setstretch{1.18}\setlength{\JustifyingParindent}{0pt}%
+	\setstretch{1.08}\setlength{\JustifyingParindent}{0pt}%
 	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
 }
-\vskip5.5mm
-{  \@author}
-\vskip5mm
-{\thecorrauthor}
-\vskip5mm
-{\thearticledates}
 \vskip3mm
-\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm,breakable]
+{  \@author}
+\vskip1.5mm
+{\thecorrauthor}
+\vskip3mm
+{\thearticledates}
+\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
 	{
 		\noindent
 		{\raggedright\bfseries ABSTRACT\par}
 	}
-	\vskip 1.5mm
-	{
+
+	
 		\noindent
 		
-		\parbox{\dimexpr\linewidth-2\fboxsep\relax}
-		{
 			{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
-		}
+		
 		
 		\vskip 0mm
 		\noindent
@@ -365,10 +362,11 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		{
 			{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} \@keywords}
 		}
-	}
+	
 \end{tcolorbox}
 \vskip25pt
 }
+\vfill
 }
 %-----------------------------------------------
 

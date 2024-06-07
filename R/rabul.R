@@ -120,9 +120,9 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
           r = parse_cellmd(c)
           # escape relevant chars &, #, {, }
           r = gsub(x = r, pattern = "&", replacement = "\\&", fixed = T)
-          #r = gsub(x = r, pattern = "#", replacement = "\\#")
-          #r = gsub(x = r, pattern = "{", replacement = "\\{")
-          #r = gsub(x = r, pattern = "}", replacement = "\\}")
+          r = gsub(x = r, pattern = "#", replacement = "\\#", fixed = T)
+          r = gsub(x = r, pattern = "\\{", replacement = "\\{")
+          r = gsub(x = r, pattern = "\\}", replacement = "\\}")
 
           r = paste0("{", r ,"}")
         })
