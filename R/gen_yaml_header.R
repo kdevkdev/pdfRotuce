@@ -8,7 +8,6 @@ gen_yaml_header = function(md, reference_parsing = T){
 
   # md : metadata to fill in
 
-
   # few hardcoded values
   md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia. J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
   md$journal_title = "JOURNAL OF COMMUNITY SYSTEMS FOR HEALTH"
@@ -82,6 +81,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$output                    = md$output
   yml_data$bibliography              = md$bibliography |> yml_qt()
   yml_data$csl                       = md$csl |> yml_qt()
+
 
   return(paste0("---\n",yaml::as.yaml(yml_data), "\n---\n"))
 }

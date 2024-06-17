@@ -42,7 +42,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # get metadata from csv
   if(!is.null(meta_csv)){
 
-    pd_tab = fread(meta_csv, header = F)
+    pd_tab = read.csv(file = meta_csv, header = F, fileEncoding = "UTF-8")
 
     # values to a vector and name to vector names
     tvals = pd_tab[[2]]
