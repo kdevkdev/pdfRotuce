@@ -9,6 +9,7 @@ rabulify(
   linesep = "\\newline",
   mode = "twocolumn",
   caption = NULL,
+  footnote = NULL,
   label = NULL,
   long = F,
   xltabular = T,

@@ -1,6 +1,7 @@
 #' Title
 #'
 #' @param folder
+#' @param overwrite either `"all"`, `"build"`, or `"none"` (default). All overwrtites all files including the manuscript template, `"build"` just the files in the `build` folder.
 #'
 #'
 #' @return `TRUE` if all files were copied successfully, `FALSE` otherwise.

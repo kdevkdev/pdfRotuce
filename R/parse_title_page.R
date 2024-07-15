@@ -91,7 +91,7 @@ parse_title_page = function(docdat){
         if(table_type == "author"){
 
           # remove emptpy
-          if(NROW(ct_tab[!is.null(author) | is.character(author) | nchar(author) == 0, ])>0){
+          if(NROW(ct_tab[!is.null(author) & is.character(author) & nchar(author) == 0, ])>0){
             warning("Empty lines in authors table")
           }
           ct_tab = ct_tab[!is.null(author) & is.character(author) &nchar(author) > 0, ]

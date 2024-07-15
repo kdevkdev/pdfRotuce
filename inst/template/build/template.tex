@@ -266,6 +266,10 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 \thispagestyle{empty}
 \enlargethispage{-2\baselineskip}
 %\begin{strip}
+\begin{textblock}{18}(1.5,27.2)
+	\footnotesize{\noindent © $copyright.year$ $copyright.text$}
+\end{textblock}
+
 \begin{abstract}
 $for(abstractparts.en)$
 {\bfseries $abstractparts.en.title$} $abstractparts.en.text$ $sep$\\
@@ -276,9 +280,7 @@ $endfor$\\
 %\end{strip}
 
 
-\begin{textblock}{18}(1.5,27.2)
-\footnotesize{\noindent © $copyright.year$ $copyright.text$}
-\end{textblock}
+
 
 %\let\thefootnote\relax\footnote{© $copyright.year$ $copyright.text$\\\\}
 
