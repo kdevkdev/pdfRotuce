@@ -17,7 +17,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   type_height = 272
 
   fig_capts =
-  tab_capts = c()
+    tab_capts = c()
 
   # read file and backup object
   docx = officer::read_docx(src_docx)
@@ -240,90 +240,90 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       })
 
     }
-   else { # end condition refernce_parsing
+    else { # end condition refernce_parsing
 
       # do not change in text citations
-     if(is.numeric(ref_inds[1])){
+      if(is.numeric(ref_inds[1])){
 
-       #doc_summar$mrkdwn[ref_inds] = paste0("\\setlength{\\parindent}{0em}\n", doc_summar$mrkdwn[ref_inds])
-       refs <- doc_summar$mrkdwn[ref_inds]
+        #doc_summar$mrkdwn[ref_inds] = paste0("\\setlength{\\parindent}{0em}\n", doc_summar$mrkdwn[ref_inds])
+        refs <- doc_summar$mrkdwn[ref_inds]
 
-       # remove empty paragraphs
-       refs <- refs[!grepl(x = refs, pattern = "^\\s?$")]
+        # remove empty paragraphs
+        refs <- refs[!grepl(x = refs, pattern = "^\\s?$")]
 
-       # extract marker 1., 2., .... using regex
-       markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
+        # extract marker 1., 2., .... using regex
+        markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
 
-       if(any(is.na(markers)) && guess_refnumbers == TRUE){
+        if(any(is.na(markers)) && guess_refnumbers == TRUE){
           markers = as.character(1:length(refs))
-       }
+        }
 
-       refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
+        refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
 
-       # delete markers from refs
-       stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
-
-
-       # remove dots
-       markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
+        # delete markers from refs
+        stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
 
-       # [] need to be grouped in latex optional options bec of parsing (https://tex.stackexchange.com/questions/84595/latex-optional-arguments-with-square-brackets)
-#       doc_summar$mrkdwn[ref_inds[1]] = gen_list(items = refs, label = "{[_]}", markers = markers,
-#                                                 options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
+        # remove dots
+        markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
 
 
-       # https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-       #[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+        # [] need to be grouped in latex optional options bec of parsing (https://tex.stackexchange.com/questions/84595/latex-optional-arguments-with-square-brackets)
+        #       doc_summar$mrkdwn[ref_inds[1]] = gen_list(items = refs, label = "{[_]}", markers = markers,
+        #                                                 options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
 
-#       refs = stringr::str_replace_all(string = refs,
-#                                pattern = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
-#                                replacement = "\\\\url{\\0}")
 
-       if(url_parsing){
+        # https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+        #[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
 
-         # pattern from qdapRegex
-         refs = stringr::str_replace_all(string = refs,
-                                         pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
-                                         replacement = function(m){
+        #       refs = stringr::str_replace_all(string = refs,
+        #                                pattern = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
+        #                                replacement = "\\\\url{\\0}")
+
+        if(url_parsing){
+
+          # pattern from qdapRegex
+          refs = stringr::str_replace_all(string = refs,
+                                          pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
+                                          replacement = function(m){
 
                                             r = gsub(pattern = "\\.$", replacement = "", x = m)
                                             r  = paste0("\\url{", r,"}.")
                                             r
                                             #browser()
-                                            })#"\\\\url{\\0}"
+                                          })#"\\\\url{\\0}"
 
-       }
-
-
-       if(doi_parsing){
+        }
 
 
-         # pattern from qdapRegex
-         refs = stringr::str_replace_all(string = refs,
-                                         pattern = stringr::regex("\\b(?<!/)10.\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
-                                         replacement = function(m){
-
-                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                           r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
-                                           r
-                                           #browser()
-                                         })#"\\\\url{\\0}"
-       }
-
-       rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
-                options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))
-
-       doc_summar = doc_summar[-c(refparind, ref_inds),]
+        if(doi_parsing){
 
 
-       # remove from document
-       #rem_inds = ref_inds[-1]
-       # if(length(rem_inds) > 0){
-       #   doc_summar = doc_summar[-c(refparind, rem_inds),]
-       # }
-     }
-   }
+          # pattern from qdapRegex
+          refs = stringr::str_replace_all(string = refs,
+                                          pattern = stringr::regex("\\b(?<!/)10.\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                          replacement = function(m){
+
+                                            r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                            r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
+                                            r
+                                            #browser()
+                                          })#"\\\\url{\\0}"
+        }
+
+        rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
+                                                                options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))
+
+        doc_summar = doc_summar[-c(refparind, ref_inds),]
+
+
+        # remove from document
+        #rem_inds = ref_inds[-1]
+        # if(length(rem_inds) > 0){
+        #   doc_summar = doc_summar[-c(refparind, rem_inds),]
+        # }
+      }
+    }
   }
 
 
@@ -357,7 +357,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     tab_opts_raw = cpart[ind_next_nonempty,]
 
     if(tab_opts_raw$content_type != "paragraph" && !startsWith(trimws(tab_opts_raw$mrkdwn, "[[table"))){
-      warning("Table " %+% cti %+% " does nto seem to have have a table tag")
+      warning("Table " %+% cti %+% " does not seem to have have a table tag")
     }else{
 
 
@@ -373,8 +373,8 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
     # delete table rows and table options form document structure
     cpart = data.table::rbindlist(l = list(cpart[doc_index < cti],
-                                         data.table::data.table(doc_index = cti, content_type = "paragraph", text = ctab_chunk, mrkdwn = ctab_chunk, is_heading1 = F, is_header = F),
-                                         cpart[doc_index > cti &doc_index != tab_opts_raw$doc_index]), fill = T)
+                                           data.table::data.table(doc_index = cti, content_type = "paragraph", text = ctab_chunk, mrkdwn = ctab_chunk, is_heading1 = F, is_header = F),
+                                           cpart[doc_index > cti &doc_index != tab_opts_raw$doc_index]), fill = T)
 
     tab_counter = tab_counter +1
 
@@ -451,29 +451,43 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
                  c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
-#
-#                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
-# knitr::include_graphics(path='" %+% src %+% "')
-# ```
-# "
+                 #
+                 #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
+                 # knitr::include_graphics(path='" %+% src %+% "')
+                 # ```
+                 # "
 
                },
                math={
                  print("Math detected")
                  form = c_command['form']
                  c_result = paste0("$$", trimws(form), "$$")
+               },
+               quote={
+                 print("quote detected")
+                 c_result = paste0("\\hyphenblockcquote{", trimws(c_command['text']), "}")
+                 c_result = "\\vskip 2mm
+::: {.displayquote data-latex=\"{  }\"}
+
+::: {.enquote data-latex=\"{ " %+% trimws(c_command['text']) %+% " }\"}
+\\phantom{}
+:::
+
+:::
+
+"
                })
-           }
-           else{
-
-             print("element arguments: yaml parsing error:")
-             #print(c_comtext)
-           }
-
-           # replace the paragraph with the result
-           cpart[c_comi]$mrkdwn = c_result
-
       }
+      else{
+
+        print("element arguments: yaml parsing error:")
+        #print(c_comtext)
+      }
+
+      # replace the paragraph with the result
+      cpart[c_comi]$mrkdwn = c_result
+
+    }
   }
 
 
@@ -491,40 +505,56 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     }
   }
 
-  # other language astracts
+  # other language abstracts
   rmd_multilang_abstracts = ""
-  if(any(names(metadata$abstractparts)!="en")){
-      olang_abs = metadata$abstractparts[setdiff(names(metadata$abstractparts),"en")]
+  if(any(names(metadata$abstracts)!="mainlang")){
+
+    # figure out what additional languages there are (remove mainlang, usually english)
+    side_langs = setdiff(names(metadata$abstracts),"mainlang")
+
+    side_langs_abstracts = metadata$abstracts[side_langs]
 
 
 
-      rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\n\\vspace{2mm}"
-      first <- TRUE
 
-      for(can in names(olang_abs)){
+    rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\n\\vspace{2mm}"
+    first <- TRUE
 
-        cab = olang_abs[[can]]
+    for(can in names(side_langs_abstracts)){
 
-        cab_tit = toupper(switch(can, "", "es" = "RESUMEN")) # Resumén, default empty
+      # all abstracgt parts
+      ca_parts = side_langs_abstracts[[can]]$parts
 
-        if(first){ # but horizontal rule
-          #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
-          rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
-          first <- FALSE
-        }
+      # get article title in current language to add to abstract
+      article_lang_title = side_langs_abstracts[[can]]$title
 
-        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "\\par}"
-        #rmd_multilang_abstracts = rmd_multilang_abstracts %+%"\\vspace{-4mm}\n\\begin{multicols}{2}\n"
 
-        for(cp in cab){
+      cab_tit = toupper(switch(can, "", "es" = "RESUMEN")) # Resumén. Generate abstract term for each language, default empty
 
-          rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% cp$title %+% "} " %+% cp$text %+% "\n\n"
-        }
+      if(first){ # but horizontal rule
+        #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
+        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
+        first <- FALSE
       }
-      #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{multicols}"
-      #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\noindent{\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
 
-      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\\begin{multicols}{2}\n```\n\n"
+
+
+      if(!is.null(article_lang_title) && !is.na(article_lang_title) && article_lang_title != ""){
+
+        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries \\vskip 0mm" %+% article_lang_title %+% "}\\vskip 3mm"
+      }
+      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "}\\vskip 1mm"
+
+
+      # go through paragraphs/parts
+      for(cp in ca_parts){
+
+        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% cp$title %+% "} " %+% cp$text %+% "\n\n"
+      }
+    }
+
+    rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\\begin{multicols}{2}\n```\n\n"
+
   }
 
 
@@ -541,7 +571,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # put orcid section
   author_orcinds <- sapply(X = metadata$authors, FUN = \(x){
 
-     grepl(x = gsub(x = x$orcid, pattern = "[^0-9X]", replacement= ""), pattern = "[0-9X]{16}")
+    grepl(x = gsub(x = x$orcid, pattern = "[^0-9X]", replacement= ""), pattern = "[0-9X]{16}")
   })
 
 

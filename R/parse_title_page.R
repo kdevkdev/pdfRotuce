@@ -2,11 +2,7 @@ parse_title_page = function(docdat){
   # list to hol return values
   retlist = list()
 
-  # (for historical purposes, paragraph can be deleted at a later stage) metadata alternatives
-  # - clearly delinated titlepage vs free floating metadata commands
-  # - all command boxes vs tables
-  # - explicit command boxes vs minimally sytnaxiced paragraphs on delinated title page
-  # - seperate (csv?) file
+
 
   stopifnot("invalid docdata data frame" = NROW(docdat) > 0 )
 
@@ -17,8 +13,10 @@ parse_title_page = function(docdat){
   stopifnot("Check that there is exactly one heading 'METADATA' with style 'heading 2' on the manuscxript titlepage"  = sum(tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "metadata") == 1)
 
   # first heading 1 is title
-
   l1_title_ind = which(tolower(docdat$style_name) == "heading 1")
+
+  # remove title
+  docdat = docdat[-l1_title_ind,]
 
   retlist[["title"]] = trimws(docdat[l1_title_ind,]$text) # could happend that unwanted space added?
 
@@ -27,17 +25,36 @@ parse_title_page = function(docdat){
   docdat[, part_id := cumsum(tolower(style_name) == "heading 2")]
 
   # prereserver
-  retlist[["abstractparts"]] = list()
+  retlist[["abstracts"]] = list()
 
   # parse parts
   for(cpi in unique(docdat$part_id)){
 
     cdat = docdat[part_id == cpi]
     section_heading=tolower(trimws(cdat$text[1]))
-    if(section_heading %in%  c("abstract", "abstract_es"))# since
+    if(section_heading %in%  c("abstract", "abstract_es")) # first is main abstract, then follows additional languages
     {
+      # detect which abstract language it is (need to list all allowed languages above)
+      if(section_heading == "abstract"){
+        langname = "mainlang" # main language (usually english)
+      }
+      else{
+
+        langname = gsub("abstract_", replacement = "", x = section_heading)
+      }
+
 
       abdat = cdat[-1,] # without first row
+
+
+      # check if we have a title
+      abstract_title = NA
+      if(tolower(abdat$style_name[1]) == "heading 3"){
+        abstract_title = abdat$text[1]
+        abdat = abdat[-1,] # delete also abstract title
+      }
+
+
       # one paragraph corresponds to 1 part
       # we boldify some words by by putting them in title
       #abdat$titles  = stringi::stri_match_first_regex(str = trimws(abdat$text), pattern = "^objective:|^methods:|^results:|^conclusion:", case_insensitive = T)
@@ -50,15 +67,9 @@ parse_title_page = function(docdat){
       abdat[is.na(text),   text   := ""]
       abdat[is.na(titles), titles := ""]
 
-      # detect which abstract language it is
-      langname = "en"
-
-      if(section_heading == "abstract_es"){
-        langname = "es"
-      }
       tl = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
-      retlist[["abstractparts"]][[langname]] = tl
-
+      retlist[["abstracts"]][[langname]][["parts"]] = tl
+      retlist[["abstracts"]][[langname]][["title"]] =abstract_title |> yml_qt()
 
     }
     else if(section_heading == "metadata"){
@@ -111,31 +122,13 @@ parse_title_page = function(docdat){
           retlist[["statements"]] = l
         }
         else {
-          stop("parseing title page, metadata section: unkown table type. Make sure that you provide the correct header row for all tables in the metadata section. f")
+          stop("parseing metadata title page esction: unkown table type. Make sure that you provide the correct header row for all tables in the metadata section. f")
         }
-
       }
+    }
+    else{
 
-
-
-#       # old metadata parsing code
-#       # tables already parsed
-#       cdat_notabs  = cdat[content_type != "table cell"]
-#       stopifnot("metadata part without tables empty" = NROW(cdat_notabs) > 1)
-#       # we parse all paragraphs
-#       for(cr in 2:NROW(cdat_notabs)){
-#
-#
-#         # command. Delinated by a colon.
-#         cmd = tolower(stringi::stri_match_first(cdat_notabs$text[cr], regex = "^[A-Za-z0-9_]{1,}\\s?(?=:)"))
-#         val = trimws(stringi::stri_replace_first(str = cdat_notabs$text[cr], regex = "^[A-Za-z0-9_]{1,}\\s?:", replacement = ""))
-#
-#         switch(cmd,
-#                #articledates = { retlist[["articledates"]] = trimws(val) }, # could be split further, separated by semilcon
-#                keywords = { retlist[["keywords"]] =  trimws(strsplit(val, split = ",")[[1]] |> yml_qt())  },
-#                corresponding_email = { retlist[["corresponding_email"]] =  trimws(val) |> yml_qt()}
-#         )
-#       }
+        stop("unkown title pge section (should be metadata or ABSTRACT_XX, where XX corresponds ")
     }
   }
   return(retlist)

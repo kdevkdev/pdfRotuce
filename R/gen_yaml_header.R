@@ -70,7 +70,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$journalinfo$volume        = md$volume |> yml_qt()
   yml_data$journalinfo$doi           = md$doi  |> yml_qt() # ideally if the doi is the article specific one this should be restructured
   yml_data$journalinfo$article_type  = md$article_type  |> yml_qt()
-  yml_data$abstractparts             = md$abstractparts
+  yml_data$abstracts                 = md$abstracts
   yml_data$keywords                  = md$attributes$keywords
   yml_data$authors                   = md$authors
   yml_data$affiliations              = md$affiliations

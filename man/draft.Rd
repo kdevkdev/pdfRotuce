@@ -7,7 +7,7 @@
 draft(folder, overwrite = "none")
 }
 \arguments{
-\item{folder}{}
+\item{overwrite}{either \code{"all"}, \code{"build"}, or \code{"none"} (default). All overwrtites all files including the manuscript template, \code{"build"} just the files in the \code{build} folder.}
 }
 \value{
 \code{TRUE} if all files were copied successfully, \code{FALSE} otherwise.

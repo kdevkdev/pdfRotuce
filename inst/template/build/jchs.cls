@@ -117,6 +117,7 @@ a4paper]{geometry}%
 \RequirePackage{pdflscape}
 \RequirePackage{afterpage}
 
+
 \RequirePackage{multicol}
 
 
@@ -249,7 +250,8 @@ justification=raggedright, skip = 2pt]{caption}
 \renewcommand*\footnoterule{}
 
 \RequirePackage{enumitem}
-
+\RequirePackage{csquotes}
+%\RequirePackage[begintext=``, endtext='']{quoting}
 \RequirePackage{xurl}
 
 \PassOptionsToPackage{hyphens}{url}
@@ -342,8 +344,9 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 {  \@author}
 \vskip1.5mm
 {\thecorrauthor}
-\vskip3mm
+\vskip2mm
 {\thearticledates}
+\vskip2mm
 \begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
 	{
 		\noindent
