@@ -270,14 +270,21 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 	\footnotesize{\noindent © $copyright.year$ $copyright.text$}
 \end{textblock}
 
+$if(abstracts.mainlang)$
 \begin{abstract}
 $for(abstracts.mainlang.parts)$
 {\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\
 $endfor$\\
 \end{abstract}
+$else$
+\begin{abstract}
+\end{abstract}
+$endif$
+
 \maketitle\thispagestyle{empty} % no page number on first page
 
 %\end{strip}
+
 
 
 

@@ -8,8 +8,8 @@ parse_title_page = function(docdat){
 
 
 
-  # check for level 2 heading METADATA and ABSTRACT
-  stopifnot("Check that there is exactly one heading 'ABSTRACT' with style 'heading 2' on the manuscript titlepage " = sum( tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "abstract")==1)
+  # check for level 2 heading METADATA and ABSTRACT (for abstract at most one)
+  stopifnot("Check that there is exactly one heading 'ABSTRACT' with style 'heading 2' on the manuscript titlepage " = sum( tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "abstract")<=1)
   stopifnot("Check that there is exactly one heading 'METADATA' with style 'heading 2' on the manuscxript titlepage"  = sum(tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "metadata") == 1)
 
   # first heading 1 is title
@@ -22,13 +22,14 @@ parse_title_page = function(docdat){
 
 
   # divide into parts
-  docdat[, part_id := cumsum(tolower(style_name) == "heading 2")]
+  docdat[text != "", part_id := cumsum(tolower(style_name) == "heading 2")]
+
 
   # prereserver
   retlist[["abstracts"]] = list()
 
   # parse parts
-  for(cpi in unique(docdat$part_id)){
+  for(cpi in unique(na.omit(docdat$part_id))){
 
     cdat = docdat[part_id == cpi]
     section_heading=tolower(trimws(cdat$text[1]))
@@ -69,7 +70,7 @@ parse_title_page = function(docdat){
 
       tl = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
       retlist[["abstracts"]][[langname]][["parts"]] = tl
-      retlist[["abstracts"]][[langname]][["title"]] =abstract_title |> yml_qt()
+      retlist[["abstracts"]][[langname]][["title"]] = abstract_title |> yml_qt()
 
     }
     else if(section_heading == "metadata"){
