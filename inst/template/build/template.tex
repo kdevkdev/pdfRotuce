@@ -24,7 +24,6 @@ $if(multirow)$
 $endif$
 \usepackage{calc} % for calculating minipage widths
 % Correct order of tables after \paragraph or \subparagraph
-\usepackage{etoolbox}
 \makeatletter
 %\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
 \makeatother
@@ -276,9 +275,9 @@ $for(abstracts.mainlang.parts)$
 {\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\
 $endfor$\\
 \end{abstract}
-$else$
-\begin{abstract}
-\end{abstract}
+%$else$
+%\begin{abstract}
+%\end{abstract}
 $endif$
 
 \maketitle\thispagestyle{empty} % no page number on first page

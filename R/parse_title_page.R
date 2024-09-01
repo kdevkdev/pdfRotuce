@@ -15,11 +15,11 @@ parse_title_page = function(docdat){
   # first heading 1 is title
   l1_title_ind = which(tolower(docdat$style_name) == "heading 1")
 
-  # remove title
-  docdat = docdat[-l1_title_ind,]
 
   retlist[["title"]] = trimws(docdat[l1_title_ind,]$text) # could happend that unwanted space added?
 
+    # remove title
+  docdat = docdat[-l1_title_ind,]
 
   # divide into parts
   docdat[text != "", part_id := cumsum(tolower(style_name) == "heading 2")]

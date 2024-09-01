@@ -32,7 +32,8 @@
 \RequirePackage{cuted}
 \RequirePackage{abspos}
 \RequirePackage{hyphenat}
-\usepackage{wrapfig}
+\RequirePackage{wrapfig}
+\RequirePackage{etoolbox}
 
 
 
@@ -346,30 +347,35 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 {\thecorrauthor}
 \vskip2mm
 {\thearticledates}
-\vskip2mm
-\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
-	{
-		\noindent
-		{\raggedright\bfseries ABSTRACT\par}
-	}
 
-	
-		\noindent
-		
-			{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
-		
-		
-		\vskip 0mm
-		\noindent
-		\parbox{\dimexpr\linewidth-2\fboxsep\relax}
+
+\ifdef{\theabstract}
+{
+	\vskip2mm
+	\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
 		{
-			{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} \@keywords}
+			\noindent
+			{\raggedright\bfseries ABSTRACT\par}
 		}
 	
-\end{tcolorbox}
-\vskip25pt
+		
+			\noindent
+			
+				{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
+			
+			
+			\vskip 0mm
+			\noindent
+			\parbox{\dimexpr\linewidth-2\fboxsep\relax}
+			{
+				{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} \@keywords}
+			}
+		
+	\end{tcolorbox}
+	\vskip6mm
+}{} % if empty ldo not print anything to page
 }
-\vfill
+%\vfill
 }
 %-----------------------------------------------
 

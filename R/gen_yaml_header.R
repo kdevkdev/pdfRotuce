@@ -19,32 +19,12 @@ gen_yaml_header = function(md, reference_parsing = T){
   }
   md$csl                      = 'plos-2020.csl'  |> yml_qt()
 
-  # yml_data = list(title_full = md$title,
-  #                 copyright = list(year = md$copyright_year, text = md$copyright),
-  #                 journalinfo = list(title = md$journal_title, volume = md$volume, doi = md$doi),
-  #                 abstractparts = md$abstractparts,
-  #                 keywords = md$keywords,
-  #                 authors = md$authors,
-  #                 affiliations = md$authors,
-  #                 correspondingauthor = list(address = '', email = md$corresponding_email),
-  #                 articledates =  list(received = '', decision = '', accepted = '') ,
-  #                 pageheader = list(even = '', odd = ''),
-  #                 output = '',
-  #                 bibliography = '',
-  #                 csl = '')
-
-
-
-
 
   # first create empty structure
   yml_data = list(title_full = '',
                   copyright = list(year = '', text = ''),
                   journalinfo = list(title = '', volume = '', doi = '', article_type = '_'),
-                  abstractparts = list(en = list(list(title = '', text = ''),
-                                            list(title = '', text = '')),
-                                       es = list(list(title = '', text = ''),
-                                                 list(title = '', text = ''))),
+                  abstracts = list(mainlang = list(parts = list(title = '', text = ''), title = '')),
                   keywords = c(),
                   authors = list(list(name = '', affiliation_ids = '', orcid = ''),
                                  list(name = '', affiliation_ids = '', orcid = '')),
@@ -57,9 +37,6 @@ gen_yaml_header = function(md, reference_parsing = T){
                   output = '',
                   bibliography = '',
                   csl = '')
-
-
-
 
 
   # copy over -> to it this way to have default values availabvlw
@@ -81,7 +58,21 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$output                    = md$output
   yml_data$bibliography              = md$bibliography |> yml_qt()
   yml_data$csl                       = md$csl |> yml_qt()
+  yml_data$has_abstract              = md$has_abstract |> yml_qt()
 
+
+
+  # check fore additional keywords
+  sidelang_keywords_names = grep("keywords_", names(md$attributes), value = T)
+
+  for(cn in sidelang_keywords_names){
+    yml_data[[cn]] = md$attributes[[cn]] |> yml_qt()
+  }
+
+  # remove abstract again if 'has_abstract' has been specified or if mainlang not defined
+  if(yml_data$has_abstract == "no" || is.null(yml_data$abstracts$mainlang)){
+    yml_data$abstracts = NULL
+  }
 
   return(paste0("---\n",yaml::as.yaml(yml_data), "\n---\n"))
 }
