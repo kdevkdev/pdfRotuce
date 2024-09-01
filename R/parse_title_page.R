@@ -129,9 +129,17 @@ parse_title_page = function(docdat){
     }
     else{
 
-        stop("unkown title pge section (should be metadata or ABSTRACT_XX, where XX corresponds ")
+        stop("unkown title page section (should be metadata or ABSTRACT_XX, where XX corresponds ")
     }
   }
+  # check if any additional language abstracts have ben specified. If yes, generate a hint text to be place below the main abstract
+  abside_languages = setdiff(names(retlist$abstracts), "mainlang")
+
+  lang_propernames = c(es = "Español")
+
+  # generate hint toext
+  retlist$abstract_sidelangs_hint = paste("Abstract in ", paste(lang_propernames[abside_languages], sep = ", "), "at the end of the article")
+
   return(retlist)
 }
 

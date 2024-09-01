@@ -372,9 +372,14 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 			}
 		
 	\end{tcolorbox}
-	\vskip6mm
+	\vskip4mm
+
 }{} % if empty ldo not print anything to page
 }
+\vskip2mm
+\begin{center}
+\ifdef{\abstracthint}{{\bfseries \abstracthint}}{}
+\end{center}
 \vfill
 }
 %-----------------------------------------------

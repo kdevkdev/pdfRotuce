@@ -513,6 +513,8 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     }
   }
 
+
+
   # other language abstracts
   rmd_multilang_abstracts = ""
   if(any(names(metadata$abstracts)!="mainlang")){
@@ -567,7 +569,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
       keywordstitle = ""
       if(csidelang == "es"){
-        keywordtitle = "{\\raggedright\\bfseries Palabra clava: }"
+        keywordtitle = "{\\raggedright\\bfseries Palabra clave: }"
       }
       rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\vskip 3mm" %+% keywordtitle
       rmd_multilang_abstracts = rmd_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]

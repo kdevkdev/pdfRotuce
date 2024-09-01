@@ -280,6 +280,11 @@ $endfor$\\
 %\end{abstract}
 $endif$
 
+
+$if(abstract_sidelangs_hint)$
+\newcommand{\abstracthint}{$abstract_sidelangs_hint$}
+$endif$
+
 \maketitle\thispagestyle{empty} % no page number on first page
 
 %\end{strip}

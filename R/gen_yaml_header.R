@@ -36,7 +36,8 @@ gen_yaml_header = function(md, reference_parsing = T){
                   pageheader = list(even = '', odd = ''),
                   output = '',
                   bibliography = '',
-                  csl = '')
+                  csl = '',
+                  abstract_sidelangs_hint = '')
 
 
   # copy over -> to it this way to have default values availabvlw
@@ -59,7 +60,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$bibliography              = md$bibliography |> yml_qt()
   yml_data$csl                       = md$csl |> yml_qt()
   yml_data$has_abstract              = md$has_abstract |> yml_qt()
-
+  yml_data$abstract_sidelangs_hint   = md$abstract_sidelangs_hint |> yml_qt()
 
 
   # check fore additional keywords
