@@ -245,10 +245,10 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 % https://tex.stackexchange.com/questions/555318/environment-to-balance-a-table-in-a-multicol
 \makeatletter
 \newsavebox\ltmcbox
-\newsavebox\xxbox
+%\newsavebox\xxbox
 \newenvironment{multicolslongtable}{
 	\setbox\ltmcbox\vbox\bgroup
-	\col@number\@ne
+	\makeatletter\col@number\@ne\makeatother
 	}{
 	\unskip
 	\unpenalty

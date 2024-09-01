@@ -375,7 +375,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	\vskip6mm
 }{} % if empty ldo not print anything to page
 }
-%\vfill
+\vfill
 }
 %-----------------------------------------------
 

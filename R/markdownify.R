@@ -482,8 +482,9 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 :::
 
-"
-               })
+"},
+               columnbreak = {
+                 c_result = "\\columnbreak"})
       }
       else{
 

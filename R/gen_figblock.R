@@ -74,7 +74,8 @@ gen_figblock = function(fig_opts, fig_counter){
   {
     # empty phamtom command to trick the lua filter
     # (that does not seem to work if there is nothing in the environment otherwise, but we used a custom latex env to transmit the params)
-    "::: {.FigureMC data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
+    "
+::: {.FigureMC data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
 \\phantom{}
 "%+% lab %+%"
 :::"

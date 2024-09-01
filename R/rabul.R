@@ -95,6 +95,10 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   # detect header rows
   header_inds = which(startsWith(d[[1]], "#"))
+
+  # manual colbreaks inds
+  colbreak_inds  = which(apply(d, 1, \(r) {grep("[[colbreak]]", r) |> sum()}) > 0 )
+
   # remove those '#'
   d[[1]] = gsub(pattern = "#", replacement = " ",  x =d[[1]])
 
@@ -140,13 +144,13 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   rows = paste0(rows, "\\\\")
 
   if(xltabular == T){
-
     rows[header_inds] =  paste0("\\rowcolor{jchshlightgray}", rows[header_inds], "")
+    rows[colbreak_inds] =  paste0(rows[colbreak_inds], "\\pagebreak")
 
     # check we do not overflow
-    thi = header_inds
-    if(length(thi) > 0 && thi[length(thi)] == length(rows))
-      thi = thi[1:(length(thi)-1)]
+    # thi = header_inds
+    # if(length(thi) > 0 && thi[length(thi)] == length(rows))
+    #   thi = thi[1:(length(thi)-1)]
 
   }
 
