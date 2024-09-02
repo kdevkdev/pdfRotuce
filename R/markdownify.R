@@ -569,7 +569,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
       keywordstitle = ""
       if(csidelang == "es"){
-        keywordtitle = "{\\raggedright\\bfseries Palabra clave: }"
+        keywordtitle = "{\\raggedright\\bfseries Palabras clave: }"
       }
       rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\vskip 3mm" %+% keywordtitle
       rmd_multilang_abstracts = rmd_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]
