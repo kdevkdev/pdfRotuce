@@ -472,11 +472,14 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                },
                quote={
                  print("quote detected")
-                 c_result = paste0("\\hyphenblockcquote{", trimws(c_command['text']), "}")
+
+                 text = trimws(c_command['text'])
+                 source = if(!is.null(c_command[['src']]) && is.character(c_command[['src']])) trimws(c_command['src']) else ""
+
                  c_result = "\\vskip 2mm
 ::: {.displayquote data-latex=\"{  }\"}
 
-::: {.enquote data-latex=\"{ " %+% trimws(c_command['text']) %+% " }\"}
+::: {.enquote data-latex=\"{\\textit{" %+% text %+% "}} " %+% source %+% "\"}
 \\phantom{}
 :::
 
