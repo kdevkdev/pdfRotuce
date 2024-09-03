@@ -397,7 +397,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
   ########################################### command parsing ####################################################
 
-  # inline paragraph commands
+  # inline paragraph commands - do not need escaping
   # put protected dollar fo rinline mathc(
   cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", replacement = "========protecteddollar========\\1========protecteddollar========")]
 
@@ -411,10 +411,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # look for commands whole para tag commands [[]]
   command_inds =  which(startsWith(trimws(cpart$mrkdwn), "[[") & endsWith(trimws(cpart$mrkdwn),"]]"))
 
-  # escape dollar in suitable paragraphs
-  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\$", replacement = "\\\\$")]
-  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\@", replacement = "\\\\@")]
-  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
+  # escape dollar etc in suitable paragraphs
+  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn :=rmd_char_escape(mrkdwn)]
+
+  # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\$", replacement = "\\\\$")]
+  # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\@", replacement = "\\\\@")]
+  # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
   fig_counter = 1
 
 
@@ -473,7 +475,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                quote={
                  print("quote detected")
 
-                 text = trimws(c_command['text'])
+                 text = rmd_char_descape(trimws(c_command['text'])) # needs double escape to pass through rmarkdown preprocessing
                  source = if(!is.null(c_command[['src']]) && is.character(c_command[['src']])) trimws(c_command['src']) else ""
 
                  c_result = "\\vskip 2mm
@@ -581,6 +583,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\\begin{multicols}{2}\n```\n\n"
 
   }
+
 
 
   ########################################### postprocessing  & writing file ####################################################

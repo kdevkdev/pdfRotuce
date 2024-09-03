@@ -327,7 +327,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
 		\colorlet{varlinkcolor}{blue}%
 		\begin{tcolorbox}[colframe=jchsorange, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
-			\sffamily We are a \href{https://www.fairopenaccess.org/}{\underline{\smash{Fair Open Access}}} journal
+			\sffamily We are a \href{https://www.mathoa.org/about/fair-open-access/}{\underline{\smash{Fair Open Access}}} journal
 		\end{tcolorbox}%
 		\colorlet{varlinkcolor}{black}%
 \end{flushright}}%
@@ -386,7 +386,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 \definecolor{color1}{RGB}{0,0,0} % Color of section headings
 
-\definecolor{jchsorange}{HTML}{ffc000} % color aroiund 'we are a fair open access journal'
+\definecolor{jchsorange}{HTML}{ffc000} % color aroiund 'we are a  open access journal'
 \definecolor{urlcolor}{HTML}{0563c1} % url color
 \definecolor{jchslightorange}{HTML}{ffe8d9} %{fbe5d6} % abstract background color
 \definecolor{jchsheadercolor}{HTML}{ed7d31} % orange title text color
