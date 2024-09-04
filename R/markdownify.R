@@ -419,16 +419,23 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
   fig_counter = 1
 
+  # store commands so we can detect the previous one
+  command_list = list()
+  cii = 0
 
   if(length(command_inds) > 0 ){
 
     for(c_comi in command_inds){
 
+      # increment
+      cii = cii +1
 
       # get current command
       c_comtext = cpart[c_comi]$mrkdwn
 
       c_command = parse_yaml_cmds(c_comtext)
+
+      command_list[[cii]] = list(command = c_command, index = c_comi)
 
       print(c_comtext |> substr(1,100))
 
@@ -478,7 +485,14 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                  text = rmd_char_descape(trimws(c_command['text'])) # needs double escape to pass through rmarkdown preprocessing
                  source = if(!is.null(c_command[['src']]) && is.character(c_command[['src']])) trimws(c_command['src']) else ""
 
-                 c_result = "\\vskip 2mm
+                 # determine spacing based on whether the last pargraph was also a quote
+                 if(cii > 1 && command_list[[cii-1]]$command[[1]] == "quote" && command_list[[cii-1]]$index  == c_comi -1){
+                   vskip = "\\vspace{-7mm}"
+                 } else {
+                   vskip = "\\vspace{2mm}"
+                 }
+
+                 c_result = vskip %+% "
 ::: {.displayquote data-latex=\"{  }\"}
 
 ::: {.enquote data-latex=\"{\\textit{" %+% text %+% "}} " %+% source %+% "\"}
