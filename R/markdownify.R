@@ -487,7 +487,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
                  # determine spacing based on whether the last pargraph was also a quote
                  if(cii > 1 && command_list[[cii-1]]$command[[1]] == "quote" && command_list[[cii-1]]$index  == c_comi -1){
-                   vskip = "\\vspace{-7mm}"
+                   vskip = "\\vspace{-8mm}"
                  } else {
                    vskip = "\\vspace{2mm}"
                  }

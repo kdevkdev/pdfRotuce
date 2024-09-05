@@ -60,7 +60,8 @@ parser = NULL
       },
 
 
-      t_TEXT = function(re = "[^`*\n\t\\\\\\[\\]]+",t){
+      # t_TEXT = function(re = "[^`*\n\t\\\\\\[\\]]+",t){
+      t_TEXT = function(re = "[^`*\n\t\\\\]+",t){
         #t_TEXT = function(re = "[A-Za-z0-9]{1,}",t){
         messlog("found text: ", t$value)
         return(t)

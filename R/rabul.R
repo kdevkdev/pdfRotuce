@@ -97,7 +97,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   header_inds = which(startsWith(d[[1]], "#"))
 
   # manual colbreaks inds
-  colbreak_inds  = which(apply(d, 1, \(r) {grep("[[colbreak]]", r) |> sum()}) > 0 )
+  colbreak_inds  = which(apply(d, 1, \(r) {grep("\\[\\[colbreak\\]\\]", r) |> sum()}) > 0 )
 
   # remove those '#'
   d[[1]] = gsub(pattern = "#", replacement = " ",  x =d[[1]])
@@ -109,7 +109,6 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   }
   else
     l_innerspecs[["bgcol"]] = NULL
-
 
 
   ####### run cell markdown parser
@@ -125,8 +124,13 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
           # escape relevant chars &, #, {, }
           r = gsub(x = r, pattern = "&", replacement = "\\&", fixed = T)
           r = gsub(x = r, pattern = "#", replacement = "\\#", fixed = T)
+
           r = gsub(x = r, pattern = "\\{", replacement = "\\{")
           r = gsub(x = r, pattern = "\\}", replacement = "\\}")
+
+          r = gsub(x = r, pattern = "[", replacement = "{[}", fixed = T)
+          r = gsub(x = r, pattern = "]", replacement = "{]}", fixed = T)
+
 
           r = paste0("{", r ,"}")
         })
@@ -145,7 +149,11 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   if(xltabular == T){
     rows[header_inds] =  paste0("\\rowcolor{jchshlightgray}", rows[header_inds], "")
-    rows[colbreak_inds] =  paste0(rows[colbreak_inds], "\\pagebreak")
+
+    if(!is.null(colbreak_inds) && length(colbreak_inds) > 0  && !is.na(colbreak_inds) && is.integer(colbreak_inds))
+    {
+      rows[colbreak_inds] =  paste0(rows[colbreak_inds], "\\pagebreak")
+    }
 
     # check we do not overflow
     # thi = header_inds
@@ -154,12 +162,17 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   }
 
-  rowhline = "\n\\hline"
+
+  # https://sv.overleaf.com/learn/latex/Errors/Misplaced_%5Cnoalign - all hlines after first haline need to be preceeded with \\ (escape needed)s
+  rowhline = "\n \\hline "
+  firsthline = "\n \\hline "
+  lasthline = "\n \\hline"
   if(fullgrid == TRUE){
-    body = paste0(rowhline, paste0(rows, rowhline, collapse = "\n"))
+    body = paste0(firsthline, paste0(rows, rowhline, collapse = "\n"))
   } else{
-    body = paste0(rowhline, paste0(rows, collapse = "\n"),    rowhline = "\n\\hline")
+    body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
   }
+
 
 
 
@@ -300,6 +313,8 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
                  post_envouter,"\n")
   }
   tex
+
+
 }
 
 
