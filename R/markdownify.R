@@ -487,20 +487,18 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
                  # determine spacing based on whether the last pargraph was also a quote
                  if(cii > 1 && command_list[[cii-1]]$command[[1]] == "quote" && command_list[[cii-1]]$index  == c_comi -1){
-                   vskip = "\\vspace{-8mm}"
+                   vskip = "\\vspace{-4mm}"
                  } else {
-                   vskip = "\\vspace{2mm}"
+                   vskip = "\\vspace{-1mm}"
                  }
 
                  c_result = vskip %+% "
 ::: {.displayquote data-latex=\"{  }\"}
-
 ::: {.enquote data-latex=\"{\\textit{" %+% text %+% "}} " %+% source %+% "\"}
 \\phantom{}
 :::
-
 :::
-
+\\vspace{-5.5mm}
 "},
                columnbreak = {
                  c_result = "\\columnbreak"})
