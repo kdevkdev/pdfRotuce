@@ -50,6 +50,7 @@
 \RequirePackage{ifthen}
 \RequirePackage{calc}
 \AtEndOfClass{\RequirePackage{microtype}}
+\RequirePackage{wrapfig}
 
 
 
@@ -290,7 +291,7 @@ justification=raggedright, skip = 2pt]{caption}
 %
 % article meta data
 %
-\newcommand{\keywords}[1]{\def\@keywords{#1}}
+%\newcommand{\keywords}[1]{\def\@keywords{#1}}
 
 
 
@@ -364,12 +365,10 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 				{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
 			
 			
-			\vskip 0mm
-			\noindent
-			\parbox{\dimexpr\linewidth-2\fboxsep\relax}
-			{
-				{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} \@keywords}
-			}
+%			\parbox{\dimexpr\linewidth-2\fboxsep\relax}
+%			{
+%				{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} \@keywords}
+%			}keywords
 		
 	\end{tcolorbox}
 	\vskip3mm
@@ -398,7 +397,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 %\renewcommand\Authfont{\fontsize{12}{12}\usefont{OT1}{phv}{b}{n}}
 %\renewcommand\Affilfont{\fontsize{10}{10}\usefont{OT1}{phv}{b}{n}}
-\newcommand{\keywordsfont}{\normalfont\rmfamily\fontsize{7}{10}\selectfont}
+%\newcommand{\keywordsfont}{\normalfont\rmfamily\fontsize{7}{10}\selectfont}
 
 \newlength{\tocsep}
 \setlength\tocsep{1.5pc} % Sets the indentation of the sections in the table of contents

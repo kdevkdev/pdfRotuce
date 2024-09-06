@@ -149,9 +149,9 @@ $endfor$
 
 %\articledates{Received $articledates.received$;}{Editorial decision $articledates.decision$;}{Accepted $articledates.accepted$} % received, editorial decision, published
 
-\keywords{%
-$for(keywords)$$keywords$$sep$, $endfor$%
-}
+%\keywords{%
+%$for(keywords)$$keywords$$sep$, $endfor$%
+%}
 
 
 \AtBeginDocument{%something is overwriting our hyperlink colors, overwrite them again: https://tex.stackexchange.com/questions/246386/changing-color-of-cites-with-hypersetup-not-working
@@ -269,11 +269,23 @@ $for(keywords)$$keywords$$sep$, $endfor$%
 	\footnotesize{\noindent © $copyright.year$ $copyright.text$}
 \end{textblock}
 
+
+% for picture in abstract - https://tex.stackexchange.com/questions/642034/how-to-add-image-with-wrap-around-text-in-abstract
+\input{insbox}
+
 $if(abstracts.mainlang)$
 \begin{abstract}
+$if(abstract_picture)$
+\emergencystretch 1pt
+\InsertBoxR{0}{\includegraphics[width=0.4\linewidth]{$abstract_picture$}}
+$endif$
 $for(abstracts.mainlang.parts)$
-{\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\
+{\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\ 	
 $endfor$\\
+\\
+\noindent
+{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} 
+$for(keywords)$$keywords$$sep$, $endfor$}
 \end{abstract}
 %$else$
 %\begin{abstract}
