@@ -344,10 +344,13 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 }
 \vskip3mm
 {  \@author}
-\vskip1.5mm
-{\thecorrauthor}
-\vskip2mm
-{\thearticledates}
+
+\ifdef{\thecorrauthor}
+{\vskip1.5mm
+\thecorrauthor}{} % empty otherwise
+\ifdef{\thearticledates}
+{\vskip2mm
+\thearticledates} {}% empty otherwise
 
 
 \ifdef{\theabstract}

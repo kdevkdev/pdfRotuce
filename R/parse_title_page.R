@@ -93,9 +93,14 @@ parse_title_page = function(docdat){
         ct_dat = cdat[content_type == "table cell" & doc_index == cti]
         ct_tab = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "text")[,-1] # not first
 
+        if(NROW(ct_tab) <= 1){
+          warning("empty table in metadata section")
+          break
+        }
+
         table_type = trimws(tolower(ct_tab[1,1]))
         cn = unlist(ct_tab[1,])
-        ct_tab = ct_tab[-1, ]
+        ct_tab = ct_tab[-1, ] # first row as colnames
         colnames(ct_tab) = trimws(tolower(cn))
 
 
@@ -107,6 +112,7 @@ parse_title_page = function(docdat){
             warning("Empty lines in authors table")
           }
           ct_tab = ct_tab[!is.null(author) & is.character(author) &nchar(author) > 0, ]
+
 
           retlist[["authors"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcid = x[["orcid"]] |> yml_qt())})
 

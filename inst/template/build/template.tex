@@ -142,8 +142,9 @@ $endfor$
 
 
 % corresponding author needs to have the corresponding YAML field set. Leave out address
+$if(correspondingauthor.email)$
 \corrauthor[]{{\bfseries *Corresponding author:}} {$correspondingauthor.email$}
-
+$endif$
 
 \articledates{$articledates$} % received, editorial decision, published
 
