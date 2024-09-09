@@ -351,8 +351,6 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \ifdef{\thearticledates}
 {\vskip2mm
 \thearticledates} {}% empty otherwise
-
-
 \ifdef{\theabstract}
 {
 	\vskip2mm

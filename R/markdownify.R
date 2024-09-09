@@ -79,6 +79,9 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   doc_summar$mrkdwn = doc_summar$text
 
 
+  # remove [empty] headings
+  doc_summar = doc_summar[!(startsWith(tolower(style_name), "heading") & trimws(tolower(mrkdwn)) == "[empty]"),]
+
   # find,parse,  and remove references
   l1_inds = which(tolower(doc_summar$style_name) == "heading 1")
   refparind = which(tolower(doc_summar$mrkdwn) == 'references' & tolower(doc_summar$style_name) == "heading 1")

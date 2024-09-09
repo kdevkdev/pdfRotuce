@@ -85,7 +85,6 @@ parse_title_page = function(docdat){
       authors = NULL
       affiliations = NULL
       keywords = NULL
-      corresponding_email = NULL
       #articledates = NULL
 
       for(cti in cudoc_tabinds){
@@ -93,9 +92,10 @@ parse_title_page = function(docdat){
         ct_dat = cdat[content_type == "table cell" & doc_index == cti]
         ct_tab = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "text")[,-1] # not first
 
+
         if(NROW(ct_tab) <= 1){
-          warning("empty table in metadata section")
-          break
+          warning(paste0("empty table in metadata section: ",ct_tab[1,1]))
+          next
         }
 
         table_type = trimws(tolower(ct_tab[1,1]))
@@ -144,7 +144,9 @@ parse_title_page = function(docdat){
   lang_propernames = c(es = "Español")
 
   # generate hint toext
-  retlist$abstract_sidelangs_hint = paste("Abstract in ", paste(lang_propernames[abside_languages], sep = ", "), "at the end of the article")
+  if(length(abside_languages) > 0){
+    retlist$abstract_sidelangs_hint = paste("Abstract in ", paste(lang_propernames[abside_languages], sep = ", "), "at the end of the article")
+  }
 
   return(retlist)
 }

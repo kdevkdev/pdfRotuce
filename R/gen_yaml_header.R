@@ -63,6 +63,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$has_abstract              = md$has_abstract |> yml_qt()
   yml_data$abstract_sidelangs_hint   = md$abstract_sidelangs_hint |> yml_qt()
 
+
   if(!is.null(md$attributes$abstract_picture) && !is.na(md$attributes$abstract_picture) && is.character(md$attributes$abstract_picture) && nchar(md$attributes$abstract_picture) > 1)
   {
       yml_data$abstract_picture      = paste0("../", md$attributes$abstract_picture) |> yml_qt()
