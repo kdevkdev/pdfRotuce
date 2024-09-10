@@ -52,13 +52,15 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
     # copy over provided values, uppercase for article typer
-    if(is.element("articledates", names(tvals)))     predef_meta$articledates              = tvals["articledates"]           else warning("'articledates' missing in meta csv")
-    if(is.element("volume", names(tvals)))           predef_meta$volume                    = tvals["volume"]                 else warning("'volume' missing in meta csv")
-    if(is.element("copyright_year", names(tvals)))   predef_meta$copyright_year            = tvals["copyright_year"]         else warning("'copyright_year' missing in meta csv")
-    if(is.element("doi", names(tvals)))              predef_meta$doi                       = tvals["doi"]                    else warning("'doi' missing in meta csv")
-    if(is.element("pageheader", names(tvals)))       predef_meta$pageheader                = tvals["pageheader"]             else warning("'pageheader' missing in meta csv")
-    if(is.element("has_abstract", names(tvals)))     predef_meta$has_abstract              = tvals["has_abstract"]           else warning("'has_abstrat' missing in meta csv")
-    if(is.element("article_type", names(tvals)))     predef_meta$article_type              = toupper(tvals["article_type"])  else warning("'article_type' missing in meta csv")
+    if(is.element("articledates", names(tvals)))             predef_meta$articledates              = tvals["articledates"]                   else warning("'articledates' missing in meta csv")
+    if(is.element("volume", names(tvals)))                   predef_meta$volume                    = tvals["volume"]                         else warning("'volume' missing in meta csv")
+    if(is.element("copyright_year", names(tvals)))           predef_meta$copyright_year            = tvals["copyright_year"]                 else warning("'copyright_year' missing in meta csv")
+    if(is.element("doi", names(tvals)))                      predef_meta$doi                       = tvals["doi"]                            else warning("'doi' missing in meta csv")
+    if(is.element("pageheader", names(tvals)))               predef_meta$pageheader                = tvals["pageheader"]                     else warning("'pageheader' missing in meta csv")
+    if(is.element("has_abstract", names(tvals)))             predef_meta$has_abstract              = tvals["has_abstract"]                   else warning("'has_abstrat' missing in meta csv")
+    if(is.element("article_type", names(tvals)))             predef_meta$article_type              = toupper(tvals["article_type"])          else warning("'article_type' missing in meta csv")
+    if(is.element("string_corresponding", names(tvals)))     predef_meta$string_corresponding      = tvals["string_corresponding"]           else warning("'string_corresponding' missing in meta csv")
+
 
     # if(is.null(parsed_meta$abstracts$mainlang) && predef_meta$has_abstract == "yes"){
     #   stop("abstract mandatory according to metadata.csv, but is not provided")
