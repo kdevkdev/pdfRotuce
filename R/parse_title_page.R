@@ -50,28 +50,36 @@ parse_title_page = function(docdat){
 
       # check if we have a title
       abstract_title = NA
-      if(tolower(abdat$style_name[1]) == "heading 3"){
+
+      if(NROW(abdat) > 0 && tolower(abdat$style_name[1]) == "heading 3"){
         abstract_title = abdat$text[1]
         abdat = abdat[-1,] # delete also abstract title
+      } else{
+        abstract_title = ""
       }
-
-
-      # one paragraph corresponds to 1 part
-      # we boldify some words by by putting them in title
-      #abdat$titles  = stringi::stri_match_first_regex(str = trimws(abdat$text), pattern = "^objective:|^methods:|^results:|^conclusion:", case_insensitive = T)
-      abdat$titles  = stringi::stri_match_first_regex(str = trimws(abdat$text), pattern = "^\\w+:", case_insensitive = T)
-
-      #abdat$text = trimws(stringi::stri_replace_first_regex(str = trimws(abdat$text), pattern = "^objective:|^methods:|^results:|^conclusion:", replacement = "", case_insensitive = T)) # call a second time to replace
-      abdat$text = trimws(stringi::stri_replace_first_regex(str = trimws(abdat$text), pattern = "^\\w+:", replacement = "", case_insensitive = T)) # call a second time to replace
-
-      # to avoid na
-      abdat[is.na(text),   text   := ""]
-      abdat[is.na(titles), titles := ""]
-
-      tl = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
-      retlist[["abstracts"]][[langname]][["parts"]] = tl
       retlist[["abstracts"]][[langname]][["title"]] = abstract_title |> yml_qt()
 
+      # anything left in abdat?
+      if(NROW(abdat) > 0){
+
+        # one paragraph corresponds to 1 part
+        # we boldify some words by by putting them in title
+        #abdat$titles  = stringi::stri_match_first_regex(str = trimws(abdat$text), pattern = "^objective:|^methods:|^results:|^conclusion:", case_insensitive = T)
+        abdat$titles  = stringi::stri_match_first_regex(str = trimws(abdat$text), pattern = "^\\w+:", case_insensitive = T)
+
+        #abdat$text = trimws(stringi::stri_replace_first_regex(str = trimws(abdat$text), pattern = "^objective:|^methods:|^results:|^conclusion:", replacement = "", case_insensitive = T)) # call a second time to replace
+        abdat$text = trimws(stringi::stri_replace_first_regex(str = trimws(abdat$text), pattern = "^\\w+:", replacement = "", case_insensitive = T)) # call a second time to replace
+
+        # to avoid na
+        abdat[is.na(text),   text   := ""]
+        abdat[is.na(titles), titles := ""]
+
+        tl = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
+        retlist[["abstracts"]][[langname]][["parts"]] = tl
+
+      }else{
+        retlist[["abstracts"]][[langname]][["parts"]] = ""
+      }
     }
     else if(section_heading == "metadata"){
 

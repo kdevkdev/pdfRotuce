@@ -4,10 +4,12 @@
 \alias{draft}
 \title{Title}
 \usage{
-draft(folder, overwrite = "none")
+draft(folder, overwrite = "none", article_type = "article")
 }
 \arguments{
 \item{overwrite}{either \code{"all"}, \code{"build"}, or \code{"none"} (default). All overwrtites all files including the manuscript template, \code{"build"} just the files in the \code{build} folder.}
+
+\item{article_type}{type of thea article to be copied to the new folder. Currently \code{article} (default) and \code{editorial} are available}
 }
 \value{
 \code{TRUE} if all files were copied successfully, \code{FALSE} otherwise.
