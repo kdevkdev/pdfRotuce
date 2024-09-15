@@ -40,8 +40,8 @@ draft <- function(folder, overwrite = "none", article_type = "article"){
   r = file.copy(from = paste0(template_path, "/figures"), to = paste0(folder), recursive = T, overwrite = ow)
 
   # these we also need to rename
-  r = file.copy(from = paste0(template_path, "/", "metadata_", article_type, ".csv"),  to = paste0(folder, "/metadata.csv"), recursive = T, overwrite = ow)
-  r = file.copy(from = paste0(template_path, "/", "manuscript_", article_type, ".docx"),  to = paste0(folder, "/manuscript.docx"), recursive = T, overwrite = ow)
+  r = file.copy(from = paste0(template_path, "/", "metadata_", article_type, ".csv"),  to = paste0(folder, "/metadata.csv"), overwrite = ow)
+  r = file.copy(from = paste0(template_path, "/", "manuscript_", article_type, ".docx"),  to = paste0(folder, "/manuscript.docx"),  overwrite = ow)
 
   # return true if no F from files.copy
   return(all(r))
