@@ -314,7 +314,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 {\absput[pg-tl, tl, x=1cm, y=-1.2cm,width=1\textwidth]{
 \begin{minipage}{0.13\textwidth}
 	\href{https://journals.ub.umu.se/index.php/jcsh}{\includegraphics[width = 20mm]{jchs.pdf}}
-\end{minipage}
+\end{minipage} 
 \begin{minipage}{0.49\textwidth}
 	{\sffamily\footnotesize\color{black}
 		\thejournaltitle\\
