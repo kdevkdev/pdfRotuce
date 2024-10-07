@@ -49,7 +49,7 @@ gen_figblock = function(fig_opts, fig_counter){
 
   #cap = gsub(pattern = "%", x = cap, replacement = "\\\\\\\\%") # enable this code later to enable '%' chars
 
-  # table captions to return
+  # figure captions to return
   fig_capts = list()
   # return later to compose global list
   fig_capts[paste0("cap",fig_chunk_label)] = paste0("(ref:cap", fig_chunk_label, ") ", fig_caption)

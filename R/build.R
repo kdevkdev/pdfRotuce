@@ -19,12 +19,14 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", ..
   metacsv_path = paste0(folder,"/", meta_csv)
   build_path  = paste0(folder, "/build")
   rmd_outpath = paste0(build_path, "/", basename, ".Rmd")
+  xml_outpath = paste0(folder, "/", "jatsxml_", basename, ".xml")
+
 
   # check if we can find the manuscript
   stopifnot("doc file not found at specified location" = file.exists(doc_path))
 
   # first markdonify and write to file
-  markdownify( src_docx = doc_path, working_folder = build_path, meta_csv = metacsv_path, rmd_outpath = rmd_outpath, ...)
+  markdownify( src_docx = doc_path, working_folder = build_path, meta_csv = metacsv_path, rmd_outpath = rmd_outpath, xml_outpath = xml_outpath, ...)
 
   # if successfull in writing file
   if(file.exists(rmd_outpath))

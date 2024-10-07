@@ -9,6 +9,7 @@ markdownify(
   working_folder = ".",
   meta_csv = NULL,
   rmd_outpath = NULL,
+  xml_outpath = NULL,
   reference_parsing = F,
   url_parsing = T,
   doi_parsing = T,

@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, reference_parsing = F, url_parsing = T, doi_parsing = T, guess_refnumbers = T){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, xml_outpath = NULL,reference_parsing = F, url_parsing = T, doi_parsing = T, guess_refnumbers = T){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -36,9 +36,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
   # predefined metadata
-  predef_meta  = list(articledates = NULL, volume = NULL, copyright_year = NULL,
-                      doi = NULL, journal_title = NULL, pageheader = NULL,
-                      article_type =NULL, has_abstract = NULL)
+  predef_meta  = list()
 
 
   # get metadata from csv
@@ -66,19 +64,35 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     #   stop("abstract mandatory according to metadata.csv, but is not provided")
     # }
   }
+  hardcoded_meta = gen_hardcoded_meta(reference_parsing = reference_parsing)
 
 
 
   # combine metadata specified in parsed document with metadata provided in CSV
-  metadata = c(predef_meta, parsed_meta)
+  metadata = c(predef_meta, parsed_meta, hardcoded_meta)
 
-  preamble_yaml = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
+  yaml_preamble = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
+
+  xml_front = gen_xml_header(metadata)
+
 
   # delete  title page from document
   doc_summar = doc_summar[-title_page_inds,]
 
   # create column to contain markdown text
   doc_summar$mrkdwn = doc_summar$text
+
+  # create xml nodes list for JATS xml, special format in that it is embedded into the doc dataframe, needs to have same length as NROW
+  # that is, each row as a cell/list entry for corresponding xml nodes
+  doc_summar$xml = vector(mode = "list", length = NROW(doc_summar))
+  doc_summar$xml_text = ""
+  doc_summar$xml_temp = doc_summar$text
+  doc_summar$xml_type = character()
+  doc_summar$xml_type = NA
+
+
+
+  ## @@@@ doc_sumar will contain: text (original word contents), mrkdwn  (processed markedown), xml_temp (intermediate 'working' xml text ), xml_text (final xml conform text
 
 
   # remove [empty] headings
@@ -101,6 +115,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     if(length(ti) == 0) lri = NROW(doc_summar) # no subsequent l1 heading, we go until end
     else lri = l1_inds[ti] -1 #deduct 1 because we do not want to have the next level 1 heading included
 
+    ################## reference parsing ##################################
     ref_inds = (refparind+1):lri # do not include the starging l1 heading , +1
 
     # create one large text value
@@ -275,9 +290,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
         # delete markers from refs
         stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
+        # escape &
+        refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
 
         # remove dots
         markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
+
 
 
         # [] need to be grouped in latex optional options bec of parsing (https://tex.stackexchange.com/questions/84595/latex-optional-arguments-with-square-brackets)
@@ -339,54 +357,60 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
-
   # there seems to be a problem with case sensitivity and style names between libreoffice and word, use tolowe (word uses capital, libreoffice not)
   # doc_summar[tolower(style_name) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")] # do not put in TOC
 
 
-
+  ############## headings ##############
   # convert headings to markdown up to level 5
   doc_summar[tolower(style_name) == "heading 1", mrkdwn := paste0("# ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 2", mrkdwn := paste0("##  ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 3", mrkdwn := paste0("###  ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 4", mrkdwn := paste0("####  ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 5", mrkdwn := paste0("#####  ", mrkdwn)]
-  cpart = doc_summar
+  doc_summar[startsWith(tolower(style_name),"heading"), xml_type:= "heading"]
 
-  # process tables
-  cudoc_tabinds = unique(cpart[content_type == "table cell"]$doc_index)
+
+  # parse headings to xml sections and store into doc_summar
+  r = gen_xml_sections(doc_summar)
+  doc_summar$xml_secopen = r$hxml_opentags
+  doc_summar$xml_secend  = r$hxml_endtags
+
+  # to debug
+  # xml2::read_xml(paste0("<document>", paste0(hxmltags, collapse = ""), "</document>")) |> xml2::as_list()
+  # cbind(headi, hxmltags)
+
+  ############## process tables ##############
+  cudoc_tabinds = unique(doc_summar[content_type == "table cell"]$doc_index)
 
   tab_counter = 1 # we keep a specific ounter, if ever cti would deviate because e.g. of failure
-
 
   for(cti in cudoc_tabinds){
 
 
     # detect empty paragraphs ahead
-    empties = cpart[, doc_index > cti & !grepl(x = mrkdwn, pattern = "$\\s?^")]
+    empties = doc_summar[, doc_index > cti & !grepl(x = mrkdwn, pattern = "$\\s?^")]
     ind_next_nonempty = min(which(empties)) # first non-empty
 
-    tab_opts_raw = cpart[ind_next_nonempty,]
+    tab_opts_raw = doc_summar[ind_next_nonempty,]
 
+    # check if table is acutally there
     if(tab_opts_raw$content_type != "paragraph" && !startsWith(trimws(tab_opts_raw$mrkdwn, "[[table"))){
       warning("Table " %+% cti %+% " does not seem to have have a table tag")
-    }else{
-
-
     }
 
+    ct_dat = doc_summar[content_type == "table cell" & doc_index == cti]
 
-    ct_dat = cpart[content_type == "table cell" & doc_index == cti]
-
-    # if we need we can take into acount the header here (is_header column in doc_summar)
+    # if we need we can take into account the header here (is_header column in doc_summar)
     ct_csv = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
 
     ctab_chunk = gen_tabchunk(ct_csv, tab_opts_raw, tab_counter, folder = working_folder)
 
     # delete table rows and table options form document structure
-    cpart = data.table::rbindlist(l = list(cpart[doc_index < cti],
-                                           data.table::data.table(doc_index = cti, content_type = "paragraph", text = ctab_chunk, mrkdwn = ctab_chunk, is_heading1 = F, is_header = F),
-                                           cpart[doc_index > cti &doc_index != tab_opts_raw$doc_index]), fill = T)
+    doc_summar = data.table::rbindlist(l = list(doc_summar[doc_index < cti],
+                                           data.table::data.table(doc_index = cti, content_type = "paragraph", text = ctab_chunk,
+                                                                  mrkdwn = ctab_chunk, is_heading1 = F, is_header = F, xml_type = "table"),
+                                           doc_summar[doc_index > cti & doc_index != tab_opts_raw$doc_index]), fill = T)
 
     tab_counter = tab_counter +1
 
@@ -401,27 +425,47 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 ```"
 
   ########################################### command parsing ####################################################
+  # list for inline math formulas
+  list_inlinemath = list()
+
 
   # inline paragraph commands - do not need escaping
   # put protected dollar fo rinline mathc(
-  cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", replacement = "========protecteddollar========\\1========protecteddollar========")]
+  doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", replacement = "========protecteddollar========\\1========protecteddollar========")]
+
+
+  # not entirely R style, but use global assigment to easily populate list based on regex pattern recognition
+  doc_summar[, xml_temp:= stringr::str_replace_all(string = text, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]",
+                                                   replacement = function(x){
+                                                   len = length(list_inlinemath)+1
+
+                                                   # saldy need to run regex again - groups not provided
+                                                   latex = stringr::str_extract(string = x, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", group = 1)
+
+                                                   list_inlinemath[[len]] <<- data.table(latex = latex, index = len)
+                                                   paste0("========protectedinlinemath", len, "========") })]
+
+  d_inlinemath = rbindlist(l = list_inlinemath)
 
   # put protected at for refs
-  cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]
+  doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]
+
+  # TODO: implement global table and figure lits for JATS XML, see todo
 
   # noindent
-  cpart[, mrkdwn:= gsub(x = trimws(mrkdwn), pattern = "^\\[\\[noindent\\]\\](.?)", replacement = "\\\\noindent \\1")]
-
+  doc_summar[, mrkdwn:= gsub(x = trimws(mrkdwn), pattern = "^\\[\\[noindent\\]\\](.?)", replacement = "\\\\noindent \\1")]
+  # JATS XML 1.3: indent likely not supported, but up to display tools
 
   # look for commands whole para tag commands [[]]
-  command_inds =  which(startsWith(trimws(cpart$mrkdwn), "[[") & endsWith(trimws(cpart$mrkdwn),"]]"))
+  command_inds =  which(startsWith(trimws(doc_summar$mrkdwn), "[[") & endsWith(trimws(doc_summar$mrkdwn),"]]"))
+
 
   # escape dollar etc in suitable paragraphs
-  cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn :=rmd_char_escape(mrkdwn)]
+  doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn :=rmd_char_escape(mrkdwn)]
 
-  # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\$", replacement = "\\\\$")]
-  # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\@", replacement = "\\\\@")]
-  # cpart[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
+  # doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\$", replacement = "\\\\$")]
+  # doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\@", replacement = "\\\\@")]
+  # doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
   fig_counter = 1
 
   # store commands so we can detect the previous one
@@ -436,7 +480,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       cii = cii +1
 
       # get current command
-      c_comtext = cpart[c_comi]$mrkdwn
+      c_comtext = doc_summar[c_comi]$mrkdwn
 
       c_command = parse_yaml_cmds(c_comtext)
 
@@ -449,6 +493,9 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
       # very primitive command parsing first position contains command
       c_result = ""
+      c_result_xml = ""
+      c_xml_type = "command"
+
 
       if(length(c_command) > 0 & !inherits(c_command, "error")){
 
@@ -457,7 +504,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                  print("interbox detected")
                  title = c_command['title']
                  text = c_command['text']
-                 iblabel = paste0("Part",  cpart_id, "Com", c_comi)
+                 iblabel = paste0( "Com", c_comi)
                  c_result = "
 ::: {.interbox data-latex=\"{"%+% title %+% "}{" %+% iblabel %+% "}\"}
 " %+% text %+% "
@@ -472,6 +519,8 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
                  c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
+                 fig_counter = fig_counter +1
+                 c_xml_type = "figure"
                  #
                  #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
                  # knitr::include_graphics(path='" %+% src %+% "')
@@ -481,8 +530,11 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                },
                math={
                  print("Math detected")
-                 form = c_command['form']
-                 c_result = paste0("$$", trimws(form), "$$")
+                 formula = c_command['form']
+                 c_result = paste0("$$", trimws(formula), "$$")
+                 c_result_xml = gen_xml_displaymath(latex = trimws(formula))
+                 c_xml_type = "display_math"
+
                },
                quote={
                  print("quote detected")
@@ -505,8 +557,15 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 :::
 \\vspace{-5.5mm}
 "},
+               table={
+                  stop("Unparsed (superflous?) table tag without table")
+               },
                columnbreak = {
-                 c_result = "\\columnbreak"})
+                 c_result = "\\columnbreak"},
+               {
+                 # default
+                   stop(paste0("unkown command '", c_comtext, "'"))
+               })
       }
       else{
 
@@ -515,13 +574,21 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       }
 
       # replace the paragraph with the result
-      cpart[c_comi]$mrkdwn = c_result
+      doc_summar[c_comi]$mrkdwn   = c_result
+      doc_summar[c_comi]$xml_text = c_result_xml # this needs to be finalized xml
+      doc_summar[c_comi]$xml_type = c_xml_type
 
     }
   }
 
 
-  # statements and declarations
+
+  # parse to xml  nodes that have not already been prossesd
+  doc_summar[is.na(xml_type), `:=`(xml_type = "paragraph", xml_text = gen_xml_paragraphs(xml_temp,d_inlinemath ))]
+
+
+
+  ############ statements and declarations ############
   rmd_statements = ''
 
   # any statements? populate corresponding article part, each with its own subheading
@@ -537,7 +604,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
 
-  # other language abstracts
+  ############ other language abstracts ############
   rmd_multilang_abstracts = ""
   if(any(names(metadata$abstracts)!="mainlang")){
 
@@ -605,12 +672,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
-  cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protecteddollar========", replacement = "$")]
-  cpart[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protectedat========", replacement = "@")]
+  doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protecteddollar========", replacement = "$")]
+  doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "========protectedat========", replacement = "@")]
 
-  cpart$sep = "\n\n"
+  doc_summar$sep = "\n\n"
 
-  outmrkdwn = cpart[, paste0(rbind(mrkdwn, sep), collapse = "")]
+  outmrkdwn = doc_summar[, paste0(rbind(mrkdwn, sep), collapse = "")]
 
 
   # put orcid section
@@ -641,7 +708,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
-  rmd_text = c(preamble_yaml, chunk_setup, fig_capts, tab_capts, outmrkdwn,
+  rmd_text = c(yaml_preamble, chunk_setup, fig_capts, tab_capts, outmrkdwn,
                rmd_statements,
                rmd_orcinds,
                rmd_multilang_abstracts,
@@ -651,6 +718,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   # write rmd file if filename provided
   if(!is.null(rmd_outpath)){
     write(rmd_text, file = rmd_outpath) # overwrites if existing
+  }
+
+  # write xml file if filename provided
+  if(!is.null(rmd_outpath)){
+    xml_text = gen_xml_file(doc_summar, article_type = metadata$article_type)
+    write(xml_text, file = xml_outpath) # overwrites if existing
   }
 
   return(rmd_text)

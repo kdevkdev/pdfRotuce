@@ -4,20 +4,30 @@ yml_qt = function(x) {
   attr(x, "quoted") = T
   x
 }
-gen_yaml_header = function(md, reference_parsing = T){
+gen_hardcoded_meta = function(reference_parsing = T){
 
-  # md : metadata to fill in
+  md = list()
 
-  # few hardcoded values
+  # few hardcoded values - should go into some conflig file when a good solutions is thought ofs
   md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia. J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
   md$journal_title = "JOURNAL OF COMMUNITY SYSTEMS FOR HEALTH"
   md$journal_title_short = "J Community Systems for Health"
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
+
                                                                       latex_engine   = "lualatex" |> yml_qt()))
+  md$publisher = "Umeå University Library"
+  md$issn = "3035-692X"
+
   if(reference_parsing == TRUE){
-     md$bibliography              = 'references.bib'  |> yml_qt()
+    md$bibliography              = 'references.bib'  |> yml_qt()
   }
   md$csl                      = 'plos-2020.csl'  |> yml_qt()
+
+  return(md)
+}
+gen_yaml_header = function(md, reference_parsing = T){
+
+  # md : metadata to fill in
 
 
   # first create empty structure
@@ -39,7 +49,9 @@ gen_yaml_header = function(md, reference_parsing = T){
                   csl = '',
                   abstract_sidelangs_hint = '',
                   abstract_picture = '',
-                  string_corresponding = '')
+                  string_corresponding = '',
+                  publisher = '',
+                  issn = '')
 
 
   # copy over -> to it this way to have default values availabvlw
@@ -64,6 +76,8 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$has_abstract              = md$has_abstract |> yml_qt()
   yml_data$abstract_sidelangs_hint   = md$abstract_sidelangs_hint |> yml_qt()
   yml_data$string_corresponding      = md$string_corresponding |> yml_qt()
+  yml_data$issn                      = md$issn |> yml_qt()
+  yml_data$publisher                 = md$publisher |> yml_qt()
 
 
   if(!is.null(md$attributes$abstract_picture) && !is.na(md$attributes$abstract_picture) && is.character(md$attributes$abstract_picture) && nchar(md$attributes$abstract_picture) > 1)
