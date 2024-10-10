@@ -52,6 +52,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     # copy over provided values, uppercase for article typer
     if(is.element("articledates", names(tvals)))             predef_meta$articledates              = tvals["articledates"]                   else warning("'articledates' missing in meta csv")
     if(is.element("volume", names(tvals)))                   predef_meta$volume                    = tvals["volume"]                         else warning("'volume' missing in meta csv")
+    if(is.element("issue",  names(tvals)))                   predef_meta$issue                     = tvals["issue"]                          else warning("'issue' missing in meta csv")
     if(is.element("copyright_year", names(tvals)))           predef_meta$copyright_year            = tvals["copyright_year"]                 else warning("'copyright_year' missing in meta csv")
     if(is.element("doi", names(tvals)))                      predef_meta$doi                       = tvals["doi"]                            else warning("'doi' missing in meta csv")
     if(is.element("pageheader", names(tvals)))               predef_meta$pageheader                = tvals["pageheader"]                     else warning("'pageheader' missing in meta csv")
@@ -72,6 +73,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   metadata = c(predef_meta, parsed_meta, hardcoded_meta)
 
   yaml_preamble = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
+
 
   xml_front = gen_xml_header(metadata)
 
@@ -404,7 +406,17 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     # if we need we can take into account the header here (is_header column in doc_summar)
     ct_csv = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
 
-    ctab_chunk = gen_tabchunk(ct_csv, tab_opts_raw, tab_counter, folder = working_folder)
+    tab_opts  = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
+
+    ctab_chunk = gen_tabchunk(ct_csv = ct_csv,
+                              tab_opts = tab_opts,
+                              tab_counter = tab_counter,
+                              folder = working_folder)
+
+    ctab_xml = gen_xml_table(ct_csv = ct_csv,
+                             tab_opts = tab_opts,
+                             tab_counter = tab_counter)
+
 
     # delete table rows and table options form document structure
     doc_summar = data.table::rbindlist(l = list(doc_summar[doc_index < cti],
@@ -562,6 +574,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                },
                columnbreak = {
                  c_result = "\\columnbreak"},
+               pagebreak = {
+                 c_result = paste("\n```{=latex}",
+                                   "\\end{multicols}",
+                                   "\\newpage",
+                                   "\\begin{multicols}{2}", sep = "\n",
+                                   "```\n")},
                {
                  # default
                    stop(paste0("unkown command '", c_comtext, "'"))
@@ -691,7 +709,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   rmd_orcinds = ""
   if(!is.null(author_orcinds) & length(author_orcinds) > 0){
 
-    td <- metadata$authors[author_orcinds] |> rbindlist()
+    td <- metadata$authors[author_orcinds] |> rbindlist(fill = TRUE)
 
     plural = ""
     if(NROW(td)> 1){
@@ -722,8 +740,8 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
   # write xml file if filename provided
   if(!is.null(rmd_outpath)){
-    xml_text = gen_xml_file(doc_summar, article_type = metadata$article_type)
-    write(xml_text, file = xml_outpath) # overwrites if existing
+    xml_text = paste0(gen_xml_file(doc_summar, article_type = metadata$article_type, xml_meta  = xml_front))
+    #write(xml_text, file = xml_outpath) # overwrites if existing
   }
 
   return(rmd_text)

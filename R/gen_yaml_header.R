@@ -10,12 +10,14 @@ gen_hardcoded_meta = function(reference_parsing = T){
 
   # few hardcoded values - should go into some conflig file when a good solutions is thought ofs
   md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia. J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
+  md$copyright_holder = "The Author(s)"
   md$journal_title = "JOURNAL OF COMMUNITY SYSTEMS FOR HEALTH"
   md$journal_title_short = "J Community Systems for Health"
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
 
                                                                       latex_engine   = "lualatex" |> yml_qt()))
   md$publisher = "Umeå University Library"
+  md$journal_publisher_id = "JCSH"
   md$issn = "3035-692X"
 
   if(reference_parsing == TRUE){

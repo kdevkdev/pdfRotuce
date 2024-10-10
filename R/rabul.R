@@ -1,8 +1,16 @@
 #library(rly)
 
-parse_cellmd = function(md){
+parse_cellmd_xml = function(md){
 
-  rt = parser$parse(md, lexer)[[1]]
+  rt = parser_xml$parse(md, lexer)[[1]]
+
+  if(is.null(rt)) rt = ""
+
+  rt
+}
+parse_cellmd_latex = function(md){
+
+  rt = parser_latex$parse(md, lexer)[[1]]
 
   if(is.null(rt)) rt = ""
 
@@ -88,7 +96,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @export
 #'
 #' @examples
-rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
+rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE, parsemode = "latex"){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -120,8 +128,14 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
       # pars cell md
 
       x = sapply(x, \(c) {
-          r = parse_cellmd(c)
+
+          if(parsemode == "latex"){
+            r = parse_cellmd_latex(c)
+          } else if (parsemode == "xml"){
+            r = parse_cellmd_xml(c)
+          }
           # escape relevant chars &, #, {, }
+
           r = gsub(x = r, pattern = "&", replacement = "\\&", fixed = T)
           r = gsub(x = r, pattern = "#", replacement = "\\#", fixed = T)
 

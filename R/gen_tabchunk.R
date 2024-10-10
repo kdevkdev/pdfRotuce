@@ -7,7 +7,7 @@ escape_caption <- function(str){
 #' Title
 #'
 #' @param ct_csv
-#' @param tab_opts_raw
+#' @param tab_opts
 #' @param tab_counter
 #' @param folder
 #'
@@ -15,13 +15,13 @@ escape_caption <- function(str){
 #' @export
 #'
 #' @examples
-gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
+gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder =""){
 
   # table captions to return
   tab_capts = list()
 
   # table options, captuion, etc need to be in nexts paragraph
-  tab_opts = c() # empty
+  if(!is.vector(tab_opts)) tab_opts = c() # set to empty if invalid (tables withotu table tags are allowed)
 
   # generate label and unique id
   tab_uind = "tab_" %+% tab_counter  %+% "_"  #%+% gsub(x = chapname, pattern = "-|-", replacement = "")
@@ -38,15 +38,6 @@ gen_tabchunk = function(ct_csv, tab_opts_raw, tab_counter, folder =""){
 
   tab_fname = paste0(folder, "tmp_tables/", tab_uind, ".csv")
   tab_rmd_fname = paste0("tmp_tables/", tab_uind, ".csv")
-
-
-  if(startsWith(trimws(tab_opts_raw$mrkdwn), "[[table")){
-
-    tab_opts = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
-  } else{
-
-    warning("No table tag found")
-  }
 
 
   # manual label overrriade?

@@ -122,9 +122,43 @@ parse_title_page = function(docdat){
           ct_tab = ct_tab[!is.null(author) & is.character(author) &nchar(author) > 0, ]
 
 
-          retlist[["authors"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcid = x[["orcid"]] |> yml_qt())})
+          ta = apply(X = ct_tab, MARGIN = 1, FUN = \(x){
 
+
+              corresponding = FALSE
+              if( stringr::str_detect(string = x[['affiliation_ids']], pattern = "\\*")){
+
+                # delete star. Technically the asterixs is supposed to be in the end but we do not care for now
+                x[['affiliation_ids']] = stringr::str_replace_all(string = x[['affiliation_ids']], pattern = "\\*", replacement = "")
+                corresponding = TRUE
+              }
+
+              rl = list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcid = x[["orcid"]] |> yml_qt(), corresponding = corresponding )
+
+              # see if author has a , or ; (unescaped). If yes, create additional fields for surname and given name
+              # this regex should work for with arbitrary number of escape chars
+              name = x[['author']]
+              nameparts = stringr::str_split_1(string = name, pattern = "(([^\\\\](\\\\\\\\)*))(,|;)")
+              if(length(nameparts) == 2){
+
+                rl[['family_name']] = trimws(nameparts[1])
+                rl[['first_name']] = trimws(nameparts[2])
+                # also put the correct order into the whole string
+                rl[['name']] = paste0(rl[['first_name']]," ", rl[['family_name']])
+
+              } else if(length(nameparts) == 1){
+                warning(paste0("ONLY ONE name part in authors table for ", name ," - if applicable it is strongly recommended to separate family name and given name by a ',' or ';' - [family name],[given name]"))
+              } else if(length(nameparts) > 2){
+                stop("more than three name parts in authors table (please use only one ',' or ';' per name - [family name],[given name]")
+              }
+
+              rl
+          })
+
+          retlist[["authors"]] = ta
         } else if(table_type == "affiliation"){
+
+          stopifnot("non-unique is in affiliation table"= sum(duplicated(ct_tab$id)) == 0)
 
           retlist[["affiliations"]] = apply(X = ct_tab, MARGIN = 1, FUN = \(x){list(id = x[["id"]] |> yml_qt(), address = x[["affiliation"]] |> yml_qt())})
         } else if(table_type == "attribute"){

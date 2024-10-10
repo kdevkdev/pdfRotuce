@@ -16,4 +16,5 @@ Imports:
     processx,
     stringr,
     commonmark,
-    xml2
+    xml2,
+    lubridate

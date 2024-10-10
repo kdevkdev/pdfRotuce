@@ -3,7 +3,8 @@
 
 
 lexer = NULL
-parser = NULL
+parser_xml = NULL
+parser_latex = NULL
 
 .onLoad <-  function(libname, pkgname){
 
@@ -93,7 +94,19 @@ parser = NULL
 
     classname = "Parser",
 
+
     public = list(
+      mode = NULL,
+      initialize = function(...){
+
+        args = (list(...))
+
+        switch(args$mode,
+               xml = { self$mode <- "xml"},
+               latex = {self$mode <- "latex"},
+               stop("undefined parser mode")
+        )
+      },
 
       tokens = TOKENS,
 
@@ -173,6 +186,10 @@ parser = NULL
   )
   lexer  <<- rly::lex(Lexer)
 
-  parser <<- rly::yacc(Parser, debug = T)
+  parser_latex <<- rly::yacc(Parser, debug = T, args = list(mode = "latex"))
+  parser_xml <<- rly::yacc(Parser, debug = T, args = list(mode = "xml"))
+
+
+
 
   }
