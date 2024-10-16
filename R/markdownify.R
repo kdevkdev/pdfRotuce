@@ -53,6 +53,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     if(is.element("articledates", names(tvals)))             predef_meta$articledates              = tvals["articledates"]                   else warning("'articledates' missing in meta csv")
     if(is.element("volume", names(tvals)))                   predef_meta$volume                    = tvals["volume"]                         else warning("'volume' missing in meta csv")
     if(is.element("issue",  names(tvals)))                   predef_meta$issue                     = tvals["issue"]                          else warning("'issue' missing in meta csv")
+    if(is.element("string_volumeissue",  names(tvals)))      predef_meta$string_volumeissue        = tvals["string_volumeissue"]             else warning("'string_volumeissue' missing in meta csv")
     if(is.element("copyright_year", names(tvals)))           predef_meta$copyright_year            = tvals["copyright_year"]                 else warning("'copyright_year' missing in meta csv")
     if(is.element("doi", names(tvals)))                      predef_meta$doi                       = tvals["doi"]                            else warning("'doi' missing in meta csv")
     if(is.element("pageheader", names(tvals)))               predef_meta$pageheader                = tvals["pageheader"]                     else warning("'pageheader' missing in meta csv")

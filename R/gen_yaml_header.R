@@ -35,7 +35,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   # first create empty structure
   yml_data = list(title_full = '',
                   copyright = list(year = '', text = ''),
-                  journalinfo = list(title = '', volume = '', doi = '', article_type = '_'),
+                  journalinfo = list(title = '', volume = '', issue = '', doi = '', article_type = '', string_volumeissue = ''),
                   abstracts = list(mainlang = list(parts = list(title = '', text = ''), title = '')),
                   keywords = c(),
                   authors = list(list(name = '', affiliation_ids = '', orcid = ''),
@@ -57,29 +57,33 @@ gen_yaml_header = function(md, reference_parsing = T){
 
 
   # copy over -> to it this way to have default values availabvlw
-  yml_data$title_full                = md$title |> yml_qt()
-  yml_data$copyright$year            = md$copyright_year |> yml_qt()
-  yml_data$copyright$text            = md$copyright |> yml_qt()
-  yml_data$journalinfo$title         = md$journal_title |> yml_qt()
-  yml_data$journalinfo$volume        = md$volume |> yml_qt()
-  yml_data$journalinfo$doi           = md$doi  |> yml_qt() # ideally if the doi is the article specific one this should be restructured
-  yml_data$journalinfo$article_type  = md$article_type  |> yml_qt()
-  yml_data$abstracts                 = md$abstracts
-  yml_data$keywords                  = md$attributes$keywords
-  yml_data$authors                   = md$authors
-  yml_data$affiliations              = md$affiliations
-  yml_data$correspondingauthor$email = md$attributes$corresponding_email |> yml_qt()
-  yml_data$articledates              = md$articledates |> yml_qt()
-  yml_data$pageheader$odd            = md$journal_title_short |> yml_qt()
-  yml_data$pageheader$even           = md$pageheader |> yml_qt()
-  yml_data$output                    = md$output
-  yml_data$bibliography              = md$bibliography |> yml_qt()
-  yml_data$csl                       = md$csl |> yml_qt()
-  yml_data$has_abstract              = md$has_abstract |> yml_qt()
-  yml_data$abstract_sidelangs_hint   = md$abstract_sidelangs_hint |> yml_qt()
-  yml_data$string_corresponding      = md$string_corresponding |> yml_qt()
-  yml_data$issn                      = md$issn |> yml_qt()
-  yml_data$publisher                 = md$publisher |> yml_qt()
+  yml_data$title_full                         = md$title |> yml_qt()
+  yml_data$copyright$year                     = md$copyright_year |> yml_qt()
+  yml_data$copyright$text                     = md$copyright |> yml_qt()
+
+  yml_data$journalinfo$title                  = md$journal_title |> yml_qt()
+  yml_data$journalinfo$volume                 = md$volume |> yml_qt()
+  yml_data$journalinfo$issue                  = md$issue |> yml_qt()
+  yml_data$journalinfo$string_volumeissue     = md$string_volumeissue |> yml_qt()
+  yml_data$journalinfo$doi                    = md$doi  |> yml_qt() # ideally if the doi is the article specific one this should be restructured
+  yml_data$journalinfo$article_type           = md$article_type  |> yml_qt()
+  yml_data$journalinfo$issn                   = md$issn |> yml_qt()
+  yml_data$journalinfo$publisher              = md$publisher |> yml_qt()
+
+  yml_data$abstracts                          = md$abstracts
+  yml_data$keywords                           = md$attributes$keywords
+  yml_data$authors                            = md$authors
+  yml_data$affiliations                       = md$affiliations
+  yml_data$correspondingauthor$email          = md$attributes$corresponding_email |> yml_qt()
+  yml_data$articledates                       = md$articledates |> yml_qt()
+  yml_data$pageheader$odd                     = md$journal_title_short |> yml_qt()
+  yml_data$pageheader$even                    = md$pageheader |> yml_qt()
+  yml_data$output                             = md$output
+  yml_data$bibliography                       = md$bibliography |> yml_qt()
+  yml_data$csl                                = md$csl |> yml_qt()
+  yml_data$has_abstract                       = md$has_abstract |> yml_qt()
+  yml_data$abstract_sidelangs_hint            = md$abstract_sidelangs_hint |> yml_qt()
+  yml_data$string_corresponding               = md$string_corresponding |> yml_qt()
 
 
   if(!is.null(md$attributes$abstract_picture) && !is.na(md$attributes$abstract_picture) && is.character(md$attributes$abstract_picture) && nchar(md$attributes$abstract_picture) > 1)

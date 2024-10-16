@@ -282,7 +282,7 @@ justification=raggedright, skip = 2pt]{caption}
 \newcommand{\articledates}[1]{\def\thearticledates{
 		{\fontsize{9}{12}\selectfont#1}
 }}
-\newcommand{\journalvolume}[1]{\def\thejournalvolume{#1}}
+\newcommand{\journalvolumestring}[1]{\def\thejournalvolumestring{#1}}
 \newcommand{\journaltitle}[1]{\def\thejournaltitle{#1}}
 \newcommand{\journaldoi}[1]{\def\thejournaldoi{#1}}
 \newcommand{\journalarticletype}[1]{\def\thejournalarticletype{#1}}
@@ -318,7 +318,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \begin{minipage}{0.49\textwidth}
 	{\sffamily\footnotesize\color{black}
 		\thejournaltitle\\
-		\thejournalvolume\\
+		\thejournalvolumestring\\
 		\thejournaldoi \vspace*{3mm}\\
 		{\fontsize{11}{13}\selectfont\textbf{\thejournalarticletype}}}
 \end{minipage}
