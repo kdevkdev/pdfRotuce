@@ -292,8 +292,11 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
         # delete markers from refs
         stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
-        # escape &
+        # escape &, _ and [,]
         refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
+        refs = stringr::str_replace_all(refs, pattern = "\\[", replacement = "{[}")
+        refs = stringr::str_replace_all(refs, pattern = "\\]", replacement = "{]}")
+        refs = stringr::str_replace_all(refs, pattern = "_", replacement = "\\\\_")
 
         # remove dots
         markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
@@ -333,7 +336,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
           # pattern from qdapRegex
           refs = stringr::str_replace_all(string = refs,
-                                          pattern = stringr::regex("\\b(?<!/)10.\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                          pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
                                           replacement = function(m){
 
                                             r = gsub(pattern = "\\.$", replacement = "", x = m)
@@ -397,8 +400,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     tab_opts_raw = doc_summar[ind_next_nonempty,]
 
     # check if table is acutally there
-    if(tab_opts_raw$content_type != "paragraph" && !startsWith(trimws(tab_opts_raw$mrkdwn, "[[table"))){
+    if(tab_opts_raw$content_type != "paragraph" && !startsWith(trimws(tab_opts_raw$mrkdwn), "[[table")){
       warning("Table " %+% cti %+% " does not seem to have have a table tag")
+      tab_opts_raw = NULL
+      tab_opts = NULL
+    } else{
+      tab_opts  = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
     }
 
     ct_dat = doc_summar[content_type == "table cell" & doc_index == cti]
@@ -406,7 +413,6 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     # if we need we can take into account the header here (is_header column in doc_summar)
     ct_csv = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
 
-    tab_opts  = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
 
     ctab_chunk = gen_tabchunk(ct_csv = ct_csv,
                               tab_opts = tab_opts,
@@ -419,10 +425,20 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
     # delete table rows and table options form document structure
-    doc_summar = data.table::rbindlist(l = list(doc_summar[doc_index < cti],
+    before = doc_summar[doc_index < cti]
+
+    if(!is.null(tab_opts_raw)){
+
+      after = doc_summar[doc_index > cti & doc_index != tab_opts_raw$doc_index]
+    } else{
+      after = doc_summar[doc_index > cti]
+    }
+
+    doc_summar = data.table::rbindlist(l = list(before,
                                            data.table::data.table(doc_index = cti, content_type = "paragraph", text = ctab_chunk,
+                                                                  xml_text = ctab_xml,
                                                                   mrkdwn = ctab_chunk, is_heading1 = F, is_header = F, xml_type = "table"),
-                                           doc_summar[doc_index > cti & doc_index != tab_opts_raw$doc_index]), fill = T)
+                                           after), fill = T)
 
     tab_counter = tab_counter +1
 
@@ -570,7 +586,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 \\vspace{-5.5mm}
 "},
                table={
-                  stop("Unparsed (superflous?) table tag without table")
+                  warning("Unparsed (superflous?) table tag without table")
                },
                columnbreak = {
                  c_result = "\\columnbreak"},

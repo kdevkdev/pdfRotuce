@@ -96,7 +96,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @export
 #'
 #' @examples
-rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE, parsemode = "latex"){
+rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -129,13 +129,9 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
       x = sapply(x, \(c) {
 
-          if(parsemode == "latex"){
-            r = parse_cellmd_latex(c)
-          } else if (parsemode == "xml"){
-            r = parse_cellmd_xml(c)
-          }
-          # escape relevant chars &, #, {, }
 
+          r = parse_cellmd_latex(c)
+          # escape relevant chars &, #, {, }
           r = gsub(x = r, pattern = "&", replacement = "\\&", fixed = T)
           r = gsub(x = r, pattern = "#", replacement = "\\#", fixed = T)
 

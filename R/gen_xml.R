@@ -325,6 +325,7 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
   }
   return(res)
 }
+
 gen_xml_sections = function(doc_summar){
 
   # for JATS we need more elaborate parsing
@@ -407,6 +408,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
   # label. to autogenerate
   # caption title  - is it needed?
+  ct_csv_o = ct_csv
 
   # caption provided?
   tab_caption = ""
@@ -415,48 +417,136 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
     # escape %, @, $
     tab_caption = escape_caption(tab_caption)
-
   }
 
-  ct_csv[,1][[1]] |> trimws()
+  header_inds = which(startsWith(ct_csv[[1]] |> trimws(), "#"))
 
-  table_xml = paste0("<table-wrap id='TN0.170'>",
+
+  if(length(header_inds) == 0){
+    warning("No header row provided (first cell starting with '#'), assuming first row is header row. XML Jats needs at least 1 header row.")
+    header_inds = 1
+  }
+
+  # remove '#'
+  ct_csv[[1]] = gsub(pattern = "#", replacement = " ",  x =ct_csv[[1]])
+
+  # parse cells
+  ct_csv = apply(ct_csv, MARGIN = c(1,2), FUN = \(x) {
+
+    # cell md
+    x = parse_cellmd_xml(x)
+
+    # 3 empty spaces
+    x = gsub(x = x,pattern = "[ ]{3}", replacement = "<preformat>   </preformat>") # 3 empty spaces
+  })
+
+  colgroup = ""
+  colwidths = NULL
+  colaligns = NULL
+
+
+  #todo: fix missing conversion to reasonable values (perentage and left,right,center)
+  if(!is.null(tab_opts['colwidths'])){
+
+    tcw = as.numeric(tab_opts['colwidths'][[1]])
+    if(!all(is.numeric(tcw))) stop("nonnumeric table colwidth provided")
+    tcw = tcw / sum(tcw)
+    colwidths = paste0("width='", tcw, "%'")
+  }
+
+
+  label = tab_opts['label']
+  if(is.null(tab_opts['label']) || !is.character(tab_opts['label'])){
+
+    label = paste0("tableautolabel", tab_counter)
+  }
+
+  id = paste0( label, "_", tab_counter)
+
+  label = paste0("Table ", tab_counter)
+
+  if(!is.null(tab_opts['colaligns']) && !is.na(tab_opts['colaligns']))  {
+
+    tca = tab_opts['colaligns'][[1]]
+
+    if(!all(tca %in% c("l", "r", "c"))) stop("only 'c','l','r' allowed in the list of table column align specifiers")
+
+    tcav = ifelse(tca == "r", "'right'", ifelse(tca == "c", "'center'", "'left'"))
+
+    colaligns = paste0("align=", tcav)
+  }
+
+  if(!is.null(colwidths) || !is.null(colaligns)){
+    colgroup = paste0("<col ", colwidths, " ", colaligns,"/>", collapse = "\n")
+  }
+
+  rf_str = "rules='none' frame='hsides'"
+
+  if('fullgrid' %in% names(tab_opts)){
+    rf_str = "rules='all' frame='box'"
+  }
+
+  # need to implement: header rows (style attribute with gray background,
+  # colwidths, colaligns, fullgrid), table id
+
+  celltags = rep("td", times = NROW(ct_csv))
+  celltags[header_inds] = "th"
+
+  row_strings = vector(mode = "character", length = NROW(ct_csv))
+  for(i in 1:NROW(ct_csv)){
+    row_strings[i] = paste0("<tr>", paste0("<",celltags[i],">", ct_csv[i,] |> unlist(), "</", celltags[i], ">", collapse = ""), "</tr>")
+  }
+  tbodystring = paste0(row_strings, collapse = "\n")
+
+  table_xml = paste0("<table-wrap id='", id ,"'>",
+   paste("<label>", label, "</label>"),
    "<caption>",
     #"<title>Patient Care at End of Follow Up</title>", caption title if ever
      paste0("<p>", tab_caption, "</p>"),
    "</caption>",
-   "<table frame='hsides' cellpadding='3'>",
+   "<table ",rf_str," cellpadding='3'>",
+    colgroup,
     "<tbody>",
-     "<tr>
-      <th></th>
-      <th colspan='3' align='center' rowspan='1'>Institutional care</th>
-      <th></th>
-      <th colspan='2' align='center' rowspan='1'>&#x2003;Bed use (days)</th>
-     </tr>
-     <tr>
-      <td colspan='3'><hr/></td>
-      <td colspan='2'><hr/></td>
-     </tr>
-     <tr>
-      <th>Control group</th>
-      <th align='center'>Day hospital</th>
-      <th align='center'>Control</th>
-      <th align='center'>Odds ratio (95&#x0025; CI)</th>
-      <th></th>
-      <th align='center'>Day hospital</th>
-      <th align='center'>Control</th>
-     </tr>
-     <tr>
-      <td colspan='7'><hr/></td>
-     </tr>",
+        tbodystring,
     "</tbody>
-   </table>
-   <table-wrap-foot>
-    <fn-group>
-     <fn id='TF1-150'><p>Data not available for 1 trial.</p></fn>
-     <fn id='TF1-151'><p>P&#x003C;0.05 (random effects model).</p></fn>
-    </fn-group>
-   </table-wrap-foot>
-  </table-wrap>", sep = "\n")
-}
+   </table>",
+   # <table-wrap-foot>
+   #  <fn-group>
+   #   <fn id='TF1-150'><p>Data not available for 1 trial.</p></fn>
+   #   <fn id='TF1-151'><p>P&#x003C;0.05 (random effects model).</p></fn>
+   #  </fn-group>
+   # </table-wrap-foot>
+  "</table-wrap>", sep = "\n")
 
+  table_xml
+}
+gen_xml_figure = function(fig_opts, fig_counter){
+
+  id = paste0( fig_opts['label'], "_", fig_counter)
+  label = paste0("Figure ", fig_counter)
+
+  # caption provided?
+  tab_caption = ""
+  if('caption' %in% names(fig_opts)){
+    fig_caption = fig_opts['caption']
+
+    # escape %, @, $
+    fig_caption = escape_caption(fig_caption)
+  }
+
+
+  if('src' %in% names(fig_opts)){
+    fig_src = paste0("../",fig_opts['src']) # add one level up because its not in the build dir but one level above
+  }
+  else{
+    stop("Figure src not provided")
+  }
+  figure_xml = paste(paste0("<fig id='", id, "'>"),
+                    paste0("<label>", label, "</label>"),
+                    "<caption>",
+                    paste0("<p>", fig_caption,"</p>"),
+                    "</caption>",
+                    paste0("<graphic xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='", fig_src, "'>"),
+                    "</graphic>
+                    </fig>", sep = "\n")
+}

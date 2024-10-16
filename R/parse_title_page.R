@@ -138,8 +138,19 @@ parse_title_page = function(docdat){
               # see if author has a , or ; (unescaped). If yes, create additional fields for surname and given name
               # this regex should work for with arbitrary number of escape chars
               name = x[['author']]
-              nameparts = stringr::str_split_1(string = name, pattern = "(([^\\\\](\\\\\\\\)*))(,|;)")
-              if(length(nameparts) == 2){
+
+              # we are interested in the end of the match (the first position always includes the previous char)
+              cpos = stringr::str_locate(string = name, pattern = "(?:(?:[^\\\\](?:\\\\\\\\)*))(?:,|;)")[2]
+
+              #nameparts = stringr::str_split_1(string = name, pattern = "(([^\\\\](\\\\\\\\)*))(,|;)")
+
+             if(!is.na(cpos) && cpos > 1 & cpos +1< nchar(name)){
+
+                nameparts = vector("character", 2)
+                nameparts[1] = trimws(stringr::str_sub(name, 1, cpos-1))
+                nameparts[2] = trimws(stringr::str_sub(name, cpos+1, nchar(name))) # -1, +1 bec. we do not want to include the ,
+
+
 
                 rl[['family_name']] = trimws(nameparts[1])
                 rl[['first_name']] = trimws(nameparts[2])
@@ -147,6 +158,7 @@ parse_title_page = function(docdat){
                 rl[['name']] = paste0(rl[['first_name']]," ", rl[['family_name']])
 
               } else if(length(nameparts) == 1){
+                rl[['name']] = name
                 warning(paste0("ONLY ONE name part in authors table for ", name ," - if applicable it is strongly recommended to separate family name and given name by a ',' or ';' - [family name],[given name]"))
               } else if(length(nameparts) > 2){
                 stop("more than three name parts in authors table (please use only one ',' or ';' per name - [family name],[given name]")
