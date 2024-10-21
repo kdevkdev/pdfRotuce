@@ -102,7 +102,7 @@ parse_title_page = function(docdat){
 
 
         if(NROW(ct_tab) <= 1){
-          warning(paste0("empty table in metadata section: ",ct_tab[1,1]))
+          hgl_warn(paste0("empty table in metadata section: ",ct_tab[1,1]))
           next
         }
 
@@ -117,7 +117,7 @@ parse_title_page = function(docdat){
 
           # remove emptpy
           if(NROW(ct_tab[!is.null(author) & is.character(author) & nchar(author) == 0, ])>0){
-            warning("Empty lines in authors table")
+            hgl_warn("Empty lines in authors table")
           }
           ct_tab = ct_tab[!is.null(author) & is.character(author) &nchar(author) > 0, ]
 
@@ -157,11 +157,9 @@ parse_title_page = function(docdat){
                 # also put the correct order into the whole string
                 rl[['name']] = paste0(rl[['first_name']]," ", rl[['family_name']])
 
-              } else if(length(nameparts) == 1){
+              } else {
                 rl[['name']] = name
-                warning(paste0("ONLY ONE name part in authors table for ", name ," - if applicable it is strongly recommended to separate family name and given name by a ',' or ';' - [family name],[given name]"))
-              } else if(length(nameparts) > 2){
-                stop("more than three name parts in authors table (please use only one ',' or ';' per name - [family name],[given name]")
+                hgl_warn(paste0("Name does not contain ',' or ';' (", name ,") - if applicable it is strongly recommended to separate family name and given name by a ',' or ';' - [family name],[given name]"))
               }
 
               rl

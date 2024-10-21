@@ -410,6 +410,12 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
   # caption title  - is it needed?
   ct_csv_o = ct_csv
 
+  label = tab_opts['label']
+  if(is.null(tab_opts['label']) || is.na(label) || !is.character(label) ){
+
+    label = paste0("tableautolabel", tab_counter)
+  }
+
   # caption provided?
   tab_caption = ""
   if('caption' %in% names(tab_opts)){
@@ -423,7 +429,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
 
   if(length(header_inds) == 0){
-    warning("No header row provided (first cell starting with '#'), assuming first row is header row. XML Jats needs at least 1 header row.")
+    hgl_warn(paste0("Table #",  tab_counter ,  " - ", label ,": no header row provided (=first cell in column starting with '#'), assuming first row is header row. XML Jats needs at least 1 header row."))
     header_inds = 1
   }
 
@@ -455,11 +461,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
   }
 
 
-  label = tab_opts['label']
-  if(is.null(tab_opts['label']) || !is.character(tab_opts['label'])){
 
-    label = paste0("tableautolabel", tab_counter)
-  }
 
   id = paste0( label, "_", tab_counter)
 
@@ -549,4 +551,6 @@ gen_xml_figure = function(fig_opts, fig_counter){
                     paste0("<graphic xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='", fig_src, "'>"),
                     "</graphic>
                     </fig>", sep = "\n")
+
+  figure_xml
 }

@@ -94,7 +94,7 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder =""){
   }
 
 
-  print(paste0("Writing table: ", tab_fname))
+  #print(paste0("Writing table: ", tab_fname))
   data.table::fwrite(ct_csv, tab_fname, col.names = F) # do not write first row of column indexes
 
   # manually change spacing

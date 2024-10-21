@@ -50,16 +50,16 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
     # copy over provided values, uppercase for article typer
-    if(is.element("articledates", names(tvals)))             predef_meta$articledates              = tvals["articledates"]                   else warning("'articledates' missing in meta csv")
-    if(is.element("volume", names(tvals)))                   predef_meta$volume                    = tvals["volume"]                         else warning("'volume' missing in meta csv")
-    if(is.element("issue",  names(tvals)))                   predef_meta$issue                     = tvals["issue"]                          else warning("'issue' missing in meta csv")
-    if(is.element("string_volumeissue",  names(tvals)))      predef_meta$string_volumeissue        = tvals["string_volumeissue"]             else warning("'string_volumeissue' missing in meta csv")
-    if(is.element("copyright_year", names(tvals)))           predef_meta$copyright_year            = tvals["copyright_year"]                 else warning("'copyright_year' missing in meta csv")
-    if(is.element("doi", names(tvals)))                      predef_meta$doi                       = tvals["doi"]                            else warning("'doi' missing in meta csv")
-    if(is.element("pageheader", names(tvals)))               predef_meta$pageheader                = tvals["pageheader"]                     else warning("'pageheader' missing in meta csv")
-    if(is.element("has_abstract", names(tvals)))             predef_meta$has_abstract              = tvals["has_abstract"]                   else warning("'has_abstrat' missing in meta csv")
-    if(is.element("article_type", names(tvals)))             predef_meta$article_type              = toupper(tvals["article_type"])          else warning("'article_type' missing in meta csv")
-    if(is.element("string_corresponding", names(tvals)))     predef_meta$string_corresponding      = tvals["string_corresponding"]           else warning("'string_corresponding' missing in meta csv")
+    if(is.element("articledates", names(tvals)))             predef_meta$articledates              = tvals["articledates"]                   else hgl_warn("'articledates' missing in meta csv")
+    if(is.element("volume", names(tvals)))                   predef_meta$volume                    = tvals["volume"]                         else hgl_warn("'volume' missing in meta csv")
+    if(is.element("issue",  names(tvals)))                   predef_meta$issue                     = tvals["issue"]                          else hgl_warn("'issue' missing in meta csv")
+    if(is.element("string_volumeissue",  names(tvals)))      predef_meta$string_volumeissue        = tvals["string_volumeissue"]             else hgl_warn("'string_volumeissue' missing in meta csv")
+    if(is.element("copyright_year", names(tvals)))           predef_meta$copyright_year            = tvals["copyright_year"]                 else hgl_warn("'copyright_year' missing in meta csv")
+    if(is.element("doi", names(tvals)))                      predef_meta$doi                       = tvals["doi"]                            else hgl_warn("'doi' missing in meta csv")
+    if(is.element("pageheader", names(tvals)))               predef_meta$pageheader                = tvals["pageheader"]                     else hgl_warn("'pageheader' missing in meta csv")
+    if(is.element("has_abstract", names(tvals)))             predef_meta$has_abstract              = tvals["has_abstract"]                   else hgl_warn("'has_abstrat' missing in meta csv")
+    if(is.element("article_type", names(tvals)))             predef_meta$article_type              = toupper(tvals["article_type"])          else hgl_warn("'article_type' missing in meta csv")
+    if(is.element("string_corresponding", names(tvals)))     predef_meta$string_corresponding      = tvals["string_corresponding"]           else hgl_warn("'string_corresponding' missing in meta csv")
 
 
     # if(is.null(parsed_meta$abstracts$mainlang) && predef_meta$has_abstract == "yes"){
@@ -107,7 +107,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
   rmd_references = ""
-  if(length(refparind) == 0)   warning("No references found!!!")
+  if(length(refparind) == 0)   hgl_warn("No references found!!!")
   else{
 
     # refinds are those paragraphs until end or next l1 heading
@@ -123,7 +123,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
     # create one large text value
     #references_text = paste(doc_summar$mrkdwn[ref_inds], collapse = "\n")
-    references = doc_summar$mrkdwn[ref_inds]
+    references =  doc_summar$mrkdwn[ref_inds]
 
     if(reference_parsing){
 
@@ -132,29 +132,29 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       dir.create(path_temprefs_in, showWarnings = FALSE)
       dir.create(path_temprefs_out, showWarnings = FALSE)
 
+      # remove number from beginning
+      ref_itemnums = stringr::str_extract(string = references, pattern = "^[0-9]+[.]")
+      references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
+
       # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
       sapply(1:length(references), FUN = \(x) { writeLines(text = references[x], con = paste0(path_temprefs_in, "/", x, ".txt")) })
-
-      # save to extracted file
-      # fname = paste(working_folder, "references_extracted.txt", sep = "/")
-      # print(paste0("Writing extracted refrerences file file: ", fname))
-      # writeLines(text = references_text, con = fname)
-
-      # anystyle -f bib parse references_extracted.txt
-      print("runing anystyle on extracted references ...")
-      #ras = system(paste0("anystyle -f bib,json parse ",  fname , " ", working_folder))
-      ras = system(paste0("anystyle -w -f bib,json parse ",  path_temprefs_in , " ", path_temprefs_out))
-      stopifnot("anystyle failed" =  ras == 0 )
-
 
       # remove from document
       doc_summar = doc_summar[-c(refparind, ref_inds), ]
       rmd_references = "# References\n\n  \n"
 
+      # run anystyle
+      print("runing anystyle on extracted references ...")
+      ras = system(paste0("anystyle -w -f bib,json parse ",  path_temprefs_in , " ", path_temprefs_out))
+      stopifnot("anystyle failed" =  ras == 0 )
 
 
-      # red back into R using bib2df  and join to big file
-      temp_bibfiles_in = sort(paste0(path_temprefs_out, "/", list.files( path = path_temprefs_out, pattern = "*.bib")))
+
+      # red back into R using bib2df  and join to big file, do numerical sort
+      temp_bibfiles_in = stringr::str_sort(paste0(path_temprefs_out, "/", list.files( path = path_temprefs_out, pattern = "*.bib")), numeric = T)
+
+
+
 
       x = list()
       for(cn in temp_bibfiles_in){
@@ -168,19 +168,20 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
         # if parsing failed bib2df returns 0 length data. framec
         if(NROW(x[[cn]]) == 0){
           x[[cn]] <- data.frame(bibliography_orderindex = bib_orderindex)
-        }else{
+        } else {
 
           parsed_citnums = NA
-
-          if("NUMBER" %in% colnames(x[[cn]]) && !is.na(x[[cn]]$NUMBER)){
-            parsed_citnums = x[[cn]]$NUMBER
-            x[[cn]]$NUMBER = NA
-          }
-          # overwrite if citation.number is given
-          if ("CITATION.NUMBER" %in% colnames(x[[cn]]) && !is.na(x[[cn]]$CITATION.NUMBER)){
-            parsed_citnums = x[[cn]]$CITATION.NUMBER
-            x[[cn]]$CITATION.NUMBER = NA
-          }
+          parsed_citnums = ref_itemnums[as.numeric(bib_orderindex)] # needs to correspond to original index since filename corresponds to row index
+# #
+#           if("NUMBER" %in% colnames(x[[cn]]) && !is.na(x[[cn]]$NUMBER)){
+#             parsed_citnums = x[[cn]]$NUMBER
+#             x[[cn]]$NUMBER = NA
+#           }
+#           # overwrite if citation.number is given
+#           if ("CITATION.NUMBER" %in% colnames(x[[cn]]) && !is.na(x[[cn]]$CITATION.NUMBER)){
+#             parsed_citnums = x[[cn]]$CITATION.NUMBER
+#             x[[cn]]$CITATION.NUMBER = NA
+#          }
 
           bib_num <- gsub(x = parsed_citnums, pattern = "[^0-9]", replacement = "") # only allow alphanumeric
           x[[cn]]$NUMBER = bib_num
@@ -196,14 +197,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       d_refs$bibliography_number = as.numeric(d_refs$bibliography_number)
       setkey(d_refs, bibliography_number) # sort
 
-
       # if("CITATION.NUMBER" %in% names(d_refs)){
       #   setnames(d_refs, "CITATION.NUMBER", "CITATION_NUMBER")
       # }
 
       # get rid of trailing letter appended by anystyle, store in new variable
       d_refs$citekey =  stringr::str_replace_all(pattern = "((?<=[0-9]{4})[a-z]{1})|(-[a-z]{1})", string= d_refs$BIBTEXKEY, replacement = "")
-
 
       # check for duplicatees
       dups = unique(d_refs$citekey[duplicated(d_refs$citekey)])
@@ -228,7 +227,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       ttext = trimws(doc_summar$mrkdwn)
       content_inds = setdiff(1:NROW(doc_summar), which(startsWith(ttext, "[[table") | startsWith(ttext, "[[figure")))
 
-      y = stringr::str_extract_all(str = doc_summar$mrkdwn[content_inds], pattern = "\\[(([0-9]+([-–][0-9]+)?)(?:, ?))+\\]") # TODO: does not allow for spaces currently and is rather strict, possibly handle that in the future
+      y = stringr::str_extract_all(str = doc_summar$mrkdwn[content_inds], pattern = "\\[(([0-9]+([-–][0-9]+)?)(?:, ?)?)+\\]") # TODO: does not allow for spaces currently and is rather strict, possibly handle that in the future
 
       # save original intext citations, seperate by ', '
       doc_summar$orig_citations[content_inds] = lapply(y, FUN = paste, sep = ", ", collapse = ", ")
@@ -236,9 +235,9 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       # replace intext-citations with citekeys
       doc_summar$mrkdwn[content_inds] = stringr::str_replace_all(str = doc_summar$mrkdwn[content_inds], pattern = "\\[(([0-9]+([-–][0-9]+)?)(?:, ?)?)+\\]", replacement = \(match) {
 
-        # first get rid of encompassing [], then split into individual components 'ranges'
-        t = stringr::str_replace_all(string = match, pattern = "\\[|\\]", replacement = "")
-        ranges = stringr::str_split(string = t, pattern = ",", simplify = T)
+      # first get rid of encompassing [], then split into individual components 'ranges'
+      t = stringr::str_replace_all(string = match, pattern = "\\[|\\]", replacement = "")
+      ranges = stringr::str_split(string = t, pattern = ",", simplify = T)
 
 
         # go through ranges, if necessary expand and retrieve and add citation key to list
@@ -263,11 +262,13 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
           locrefs_nums[[crange]] = trefnums
           locrefs_keys[[crange]] = d_refs[bibliography_number %in% trefnums]$citekey
 
+
         }
         # construct string to return
         replacement = paste0("[", paste0("========protectedat========", unlist(locrefs_keys),collapse = ";") , "]")
         replacement
       })
+
 
     }
     else { # end condition refernce_parsing
@@ -402,7 +403,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
     # check if table is acutally there
     if(tab_opts_raw$content_type != "paragraph" && !startsWith(trimws(tab_opts_raw$mrkdwn), "[[table")){
-      warning("Table " %+% cti %+% " does not seem to have have a table tag")
+      hgl_warn("Table " %+% cti %+% " does not seem to have have a table tag")
       tab_opts_raw = NULL
       tab_opts = NULL
     } else{
@@ -515,7 +516,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
       command_list[[cii]] = list(command = c_command, index = c_comi)
 
-      print(c_comtext |> substr(1,100))
+      #print(c_comtext |> substr(1,100))
 
 
 
@@ -530,7 +531,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
         switch(c_command[[1]],
                interbox={
-                 print("interbox detected")
+                 #print("interbox detected")
                  title = c_command['title']
                  text = c_command['text']
                  iblabel = paste0( "Com", c_comi)
@@ -540,16 +541,24 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 :::
 
 "
-               },
+              c_result_xml = paste("<boxed-text position='anchor' content-type='infobox'>",
+                                "<caption>",
+                                 "<title>", title, "</title>",
+                                "</caption>",
+                                paste0("<p>",text,"</p>"),
+                                paste0( "<xref ref-type='aff' rid='ibox_", iblabel  ,"'/>"),
+                               "</boxed-text>", sep = "\n")
+                 },
                figure={
-                 print("figure detected")
+                 #print("figure detected")
                  # src = c_command['src']
                  # cap = c_command['cap']
 
 
                  c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
-                 fig_counter = fig_counter +1
                  c_xml_type = "figure"
+                 c_result_xml = gen_xml_figure(fig_opts = c_command, fig_counter = fig_counter)
+                 fig_counter = fig_counter +1
                  #
                  #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
                  # knitr::include_graphics(path='" %+% src %+% "')
@@ -558,7 +567,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
                },
                math={
-                 print("Math detected")
+                 #print("Math detected")
                  formula = c_command['form']
                  c_result = paste0("$$", trimws(formula), "$$")
                  c_result_xml = gen_xml_displaymath(latex = trimws(formula))
@@ -566,7 +575,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
                },
                quote={
-                 print("quote detected")
+                 #print("quote detected")
 
                  text = rmd_char_descape(trimws(c_command['text'])) # needs double escape to pass through rmarkdown preprocessing
                  source = if(!is.null(c_command[['src']]) && is.character(c_command[['src']])) trimws(c_command['src']) else ""
@@ -585,9 +594,15 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 :::
 :::
 \\vspace{-5.5mm}
-"},
+"
+                 c_result_xml = paste("<disp-quote>",
+                 "<preformat>",text,"</preformat>",
+                 paste0("<attrib>", source, "</attrib>"),
+                 "</disp-quote>", sep = "\n")
+
+                 },
                table={
-                  warning("Unparsed (superflous?) table tag without table")
+                  hgl_warn("Unparsed (superflous?) table tag without table")
                },
                columnbreak = {
                  c_result = "\\columnbreak"},

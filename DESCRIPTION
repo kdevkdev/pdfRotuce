@@ -17,4 +17,5 @@ Imports:
     stringr,
     commonmark,
     xml2,
-    lubridate
+    lubridate,
+    crayon
