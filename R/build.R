@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples
-build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", ...){
+build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", render_only = F, ...){
 
   # get basename without file extension
   basename = tools::file_path_sans_ext(basename(src))
@@ -25,8 +25,12 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", ..
   # check if we can find the manuscript
   stopifnot("doc file not found at specified location" = file.exists(doc_path))
 
-  # first markdonify and write to file
-  markdownify( src_docx = doc_path, working_folder = build_path, meta_csv = metacsv_path, rmd_outpath = rmd_outpath, xml_outpath = xml_outpath, ...)
+  # check if we should markdownify
+  if(render_only !=T){
+
+    # firsmarkdownify and write to file
+    markdownify( src_docx = doc_path, working_folder = build_path, meta_csv = metacsv_path, rmd_outpath = rmd_outpath, xml_outpath = xml_outpath, ...)
+  }
 
   # if successfull in writing file
   if(file.exists(rmd_outpath))

@@ -221,11 +221,11 @@ $endif$
   	\captionof{figure}{\raggedright #2}}
   {\endminipage\par\medskip}
 
- \newenvironment{FigureMW}[2]
- {\begin{figure*}
+\newenvironment{FigureMW}[2]
+{\begin{figure*}
+ 	\centering
  	\includegraphics[width=1\textwidth]{#1}
- 	\captionof{figure}{\raggedright #2}
- }
+ 	\captionof{figure}{\raggedright #2}}
 {\end{figure*}}
 
 % does not work
@@ -238,6 +238,7 @@ $endif$
 
 % https://tex.stackexchange.com/questions/68516/avoid-that-figure-gets-its-own-page
 \renewcommand{\topfraction}{.8}
+\renewcommand{\bottomfraction}{.8}
 \renewcommand{\floatpagefraction}{.8}
 
 
@@ -261,6 +262,7 @@ $endif$
 }{
 }
 
+%\setcounter{tracingmulticols}{5}  - for debugging multicols
 
 \begin{document}
 \thispagestyle{empty}
@@ -325,14 +327,9 @@ $endif$
 % 	bottom=2.75cm,%
 % 	headheight=15mm}
 
-\begin{multicols}{2}
-\raggedcolumns
 $body$
-\end{multicols}
 
-$for(include-after)$
-$include-after$
-$endfor$
+
 
 
 % Bibliography

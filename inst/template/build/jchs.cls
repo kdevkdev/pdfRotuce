@@ -34,7 +34,8 @@
 \RequirePackage{hyphenat}
 \RequirePackage{wrapfig}
 \RequirePackage{etoolbox}
-
+\RequirePackage{placeins}
+\RequirePackage{framed}
 
 
 

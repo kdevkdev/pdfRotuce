@@ -76,13 +76,11 @@ gen_figblock = function(fig_opts, fig_counter){
     # (that does not seem to work if there is nothing in the environment otherwise, but we used a custom latex env to transmit the params)
     "
 ::: {.FigureMC data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
-\\phantom{}
 "%+% lab %+%"
 :::"
   }
   else{
-    "::: {.FigureMW data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
-\\phantom{}
+"::: {.FigureMW data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
 "%+% lab %+%"
 :::"
   }

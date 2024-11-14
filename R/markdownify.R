@@ -611,6 +611,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                                    "\\end{multicols}",
                                    "\\newpage",
                                    "\\begin{multicols}{2}", sep = "\n",
+                                   #"\\raggedcolumns",
                                    "```\n")},
                {
                  # default
@@ -666,7 +667,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
 
-    rmd_multilang_abstracts = "\n```{=latex}\n\\end{multicols}\n\\vspace{2mm}"
+    rmd_multilang_abstracts = "\n\\vspace{2mm}"
     first <- TRUE
 
     for(can in names(side_langs_abstracts)){
@@ -714,7 +715,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       rmd_multilang_abstracts = rmd_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]
     }
 
-    rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\\begin{multicols}{2}\n```\n\n"
+    rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\n\n"
 
   }
 
@@ -758,11 +759,34 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   }
 
 
-  rmd_text = c(yaml_preamble, chunk_setup, fig_capts, tab_capts, outmrkdwn,
+  rmd_text = c(yaml_preamble, chunk_setup, fig_capts, tab_capts,
+               "```{=latex}", # maybe sometimes a restart of the column environemnt might be helpful_
+               "\\begin{multicols}{2}",
+               #"\\raggedcolumns",
+               #"\\interlinepenalty=10000",
+               "```",
+               outmrkdwn,
+               "```{=latex}",
+               "```",
                rmd_statements,
                rmd_orcinds,
+               "```{=latex}",
+               "\\end{multicols}",
+               "```",
+               "\\raggedbottom",
                rmd_multilang_abstracts,
-               rmd_references)
+               "```{=latex}",
+               "\\begin{multicols}{2}",
+               #"\\raggedcolumns",
+               #"\\interlinepenalty=10000",
+               "```",
+               rmd_references,
+               "```{=latex}",
+               "\\end{multicols}",
+               "```")
+
+  #[[figure,src: 'figures/Fig4.png', wide, caption: 'Promotores de salud capacitados.', label: 'fig4']]
+
 
 
   # write rmd file if filename provided
