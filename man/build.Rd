@@ -4,7 +4,13 @@
 \alias{build}
 \title{Title}
 \usage{
-build(folder, src = "manuscript.docx", meta_csv = "metadata.csv", ...)
+build(
+  folder,
+  src = "manuscript.docx",
+  meta_csv = "metadata.csv",
+  render_only = F,
+  ...
+)
 }
 \arguments{
 \item{src}{}

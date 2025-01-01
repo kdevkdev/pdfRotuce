@@ -4,12 +4,13 @@ yml_qt = function(x) {
   attr(x, "quoted") = T
   x
 }
-gen_hardcoded_meta = function(reference_parsing = T){
+gen_hardcoded_meta = function(reference_parsing ){
 
   md = list()
 
   # few hardcoded values - should go into some conflig file when a good solutions is thought ofs
-  md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia. J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
+  md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia."
+  md$license = "J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
   md$copyright_holder = "The Author(s)"
   md$journal_title = "JOURNAL OF COMMUNITY SYSTEMS FOR HEALTH"
   md$journal_title_short = "J Community Systems for Health"
@@ -20,10 +21,10 @@ gen_hardcoded_meta = function(reference_parsing = T){
   md$journal_publisher_id = "JCSH"
   md$issn = "3035-692X"
 
-  if(reference_parsing == TRUE){
+  if(reference_parsing != FALSE){
     md$bibliography              = 'references.bib'  |> yml_qt()
   }
-  md$csl                      = 'plos-2020.csl'  |> yml_qt()
+  md$csl                      = 'plos-2020_square_nums.csl'  |> yml_qt()
 
   return(md)
 }
@@ -35,6 +36,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   # first create empty structure
   yml_data = list(title_full = '',
                   copyright = list(year = '', text = ''),
+                  license = '',
                   journalinfo = list(title = '', volume = '', issue = '', doi = '', article_type = '', string_volumeissue = ''),
                   abstracts = list(mainlang = list(parts = list(title = '', text = ''), title = '')),
                   keywords = c(),
@@ -60,6 +62,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$title_full                         = md$title |> yml_qt()
   yml_data$copyright$year                     = md$copyright_year |> yml_qt()
   yml_data$copyright$text                     = md$copyright |> yml_qt()
+  yml_data$license                            = md$license |> yml_qt()
 
   yml_data$journalinfo$title                  = md$journal_title |> yml_qt()
   yml_data$journalinfo$volume                 = md$volume |> yml_qt()

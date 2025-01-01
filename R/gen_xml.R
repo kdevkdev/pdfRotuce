@@ -81,7 +81,11 @@ gen_xml_header = function(metadata){
   # front
   journal_meta = paste0("<journal-meta>",
                         "<journal-id journal-id-type='publisher'>",metadata$journal_publisher_id,"</journal-id>",
-                        "<issn>",metadata$issn,"</issn>",
+                        "<journal-title-group>",
+                        "<journal-title>",metadata$journal_title, "</journal-title>",
+                        "<abbrev-journal-title>",metadata$journal_title_short,"</abbrev-journal-title>",
+                        "</journal-title-group>",
+                        "<issn publication-format='electronic'>",metadata$issn,"</issn>",
                         "<publisher>", #PMC  ids for publisher and pubmed shorthand need likely to be added backupon indexation
                         "<publisher-name>",metadata$publisher,"</publisher-name>",
                         "</publisher>",
@@ -180,17 +184,20 @@ gen_xml_header = function(metadata){
 
     if(parsed_adatetypes[j] == "published"){
 
-      pubdate = gen_xml_date(parsed_adates[j], tag = "pub-date", attributes = c('date-type' = parsed_adatetypes[j]))
+      # publication-date needs date-type 'pub' https://jats.nlm.nih.gov/publishing/tag-library/1.3/attribute/date-type.html
+      pubdate = gen_xml_date(parsed_adates[j], tag = "pub-date", attributes = c('date-type' = "pub", 'publication-format'='electronic'))
     }
     else {
       # put in history
-      hist_list[[length(hist_list)+1]] = gen_xml_date(parsed_adates[j], attributes = c('date-type' = 'pub'))
+      hist_list[[length(hist_list)+1]] = gen_xml_date(parsed_adates[j], attributes = c('date-type' = parsed_adatetypes[j])) # can put directly, both accepted and received part of JATS standard
     }
 
   }
   history = paste("<history>", paste(hist_list, collapse = "\n"), "</history>", sep = "\n")
   volumeissue = paste("<volume>", metadata$volume,"</volume>\n",
-                      "<issue>", metadata$issue, "</issue>", sep = "")
+                      "<issue>", metadata$issue, "</issue>",
+                      "<elocation-id>1</elocation-id>\n",
+                      sep = "")
 
 
 
@@ -198,6 +205,9 @@ gen_xml_header = function(metadata){
                       "<copyright-statement>©",metadata$copyright_year, metadata$copyright,"</copyright-statement>\n",
                       "<copyright-year>",metadata$copyright_year,"</copyright-year>\n",
                       "<copyright-holder>", metadata$copyright_holder,"</copyright-holder>\n",
+                      "<license license-type='open-access'>",
+                      "<license-p>", metadata$license,"</license-p>",
+                      "</license>",
                       "</permissions>", sep = "")
 
   abstracts = gen_xml_abstracts(metadata$abstracts)
@@ -228,8 +238,8 @@ gen_xml_header = function(metadata){
                           # authors - ask miguel if CREDIT statment will be used? if yes, check pnas original again
                           "<contrib-group content-type='authors'>",
                           authors,
-                          "</contrib-group>",
                           affiliations,
+                          "</contrib-group>",
                           "<author-notes>",
                             corresp_note,
                           "</author-notes>",
@@ -243,6 +253,171 @@ gen_xml_header = function(metadata){
 
   header = paste(processing_meta, "<front>", journal_meta, article_meta, "</front>", sep = "\n")
   header
+}
+gen_xml_authors = function(v_authors){
+
+
+  xmlauthors = ""
+
+  if(!is.null(v_authors)){
+    v_authors = v_authors[!is.na(v_authors)] #filter to tonlyi get NA
+
+
+    if(length(v_authors) > 0){
+
+      authoritems = vector("character", length(v_authors))
+      for(j in 1:length(v_authors)){
+
+
+        # parse family and first name
+        anparts = strsplit(v_authors[j], split = ",")[[1]]
+
+        # check if we have first and surname
+        if(length(anparts) == 1){
+
+          authoritems[j] = paste0("<name>\n<surname>", # also remove curly brackets
+                                  trimws(anparts[1], whitespace = "[ \t\r\n}{]"),
+                                  "</surname>\n</name>")
+
+
+        } else if (length(anparts) == 2){
+
+          authoritems[j] = paste0("<name>\n<surname>",
+                                  trimws(anparts[1], whitespace = "[ \t\r\n}{]"),"</surname>\n",
+                                  "<given-names>",trimws(anparts[2], whitespace = "[ \t\r\n}{]"),
+                                  "</given-names>\n</name>")
+
+        }
+        else {
+          hgl_error("invalid number of author name parts ")
+        }
+
+      }
+      xmlauthors = paste0(authoritems, collapse = "\n")
+
+    } else{
+      hgl_warn("ors: No valid author entries in vector")
+    }
+  }
+  xmlauthors
+}
+gen_xml_references = function(d_refs){
+
+
+  # JATS: element-citation -> only well structured, biographic data contained
+  # JATS: mixecd-element -> can also contain text
+
+  # generate JATS xml references here
+  refitems = vector("character", NROW(d_refs))
+
+  # empty rows might occur)
+  dr = d_refs[!is.na(citekey)]
+
+
+  for(i in 1:NROW(dr)){
+
+    cid = paste0("B", i)
+    clab = paste0(i,".")
+    # if a list, use [[]]
+
+    # parse authors
+    xml_authors = gen_xml_authors(dr$AUTHOR[[i]])
+    pgauthors = ""
+    if(nchar(xml_authors) > 0 ){
+      pgauthors = paste("<person-group person-group-type='author'>", xml_authors, "</person-group>", sep = "\n")
+    }
+
+    # and editors
+    xml_editors = gen_xml_authors(dr$EDITOR[[i]])
+    pgeditors = ""
+
+    if(nchar(xml_editors) > 0 ){
+      pgeditors = paste("<person-group person-group-type='editor'>", xml_editors, "</person-group>", sep= "\n")
+    }
+
+
+    volume =        if(!is.na(dr$VOLUME[i]))     paste0("<volume>", dr$VOLUME[i], "</volume>")                     else ""
+    issue =         if(!is.na(dr$NUMBER[i]))     paste0("<issue>", dr$NUMBER[i], "</isssue>")                      else ""
+
+
+    articletitle  = if(!is.na(dr$TITLE[i]))      paste0("<article-title>",
+                                                        trimws(dr$TITLE[i], whitespace = "[ \t\r\n}{]"),
+                                                        "</article-title>")                                        else ""
+
+    source =        if(!is.na(dr$BOOKTITLE[i]))  paste0("<source>",
+                                                        trimws(dr$BOOKTITLE[i], whitespace = "[ \t\r\n}{]"),
+                                                        "</source>")                                               else ""
+
+    publisherloc  = if(!is.na(dr$ADDRESS[i]))    paste0("<publisher-loc>", dr$ADDRESS[i],"</publisher-loc>")       else ""
+    publishername = if(!is.na(dr$PUBLISHER[i]))  paste0("<publisher-name>", dr$PUBLISHER[i],"</publisher-name>")   else ""
+    extlink =       if(!is.na(dr$URL[i]))        paste0("<ext-link ext-link-type='url'>", dr$URL[i],"</ext-link>") else ""
+    pubiddoi  =     if(!is.na(dr$DOI[i]))        paste0("<pub-id pub-id-type='doi'>", dr$DOI[i],"</pub-id>")       else ""
+
+
+
+    edition = ""
+    pages = ""
+    if(!is.na(dr$PAGES[i])){
+
+      tspl = stringr::str_split(string = "40-30", pattern = "((--)|-)")[[1]]
+      if(length(tspl)> 1){
+        pages = paste0("<fpage>",tspl[1],"</fpage>\n<lpage>",tspl[2],"</lpage>")
+      } else{
+        pages = paste0("<fpage>",tspl[1])
+      }
+    }
+
+    # publicatoin-type
+    pt = switch(dr$CATEGORY[i], ARTICLE="journal", BOOK="book", TECHREPORT="report", CONFERENCE="conf-paper", MISC="webpage", "")
+    if(nchar(pt) > 0 ) publicationtype = paste0("publication-type='", pt,"'") else publicationtype = ""
+
+    # , publication-format='print' ?
+    publicationformat = ""
+    if(nchar(pubiddoi) > 0 || nchar(extlink) > 0 ) publicationformat = paste0("publication-format='electronic'")
+    else publicationformat = paste0("publication-format='print'")
+
+
+    # only extract years -> the recogniztion by anystyle seems to be too unreliable for more
+    tdate = stringr::str_extract(dr$YEAR[i], pattern = "[0-9]{4}")
+    year = ""
+    if(!is.na(tdate)  && length(tdate) == 1 && nchar(tdate) == 4){
+      year = paste0("<year iso-8601-date='", tdate, "'>",tdate, "</year>")
+    }
+
+
+    refitems[i]   = paste(
+      paste0("<ref id='", cid , "' >"),
+      paste0("<label>", clab, "</label>"),
+      paste0("<element-citation ",  publicationtype, " ", publicationformat, " >"),
+      pgauthors,
+      pgeditors,
+      year,
+      articletitle,
+      source,
+      volume,
+      issue,
+      edition,
+      pages,
+      publisherloc,
+      publishername,
+      pubiddoi,
+      extlink,
+      "</element-citation>",
+      "</ref>",sep = "\n")
+
+
+    # remove blank lines
+    refitems[i] <- stringr::str_replace_all(string = refitems[i], pattern = stringr::regex("[\n\r]{2,}", multiline = T), replacement = "\n")
+  }
+
+
+
+
+  xml_refs = paste("<ref-list>",
+                    paste0(refitems, collapse="\n"),
+                    "</ref-list>", sep = "\n")
+  xml_refs
+
 }
 gen_xml_displaymath = function(latex, counter = NULL){
 
@@ -372,13 +547,31 @@ gen_xml_sections = function(doc_summar){
   }
   return(list(hxml_opentags = hxml_opentags, hxml_endtags = hxml_endtags))
 }
-gen_xml_file = function(doc_summar, article_type, xml_meta){
+gen_xml_file = function(doc_summar, article_type, xml_meta, xml_references){
+
+  xml_article_type = ""
+
+  if(tolower(article_type) == "original research"){
+
+    xml_article_tuype = "research-article"
+
+  } else if(olower(article_type) == "review"){
+
+    xml_article_type = "review-article"
+
+  } else if(olower(article_type) == "comment"){
+
+    xml_article_type = "article-commentary"
+  }
+  else{
+    stop("unkown article typer for JATS conversion")
+  }
 
   header = paste("<?xml version='1.0' encoding='UTF-8'?>",
                   "<!DOCTYPE article PUBLIC",
                   "'-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.3 20210610//EN'",
                   "'JATS-journalpublishing1-3.dtd'>",
-                  paste0("<article article-type='",article_type, "'"),
+                  paste0("<article article-type='",xml_article_type, "'"),
   "dtd-version='1.3'",
   "xml:lang='en'",
   "xmlns:mml='http://www.w3.org/1998/Math/MathML'",
@@ -399,9 +592,11 @@ gen_xml_file = function(doc_summar, article_type, xml_meta){
 
   mid = paste0(xmltext_rows[nchar(xmltext_rows) > 0], collapse = "\n")
 
-    end = "</article>"
+  back = paste0("<back>",xml_references,"</back>", sep="\n")
 
-  res = paste0(header, "<body>", mid, "</body>", end)
+  end = "</article>"
+
+  res = paste(header, "<body>", mid, "</body>", back, end, sep = "\n")
 
 }
 gen_xml_table = function(ct_csv, tab_opts, tab_counter){

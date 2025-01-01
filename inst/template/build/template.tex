@@ -53,6 +53,8 @@ $if(csl-refs)$
 			\setlength{\itemindent}{0pt}
 			\setlength{\leftmargin}{0pt}
 			\setlength{\parsep}{0pt}
+			\setlength{\topsep}{0pt}
+			\setlength{\partopsep}{0pt}
 			% turn on hanging indent if param 1 is 1
 			\ifodd #1
 			\setlength{\leftmargin}{\cslhangindent}
@@ -121,7 +123,7 @@ $endfor$
 
 \journaltitle{$journalinfo.title$}
 \journalvolumestring{$journalinfo.string_volumeissue$}
-\journaldoi{$journalinfo.doi$}
+\journaldoi{https://doi.org/$journalinfo.doi$}
 \journalarticletype{$journalinfo.article_type$}
 
 % set tite
@@ -269,7 +271,7 @@ $endif$
 \enlargethispage{-2\baselineskip}
 %\begin{strip}
 \begin{textblock}{18}(1.5,27.2)
-	\footnotesize{\noindent © $copyright.year$ $copyright.text$}
+	\footnotesize{\noindent © $copyright.year$ $copyright.text$ $license$}
 \end{textblock}
 
 

@@ -4,13 +4,16 @@
 #' @param src_docx
 #' @param working_folder
 #' @param meta_csv
-#' @param reference_parsing Default `TRUE`. IF `FALSE`, copy references as is without automated parsing using anystyle.
+#' @param reference_parsing Default `FALSE`. IF `FALSE`, copy references as is without automated parsing. 'anystyle' or 'grobid' use the respective backends
 #'
 #' @return
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outpath = NULL, xml_outpath = NULL,reference_parsing = F, url_parsing = T, doi_parsing = T, guess_refnumbers = T){
+markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
+                       rmd_outfile = NULL,
+                       xml_outfile = NULL,
+                       reference_parsing = F, url_parsing = T, doi_parsing = T, guess_refnumbers = T){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -61,6 +64,16 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     if(is.element("article_type", names(tvals)))             predef_meta$article_type              = toupper(tvals["article_type"])          else hgl_warn("'article_type' missing in meta csv")
     if(is.element("string_corresponding", names(tvals)))     predef_meta$string_corresponding      = tvals["string_corresponding"]           else hgl_warn("'string_corresponding' missing in meta csv")
 
+    if(startsWith(predef_meta$doi,"https://doi.org/") || startsWith(predef_meta$doi,"http://doi.org/")){
+
+      # convert form url to doi if needed
+      # for url start
+      predef_meta$doi = stringr::str_replace(string = predef_meta$doi, pattern = "^(https?://)?doi\\.org/", replacement = "")
+
+      # for url end
+      predef_meta$doi = stringr::str_replace(string = predef_meta$doi, pattern = "/$", replacement = "")
+    }
+
 
     # if(is.null(parsed_meta$abstracts$mainlang) && predef_meta$has_abstract == "yes"){
     #   stop("abstract mandatory according to metadata.csv, but is not provided")
@@ -76,7 +89,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
   yaml_preamble = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
 
 
-  xml_front = gen_xml_header(metadata)
+
 
 
   # delete  title page from document
@@ -114,7 +127,6 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     ti = which(l1_inds > (refparind+1)) #+1 because we donot want to have the heading included
 
 
-
     if(length(ti) == 0) lri = NROW(doc_summar) # no subsequent l1 heading, we go until end
     else lri = l1_inds[ti] -1 #deduct 1 because we do not want to have the next level 1 heading included
 
@@ -125,10 +137,16 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
     #references_text = paste(doc_summar$mrkdwn[ref_inds], collapse = "\n")
     references =  doc_summar$mrkdwn[ref_inds]
 
-    if(reference_parsing){
+    path_temprefs_in  = paste0(working_folder, "/tempreftxts_in")
+    path_temprefs_out = paste0(working_folder, "/tempreftxts_out")
 
-      path_temprefs_in  = paste0(working_folder, "/tempreftxts_in")
-      path_temprefs_out = paste0(working_folder, "/tempreftxts_out")
+    if(dir.exists(path_temprefs_in)) unlink(path_temprefs_in, recursive = T)
+    if(dir.exists(path_temprefs_out)) unlink(path_temprefs_out, recursive = T)
+    if(file.exists(paste0(working_folder, "/", "references.bib"))) unlink(paste0(working_folder, "/", "references.bib"))
+
+    if(reference_parsing != FALSE){
+
+
       dir.create(path_temprefs_in, showWarnings = FALSE)
       dir.create(path_temprefs_out, showWarnings = FALSE)
 
@@ -136,18 +154,55 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       ref_itemnums = stringr::str_extract(string = references, pattern = "^[0-9]+[.]")
       references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
 
-      # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
+       # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
       sapply(1:length(references), FUN = \(x) { writeLines(text = references[x], con = paste0(path_temprefs_in, "/", x, ".txt")) })
 
       # remove from document
       doc_summar = doc_summar[-c(refparind, ref_inds), ]
-      rmd_references = "# References\n\n  \n"
+      rmd_references = paste0("# References\n\n",
+                              "<div id=\"refs\"></div>")
 
+      if(reference_parsing == "anystyle"){
+
+        print("runing anystyle on extracted references ...")
+        ras = system(paste0("anystyle -w -f bib,json parse ",  path_temprefs_in , " ", path_temprefs_out))
+        stopifnot("anystyle failed" =  ras == 0 )
+      } else if(reference_parsing == "grobid"){
+
+        for(cri in 1:length(references)){
+
+          resp_bib = ""
+          resp_xml = ""
+          resp_text  = ""
+
+          cref = references[cri]
+          res = httr::POST("localhost:8070/api/processCitation", body = list(citations = cref),
+                     encode = "form", httr::accept("application/xml")) # application/x-bibtex
+
+          if(res$status_code > 204)  stop("grobid service reference parsing failed with error")
+          if(res$status_code == 204) {
+            hgl_warn(paste0("could not parse reference: ", cref))
+
+          } else{
+
+            # if not - hopefully successfull
+            resp_text = httr::content(res, as="text")
+            resp_xml = xml2::read_xml(resp_text)
+            resp_bib = tei_xml_to_bib(resp_xml, orderindex = cri)
+
+            cat(resp_text, file=paste0(path_temprefs_out, "/", cri, ".xml"))
+            cat(resp_bib, file=paste0(path_temprefs_out, "/", cri, ".bib"))
+          }
+        }
+      }
+      else {
+        stop("Unkown reference parsing backend")
+      }
       # run anystyle
-      print("runing anystyle on extracted references ...")
-      ras = system(paste0("anystyle -w -f bib,json parse ",  path_temprefs_in , " ", path_temprefs_out))
-      stopifnot("anystyle failed" =  ras == 0 )
 
+
+      # grobid
+      #Examble: curl -X POST -H "Accept: application/x-bibtex" -d "citations=Graff, Expert. Opin. Ther. Targets (2002) 6(1): 103-113" localhost:8070/api/processCitation
 
 
       # red back into R using bib2df  and join to big file, do numerical sort
@@ -155,8 +210,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
 
-
-      x = list()
+        x = list()
       for(cn in temp_bibfiles_in){
         x[[cn]] <- bib2df::bib2df(cn)
 
@@ -184,7 +238,6 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 #          }
 
           bib_num <- gsub(x = parsed_citnums, pattern = "[^0-9]", replacement = "") # only allow alphanumeric
-          x[[cn]]$NUMBER = bib_num
         }
 
         x[[cn]]$bibliography_number = bib_num
@@ -200,6 +253,8 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
       # if("CITATION.NUMBER" %in% names(d_refs)){
       #   setnames(d_refs, "CITATION.NUMBER", "CITATION_NUMBER")
       # }
+
+
 
       # get rid of trailing letter appended by anystyle, store in new variable
       d_refs$citekey =  stringr::str_replace_all(pattern = "((?<=[0-9]{4})[a-z]{1})|(-[a-z]{1})", string= d_refs$BIBTEXKEY, replacement = "")
@@ -781,7 +836,9 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
                #"\\interlinepenalty=10000",
                "```",
                rmd_references,
+
                "```{=latex}",
+               #"\\bibliography{$bibliography$}",
                "\\end{multicols}",
                "```")
 
@@ -790,14 +847,26 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL, rmd_outp
 
 
   # write rmd file if filename provided
-  if(!is.null(rmd_outpath)){
-    write(rmd_text, file = rmd_outpath) # overwrites if existing
+  if(!is.null(rmd_outfile)){
+    write(rmd_text, file = rmd_outfile) # overwrites if existing
+  }
+
+
+
+  # more xml parts
+  xml_front = gen_xml_header(metadata)
+
+  if(exists("d_refs")){
+    xml_refs = gen_xml_references(d_refs)
+  }
+  else{
+    hgl_warn("No parsed references found, but necessary for JATS xml")
   }
 
   # write xml file if filename provided
-  if(!is.null(rmd_outpath)){
-    xml_text = paste0(gen_xml_file(doc_summar, article_type = metadata$article_type, xml_meta  = xml_front))
-    #write(xml_text, file = xml_outpath) # overwrites if existing
+  if(!is.null(xml_outfile)){
+    xml_text = paste0(gen_xml_file(doc_summar, article_type = metadata$article_type, xml_meta  = xml_front, xml_references = xml_refs))
+    write(xml_text, file = xml_outfile) # overwrites if existing
   }
 
   return(rmd_text)
