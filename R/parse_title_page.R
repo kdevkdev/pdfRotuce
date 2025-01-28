@@ -162,6 +162,17 @@ parse_title_page = function(docdat){
                 hgl_warn(paste0("Name does not contain ',' or ';' (", name ,") - if applicable it is strongly recommended to separate family name and given name by a ',' or ';' - [family name],[given name]"))
               }
 
+              # parse contributions
+              if("contributions" %in% names(x) &&  !is.null(x[['contributions']]) && !is.na(x[['contributions']]) ){
+
+                craw = x[['contributions']]
+                # each comma seperated part holds a 'contribution rolen
+                roles = trimws(stringr::str_split(string = craw, patter = ",")[[1]])
+
+                rl[['contrib_roles']] = roles
+              }
+
+
               rl
           })
 

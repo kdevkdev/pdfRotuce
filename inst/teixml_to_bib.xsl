@@ -145,6 +145,21 @@ Original from tei-c.org, with modifications by Kaspar Meili.
   <xsl:text>}</xsl:text>
 </xsl:template>
 
+<xsl:template mode="tobib" match="idno[@type='ISSNe'or @type='issne']">
+  <xsl:text>@issn={</xsl:text>
+  <xsl:value-of select="."/>
+  <xsl:text>}</xsl:text>
+</xsl:template>
+
+
+<xsl:template mode="tobib" match="idno[@type='ISSN' or @type='issn']">
+  <xsl:if test="not(//idno[@type='ISSNe' or @type='issne'])">
+    <xsl:text>@issn={</xsl:text>
+    <xsl:value-of select="."/>
+    <xsl:text>}</xsl:text>
+  </xsl:if>
+</xsl:template>
+
 <xsl:template mode="tobib" match="pubPlace">
   <xsl:text>@address={</xsl:text>
   <xsl:value-of select="."/>

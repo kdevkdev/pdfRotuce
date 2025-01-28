@@ -60,21 +60,24 @@
 %\RequirePackage{tgpagella}
 
 \RequirePackage{fontspec}
+\directlua{ luaotfload.add_fallback("fallbacks", { "NotoSansSymbols2:style=Regular;" }) }
+
 
 % load font from manual location to enbale embedded shipping
 \setmainfont{texgyrepagella-regular.otf}[
 Path = fonts/pagella/,
 BoldFont = texgyrepagella-bold.otf,
 ItalicFont = texgyrepagella-italic.otf,
-BoldItalicFont  = texgyrepagella-bolditalic.otf]
+BoldItalicFont  = texgyrepagella-bolditalic.otf,
+RawFeature={fallback=fallbacks}]
 
 
 \setsansfont{OpenSans-Regular.ttf}[
 Path = fonts/opensans/,
 BoldFont = OpenSans-Bold.ttf,
 ItalicFont = OpenSans-Italic.ttf,
-BoldItalicFont  = OpenSans-BoldItalic.ttf]
-
+BoldItalicFont  = OpenSans-BoldItalic.ttf,
+RawFeature={fallback=fallbacks}]
 
 
 %\usepackage[T1]{fontenc}

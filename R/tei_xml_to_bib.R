@@ -6,7 +6,8 @@ tei_xml_to_bib = function(xml_obj, orderindex = ""){
 
   # xslt in R only currently possible with libxslt which supports (mostly) only xslt 1.0 without regex, hence preparse the citekey here to pass it as a parameter
   # (deduplication happens later)
-  first_name = tolower(xml2::xml_text(xml2::xml_find_first( xml_obj, "//persName/surname|author|editor")))
+  # get rid of non alphabetic chars
+  first_name = stringr::str_replace_all(string = tolower(xml2::xml_text(xml2::xml_find_first( xml_obj, "//persName/surname|author|editor"))), pattern = "[^a-z]", replacement = "")
   first_year = xml2::xml_text(xml2::xml_find_first(xml_obj, "//date/@when|//date")) |> stringr::str_extract(pattern = "[0-9]{4}")
 
   # edition may not be put in the correct tag by grobid, but in the 'note' tags
@@ -23,7 +24,7 @@ tei_xml_to_bib = function(xml_obj, orderindex = ""){
 
 
   if(is.na(first_year)) first_year = orderindex
-  if(is.na(first_name)) first_name = "undefauthor"
+  if(is.na(first_name) || nchar(first_name) == 0) first_name = "undefauthor"
 
   xslt_params$citekey = paste0(first_name, first_year)
   xslt_params$year = as.character(first_year)

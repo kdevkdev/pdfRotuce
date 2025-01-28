@@ -1,3 +1,143 @@
+getLE = function(l, names){
+
+  # hacker funktion return and test element of nested lists
+  # NULL if not foundS
+  ns = names(unlist(l))
+
+  for(cn in names){
+    tofind = gsub(pattern = "\\$", replacement = ".", x = cn)
+
+    if(any(startsWith(ns,tofind))){
+      # evaluate the access expression in the local environment of the function
+            return(eval(parse(text=paste0("l$",cn))))
+    }
+  }
+  return(FALSE)
+}
+pack_xml_file = function(src, base_folder, xml_filepack_dir){
+
+  # try to copy file into temporary xml file pack directory and configure the right paths
+  cpydest = paste0(xml_filepack_dir, "/", basename(src))
+  cpysrc = paste0(base_folder, "/",src)
+
+  if(file.exists(cpydest))  hgl_error(paste0("pack_xml_file: trying to move xml figure file into xml packaging diretory, but file '",destfile, "' already exists"))
+  if(!file.exists(cpysrc))  hgl_error(paste0("pack_xml_file: trying to move xml figure file into xml packaging directoy, but could not find '",src, "' at location"))
+
+  file.copy(from = cpysrc, to = cpydest, overwrite = T)
+
+}
+# is valid
+v = function(x){
+
+  # if multiple elements in x, only check first one
+  # length also triggers for x=NULL
+  if(length(x) == 0 || is.na(x[1]) || isFALSE(x[1]) || is.nan(x[1])) return(FALSE)
+  TRUE
+}
+
+xml_reorder_metadata = function(metadata){
+
+  xml_meta = metadata
+  fstatement <- metadata |> getLE(c("statements$funding","statements$Funding"))
+  if(v(fstatement)){
+
+    # move fudning statement because in JATS XML it belongs into the metadata header
+    xml_meta$funding = list(statement = fstatement)
+    metadata$statements$funding = NULL
+  }
+
+  if(exists("attributes", where = metadata)){
+
+    # put all keywords into its own list and delete from attributes
+    kwinds = names(metadata$attributes)[stringr::str_detect(string = names(metadata$attributes), pattern = "^keywords" )]
+    if(length(kwinds) > 0 ){
+
+      xml_meta$keywords = list()
+
+      for(ckl in kwinds){
+
+        if(ckl == "keywords"){
+            xml_meta$keywords$keywords_mainlang = xml_meta$attributes[[ckl]]
+        }
+        else{
+
+          lang = stringr::str_extract(string = ckl, pattern = "^keywords_(.+)$", group = 1)
+
+          if(lang %in% c("es")){
+            xml_meta$keywords[[ckl]] = xml_meta$attributes[[ckl]]
+          }
+
+        }
+        xml_meta$attributes[[ckl]] = NULL
+      }
+    }
+
+  }
+  abspic <- metadata |> getLE(c("attributes$abstract_picture"))
+  if(v(abspic)){
+
+     xml_meta$abstract_picture = abspic
+     xml_meta$attributes$abstract_picture = NULL
+  }
+
+
+  # all keyword langauges into 'kewywords'
+
+  xml_meta
+}
+process_xml_intext_citations = function(text, d_refs){
+
+  # function to generate <xref bibtype='bibr' rid='xx'> xml in-text reference tag
+
+  # first find all citation keys
+
+  l_intextcites = list()
+
+  xmlres = stringr::str_replace_all(str = text, pattern = "\\[(========protectedat========\\w+;?)+\\]", replacement = \(match) {
+
+    # get rid of square brackets and split into single citation keys
+    t = stringr::str_replace_all(string = match, pattern = "\\[|\\]", replacement = "")
+    ranges = stringr::str_split(string = t, pattern = ";", simplify = T)
+
+    lres = vector("character", length(ranges))
+    for(cri in 1:length(ranges)){
+
+      # delete '@' text from citation key
+      ccitekey = stringr::str_replace(string = ranges[cri], pattern = "========protectedat========", replacement = "")
+
+      # find ref_number
+      bn = d_refs[CITEKEY == ccitekey, BIBLIOGRAPHY_NUMBER]
+
+      if(length(bn) !=1) {
+          hgl_error(paste0("No valid bibliography number for citation key: ", ccitekey))
+      } else {
+        # use the same id generation procedure here as later in the xml biography
+        #lres[cri] = paste0("<xref ref-type='bibr' rid='B", bn, "'>", bn, "</xref>")
+        len = length(l_intextcites)+1
+        l_intextcites[[len]] <<- data.table(xml = paste0("<xref ref-type='bibr' rid='B", bn, "'>", bn, "</xref>"), index = len)
+        lres[cri] = paste0("========protectedintextcite", len, "========")
+      }
+    }
+    # ptu back as string
+    paste0("[", paste0(lres, collapse = ","), "]")
+  })
+
+
+  return(list(xml_text = xmlres, d_intextcites =  rbindlist(l = l_intextcites)))
+}
+insert_xml_intext_citations = function(xml_text, d_xmlintext_cites){
+
+  # fill back in latex formulas
+  xml_text = stringr::str_replace_all(xml_text, pattern = "========protectedintextcite[:digit:]+========", replacement = \(x) {
+
+    # get index of inline math to get the corresponding row - unfortunate we have to run the regex again but neither stirngr nor stringi seem to provdie group match access in replacement functions
+    ind = as.numeric(stringr::str_extract(x, "========protectedintextcite([:digit:]+)========", group = 1))
+
+    xml = d_xmlintext_cites[index == ind, xml]
+    xml
+  })
+  xml_text
+}
 gen_xml_date = function(datetime, tag = "date", attributes = NULL){
 
   isodate = lubridate::format_ISO8601(datetime, precision = "ymd", usetz = F)
@@ -16,7 +156,7 @@ gen_xml_date = function(datetime, tag = "date", attributes = NULL){
         "</",tag,">", sep = "")
 
 }
-gen_xml_abstracts = function(metadata_abs){
+gen_xml_abstracts = function(metadata_abs, base_folder = NULL, xml_filepack_dir = NULL, abstract_picture = NULL){
 
   # TODO: dont forget handing of picture later
   res = list()
@@ -25,9 +165,18 @@ gen_xml_abstracts = function(metadata_abs){
     ca = metadata_abs[[cn]]
     tag = ""
     lan = ""
+    picture = ""
     if(cn == "mainlang"){
       # WARNING JATS implicitly assumes this is english. should be properly explicitly or is it ok?
       tag = "abstract"
+
+      # also check if picture provided
+      if(!is.null(abstract_picture)){
+
+        # only possible in 1.4 -> wait until implemented
+        #pack_xml_file(src = abstract_picture, base_folder =  base_folder,  xml_filepack_dir = xml_filepack_dir)
+        #picture = paste0("<graphic xlink:href='", abstract_picture,"' position='anchor'/>")
+      }
 
     } else {
       tag = "trans-abstract"
@@ -55,21 +204,77 @@ gen_xml_abstracts = function(metadata_abs){
 
     if(length(resparts) > 1){
 
-      text = paste("<sec>", resparts, "</sec>", collapse = "\n", sep = "\n")
+      text = paste("<sec>", resparts,  "</sec>", collapse = "\n", sep = "\n")
 
     } else if(length(resparts)  == 1){
 
       text = resparts[[1]]
     }
 
-    res[[cn]] = paste0("<", tag, " ", lan, ">",text,
+    res[[cn]] = paste0("<", tag, " ", lan, ">",text, "\n", picture,
            "\n</", tag, ">")
   }
 
   ret = paste0(res, collapse = "\n")
   ret
 }
-gen_xml_header = function(metadata){
+gen_xml_keywords = function(metadata_kwds){
+
+  res = list()
+
+  for(cn in names(metadata_kwds)){
+    xml_lang = ""
+    if(cn == "keywords_mainlang"){
+      xml_lang = ""
+    } else{
+        lang = stringr::str_extract(string = cn, pattern = "_(.+)$", group = 1)
+        xml_lang = paste0("xml:lang='es'")
+    }
+    kwds = trimws(stringr::str_split(string = metadata_kwds[[cn]], pattern = ",")[[1]])
+
+    xkwds = paste0("<kwd>", kwds, "</kwd>")
+
+    res[[cn]] = paste0("<kwd-group ", xml_lang, " kwd-group-type='author'>\n",
+                       paste(xkwds, collapse = "\n"),
+                       "\n</kwd-group>")
+  }
+  ret = paste0(res, collapse = "\n")
+  ret
+}
+gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
+
+
+  # https://credit.niso.org/ credit taxonomoy terms to recogmnize author roles
+  credit_roles = c("Conceptualization",
+    "Data curation",
+    "Formal analysis",
+    "Funding acquisition",
+    "Investigation",
+    "Methodology",
+    "Project administration",
+    "Resources",
+    "Software",
+    "Supervision",
+    "Validation",
+    "Visualization",
+    "Writing – original draft",
+    "Writing – review & editing")
+
+  # match by index
+  credit_urls = c("http://credit.niso.org/contributor-roles/conceptualization/",
+                  "http://credit.niso.org/contributor-roles/data-curation/",
+                  "http://credit.niso.org/contributor-roles/formal-analysis/",
+                  "http://credit.niso.org/contributor-roles/fundin-acquisition/",
+                  "http://credit.niso.org/contributor-roles/investigation/",
+                  "http://credit.niso.org/contributor-roles/methodology/",
+                  "http://credit.niso.org/contributor-roles/project-administration/",
+                  "http://credit.niso.org/contributor-roles/resources/",
+                  "http://credit.niso.org/contributor-roles/software/",
+                  "http://credit.niso.org/contributor-roles/supervision/",
+                  "http://credit.niso.org/contributor-roles/validation/",
+                  "http://credit.niso.org/contributor-roles/visualization/",
+                  "http://credit.niso.org/contributor-roles/writing-original-draft/",
+                  "http://credit.niso.org/contributor-roles/writing-review-editing/")
 
 
   processing_meta = paste0("<processing-meta ",
@@ -121,6 +326,30 @@ gen_xml_header = function(metadata){
           corresp_att = "corresp='yes'"
        }
 
+       # roles
+       v_roles = vector("character", length(ca$contrib_roles))
+       if(!is.null(ca$contrib_roles)){
+
+         for(cri in 1:length(ca$contrib_roles)){
+
+            crole = ca$contrib_roles[cri]
+            v_roles[cri] = ""
+             # is it a credit taxonomy temr_
+            mi = match(tolower(trimws(crole)), tolower(credit_roles))
+            if(!is.na(mi)){
+
+              v_roles[cri] = paste0("<role vocab='credit' vocab-identifier='https://credit.niso.org/' ",
+                             "vocab-term-identifier='", credit_urls[mi], "' ",
+                             "vocab-term='", tolower(crole), "'>", crole, "</role>")
+            }
+            else {
+
+              v_roles[cri] = paste0("<role>",crole,"</role>\n")
+            }
+
+          }
+       }
+
        affilxrefs = paste(txr, collapse  ="\n")
        author_vec[i] =
          paste(paste0("<contrib contrib-type='author' ", corresp_att, " >"),
@@ -128,6 +357,7 @@ gen_xml_header = function(metadata){
                   "</name>",
                   affilxrefs,
                   corresp_xref,
+                  paste(v_roles, collapse = "\n"),
                 "</contrib>", sep = "\n")
        i = i+1
 
@@ -210,24 +440,31 @@ gen_xml_header = function(metadata){
                       "</license>",
                       "</permissions>", sep = "")
 
-  abstracts = gen_xml_abstracts(metadata$abstracts)
+  abstracts = gen_xml_abstracts(metadata$abstracts,abstract_picture =  metadata$abstract_picture, base_folder = base_folder, xml_filepack_dir = xml_filepack_dir)
+
+  keywords = ""
+  if(exists("keywords", where = metadata)){
+    keywords =  gen_xml_keywords(metadata$keywords)
+  }
+
+  funding = ""
+  fstatement <- metadata |> getLE("funding$statement")
+  if(v(fstatement)){
+
+    paste0("<funding-group>",
+           "<funding-statement>", fstatement, "</funding-statement>",
+      "</funding-group>")
+  }
 
   article_meta = paste("<article-meta>",
                           #"<article-id pub-id-type='publisher-id'>181325198</article-id>", # needed - Ask miguel?$
                           paste0("<article-id pub-id-type='doi'>",metadata$doi,"</article-id>"),
                           "<article-version vocab='JAV' vocab-identifier='http://www.niso.org/publications/rp/RP-8-2008.pdf' vocab-term='Version of Record' article-version-type='VoR'>Version of Record</article-version>", # ask miguel
-                          # ask miguel for how they plan around this?
                           "<article-categories>",
                           "<subj-group>",
-                          "<subject>X</subject>",
+                          "<subject>Articles</subject>", # use two level groupinsg to be somewhat future proof
                           "<subj-group>",
-                          "<subject>Y</subject>",
-                          "</subj-group>",
-                          "</subj-group>",
-                          "<subj-group>",
-                          "<subject>Z</subject>",
-                          "<subj-group>",
-                          "<subject>W</subject>",
+                          "<subject>",metadata$article_type,"</subject>",
                           "</subj-group>",
                           "</subj-group>",
                           "</article-categories>",
@@ -248,6 +485,8 @@ gen_xml_header = function(metadata){
                           history,
                           permissions,
                           abstracts,
+                          keywords,
+                          funding,
                           "</article-meta>", sep = "\n")
 
 
@@ -255,6 +494,7 @@ gen_xml_header = function(metadata){
   header
 }
 gen_xml_authors = function(v_authors){
+
 
 
   xmlauthors = ""
@@ -296,7 +536,7 @@ gen_xml_authors = function(v_authors){
       xmlauthors = paste0(authoritems, collapse = "\n")
 
     } else{
-      hgl_warn("ors: No valid author entries in vector")
+      hgl_warn("gen_xml_authors: No valid entries in vector")
     }
   }
   xmlauthors
@@ -311,7 +551,7 @@ gen_xml_references = function(d_refs){
   refitems = vector("character", NROW(d_refs))
 
   # empty rows might occur)
-  dr = d_refs[!is.na(citekey)]
+  dr = d_refs[!is.na(CITEKEY)]
 
 
   for(i in 1:NROW(dr)){
@@ -336,26 +576,23 @@ gen_xml_references = function(d_refs){
     }
 
 
-    volume =        if(!is.na(dr$VOLUME[i]))     paste0("<volume>", dr$VOLUME[i], "</volume>")                     else ""
-    issue =         if(!is.na(dr$NUMBER[i]))     paste0("<issue>", dr$NUMBER[i], "</isssue>")                      else ""
 
 
-    articletitle  = if(!is.na(dr$TITLE[i]))      paste0("<article-title>",
-                                                        trimws(dr$TITLE[i], whitespace = "[ \t\r\n}{]"),
-                                                        "</article-title>")                                        else ""
+    volume          = putxml.nullna(dr$VOLUME[i],                                                           "volume")
+    issue           = putxml.nullna(dr$NUMBER[i],                                                           "issue")
+    articletitle    = putxml.nullna(trimws(dr$TITLE[i], whitespace = "[ \t\r\n}{]"),                        "article-title")
+    source          = putxml.nullna(trimws(dr$BOOKTITLE[i], whitespace = "[ \t\r\n}{]"),                    "source")
+    source          = if(source == "") putxml.nullna(trimws(dr$JOURNAL[i], whitespace = "[ \t\r\n}{]"),     "source") # give higher priority to journal title
+    edition         = putxml.nullna(dr$EDITION[i],                                                          "edition")
 
-    source =        if(!is.na(dr$BOOKTITLE[i]))  paste0("<source>",
-                                                        trimws(dr$BOOKTITLE[i], whitespace = "[ \t\r\n}{]"),
-                                                        "</source>")                                               else ""
 
-    publisherloc  = if(!is.na(dr$ADDRESS[i]))    paste0("<publisher-loc>", dr$ADDRESS[i],"</publisher-loc>")       else ""
-    publishername = if(!is.na(dr$PUBLISHER[i]))  paste0("<publisher-name>", dr$PUBLISHER[i],"</publisher-name>")   else ""
-    extlink =       if(!is.na(dr$URL[i]))        paste0("<ext-link ext-link-type='url'>", dr$URL[i],"</ext-link>") else ""
-    pubiddoi  =     if(!is.na(dr$DOI[i]))        paste0("<pub-id pub-id-type='doi'>", dr$DOI[i],"</pub-id>")       else ""
+    publisherloc    = putxml.nullna(dr$ADDRESS[i],                                          "publisher-loc")
+    publishername   = putxml.nullna(dr$PUBLISHER[i],                                        "publisher-name")
+    extlink         = putxml.nullna(dr$URL[i],                                              "ext-link", c("ext-link-type"="url"))
+    pubiddoi        = putxml.nullna(dr$DOI[i],                                              "pub-id", c("pub-id-type"="doi"))
 
 
 
-    edition = ""
     pages = ""
     if(!is.na(dr$PAGES[i])){
 
@@ -443,7 +680,7 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
 
   res = vector("character", length = length(ptext))
 
-  # parse rmarkdown to xml- but keep in vector hence the loop
+  # parse rmarkdown to xml- but keep in vector order, hence the loop, and check for invalid entries to be set to ''
   for(i in 1:length(ptext)){
 
     if(is.null(ptext[i]) || is.na(ptext[i]) || !is.character(ptext[i])  || nchar(ptext[i]) ==0){
@@ -498,6 +735,8 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
 
     }
   }
+
+
   return(res)
 }
 
@@ -526,7 +765,29 @@ gen_xml_sections = function(doc_summar){
     # current heading start
     ccol = which(headi[crow,] == 1)
 
-    hxml_opentags[crow] = paste0(hxml_opentags[crow],"<sec><title>",doc_summar$text[crow], "</title>")
+
+    # put section type for some level 1 headings (https://jats.nlm.nih.gov/archiving/tag-library/1.4/attribute/sec-type.html)
+    sectype = ""
+    txt = ""
+    if(ccol  ==1 ){
+
+      txt = doc_summar$text[crow]
+
+      t = switch(tolower(trimws(txt)),
+              conclusions = "conclusions",
+              discussion = "discussion",
+              introduction = "intro",
+              background = "intro",
+              methods = "methods",
+              results = "results",
+             "")
+
+      if(nchar(t) > 0){
+        sectype = paste0("sec-type='", t,"'")
+      }
+    }
+
+    hxml_opentags[crow] = paste0(hxml_opentags[crow],"<sec ", sectype, "><title>",txt, "</title>")
 
     # find section end -> next row with 1 or 2 in the same column
     if(crow < NROW(headi)) {
@@ -546,58 +807,6 @@ gen_xml_sections = function(doc_summar){
 
   }
   return(list(hxml_opentags = hxml_opentags, hxml_endtags = hxml_endtags))
-}
-gen_xml_file = function(doc_summar, article_type, xml_meta, xml_references){
-
-  xml_article_type = ""
-
-  if(tolower(article_type) == "original research"){
-
-    xml_article_tuype = "research-article"
-
-  } else if(olower(article_type) == "review"){
-
-    xml_article_type = "review-article"
-
-  } else if(olower(article_type) == "comment"){
-
-    xml_article_type = "article-commentary"
-  }
-  else{
-    stop("unkown article typer for JATS conversion")
-  }
-
-  header = paste("<?xml version='1.0' encoding='UTF-8'?>",
-                  "<!DOCTYPE article PUBLIC",
-                  "'-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.3 20210610//EN'",
-                  "'JATS-journalpublishing1-3.dtd'>",
-                  paste0("<article article-type='",xml_article_type, "'"),
-  "dtd-version='1.3'",
-  "xml:lang='en'",
-  "xmlns:mml='http://www.w3.org/1998/Math/MathML'",
-  "xmlns:xlink='http://www.w3.org/1999/xlink'",
-  "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' >",
-                 xml_meta, sep = "\n")
-
-  # get rid of NA entires - could be unsave though in case NAs do not match over rows
-  secopen = doc_summar$xml_secopen
-  text    = doc_summar$xml_text
-  secend  = doc_summar$xml_secend
-
-  secopen[is.na(secopen)] = ""
-  text[is.na(text)] = ""
-  secend[is.na(secend)] = ""
-
-  xmltext_rows = paste(trimws(secend), trimws(text), trimws(secopen))
-
-  mid = paste0(xmltext_rows[nchar(xmltext_rows) > 0], collapse = "\n")
-
-  back = paste0("<back>",xml_references,"</back>", sep="\n")
-
-  end = "</article>"
-
-  res = paste(header, "<body>", mid, "</body>", back, end, sep = "\n")
-
 }
 gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
@@ -717,7 +926,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
   table_xml
 }
-gen_xml_figure = function(fig_opts, fig_counter){
+gen_xml_figure = function(fig_opts, fig_counter, xml_filepack_dir, base_folder){
 
   id = paste0( fig_opts['label'], "_", fig_counter)
   label = paste0("Figure ", fig_counter)
@@ -733,7 +942,11 @@ gen_xml_figure = function(fig_opts, fig_counter){
 
 
   if('src' %in% names(fig_opts)){
-    fig_src = paste0("../",fig_opts['src']) # add one level up because its not in the build dir but one level above
+
+
+    fig_src = fig_opts[['src']] # add one level up because its not in the build dir but one level above
+    pack_xml_file(src = fig_src, base_folder = base_folder, xml_filepack_dir = xml_filepack_dir)
+
   }
   else{
     stop("Figure src not provided")
@@ -748,4 +961,114 @@ gen_xml_figure = function(fig_opts, fig_counter){
                     </fig>", sep = "\n")
 
   figure_xml
+}
+gen_xml_statements = function(statement_list){
+
+  # generate statements to be put in bACK
+
+  if(length(statement_list) > 0){
+
+    ret = vector("character", length(statement_list))
+    # list with statement titles as names, statement texts as text
+    for(ci in 1:length(statement_list)){
+
+      title = names(statement_list)[ci]
+      if(!is.null(title)) title = paste0("<title>", title, "</title>")
+
+      # type detection
+      sectype = ""
+      tag = "sec"
+      if(!is.null(title)){
+
+        if(tolower(title) == "data availability"){
+          sectype = "data-availability"
+        } else if(tolower(title) == "acknowledgement" || tolower(title) == "acknowledgements") {
+          tag = "ack"
+        } else if(stringr::str_detect(string = tolower(title), pattern = "( conflict| competing).+interest")){
+          sectype = "coi-statement"
+        }else if(tolower(title) == "contributions"){
+          sectype = "author-contributions" # according to : https://jats.taylorandfrancis.com/jats-guide/topics/author-contributions-credit/#author-contributions-statement
+        }
+        # do nothing specific otherwise
+
+      }
+
+      # Funding: https://jats.nlm.nih.gov/archiving/tag-library/1.4/element/funding-group.html -> either very structured or text funding statement in article metadata
+      # COntributions: single statment and/or specific to listed authors and addtional parties in article metadata contrib-group / contrib/ role
+# disclosure: according to https://jats.taylorandfrancis.com/jats-guide/topics/disclosure-statement/ , as a sec of type COI-statement inside of back
+
+
+      ret[ci] = paste0("<",tag,">",
+             title,
+             paste0("<p>",statement_list[[ci]], "</p>"),
+             "</", tag, ">", sep = "\n")
+
+      return(paste0(ret, collapse = "\n"))
+    }
+
+
+  } else {
+    return("")
+  }
+}
+
+gen_xml_file = function(doc_summar, article_type, xml_meta, xml_references, d_xmlintext_cites, xml_statements){
+
+  xml_article_type = ""
+
+  if(tolower(article_type) == "original research"){
+
+    xml_article_tuype = "research-article"
+
+  } else if(olower(article_type) == "review"){
+
+    xml_article_type = "review-article"
+
+  } else if(olower(article_type) == "comment"){
+
+    xml_article_type = "article-commentary"
+  }
+  else{
+    stop("unkown article typer for JATS conversion")
+  }
+
+  header = paste("<?xml version='1.0' encoding='UTF-8'?>",
+                  "<!DOCTYPE article PUBLIC",
+                 "'-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.3 20210610//EN'",
+                 "'JATS-journalpublishing1-3.dtd'>",
+                 # "'-//NLM//DTD JATS (Z39.96) Article Authoring DTD v1.4 20241031//EN'",
+                 # "'JATS-articleauthoring1-4.dtd'>",
+                  paste0("<article article-type='",xml_article_type, "'"),
+  #"dtd-version='1.4'",
+  "dtd-version='1.3'",
+  "xml:lang='en'",
+  "xmlns:mml='http://www.w3.org/1998/Math/MathML'",
+  "xmlns:xlink='http://www.w3.org/1999/xlink'",
+  "xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' >",
+                 xml_meta, sep = "\n")
+
+  # get rid of NA entires - could be unsave though in case NAs do not match over rows
+  secopen = doc_summar$xml_secopen
+  text    = doc_summar$xml_text
+  secend  = doc_summar$xml_secend
+
+  secopen[is.na(secopen)] = ""
+  text[is.na(text)] = ""
+  secend[is.na(secend)] = ""
+
+  xmltext_rows = paste(trimws(secend), trimws(text), trimws(secopen))
+
+  mid = paste0(xmltext_rows[nchar(xmltext_rows) > 0], collapse = "\n")
+
+  # put xml intext citations back
+  mid = insert_xml_intext_citations(xml_text = mid, d_xmlintext_cites = d_xmlintext_cites)
+
+  if(is.null(xml_references)) xml_references = ""
+
+  back = paste0("<back>",xml_statements, xml_references,"</back>", sep="\n")
+
+  end = "</article>"
+
+  res = paste(header, "<body>", mid, "</body>", back, end, sep = "\n")
+
 }

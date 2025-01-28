@@ -18,4 +18,6 @@ Imports:
     commonmark,
     xml2,
     lubridate,
-    crayon
+    crayon,
+    zip,
+    RefManageR

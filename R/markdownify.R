@@ -4,16 +4,24 @@
 #' @param src_docx
 #' @param working_folder
 #' @param meta_csv
-#' @param reference_parsing Default `FALSE`. IF `FALSE`, copy references as is without automated parsing. 'anystyle' or 'grobid' use the respective backends
-#'
+#' @param reference_parsing Default `FALSE`. IF `FALSE`, copy references as is without automated parsing. 'anystyle' or 'grobid' use the respective backends. Can also take the name of a .bib file to use to genrate the bibliography. In that case, in-text citations are expected to follow the '[@citekey1, @citekey2..]' syntax with alphanumeric plus - and _ being valid chars for citekeys,a nd ',' and ';' being valid chars for seperating listed citekeys. In that case, a bibliography in the mansucript file will be disregarded.
+#' @param reference_correction Only has effect if `reference_parsing` is not `FALSE`. Path to bibtex .bib file that contains manual overrides for references. Matching with entries in file: Recommended (Second priority) is automatically generated citeky, normally 'author'+ 'year', see 'working_path/references.bib' or files in the 'build/tempreftxts_out'. 1st priority is nonstandard bibtex field 'CORRECTION_BN', corresponding to the list item number in the refernces and in-text citation number. If a correction bibfile is provided, 'working_path/references.bib' will be altered compared to 'working_path/refernces_autoparses.bib'. If the file is not found at the specified path, the parent level of the working folder will also be checked (to cover the normal case where intermediate files are placed in the working path 'build' directory, and input files reside at the parent of the 'build' directory)
 #' @return
 #' @export
 #'
 #' @examples
-markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
+markdownify = function(src_docx, doc_folder, working_folder = ".",
+                       meta_csv = NULL,
                        rmd_outfile = NULL,
-                       xml_outfile = NULL,
-                       reference_parsing = F, url_parsing = T, doi_parsing = T, guess_refnumbers = T){
+                       xml_outpath = NULL,
+                       reference_parsing = F,
+                       reference_correction = NULL,
+                       consolidate_grobid = NULL,# grobidlv1, grobidlv2
+                       consolidate_blacklist = NULL, # only has effect if consolidation_global is provided
+                       augment_global = NULL, # pmid, or doi
+                       augment_whitelist = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=(doi|pmid):id
+                       augment_blacklist = NULL,
+                       url_parsing = T, doi_parsing = T, guess_refnumbers = T){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
@@ -22,10 +30,39 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
   fig_capts =
     tab_capts = c()
 
+
+  if(!is.null(consolidate_blacklist)) consolidate_blacklist = stringr::str_split(consolidate_blacklist, pattern = ",")
+  if(!is.null(augment_blacklist)) augment_blacklist = stringr::str_split(augment_blacklist, pattern = ",")
+
+
+  d_augment_whitelist = data.table(internal_id = character(0), service = character(0),  DOI = character(0), PMID = character(0), external_id = character(0), service = character(0))
+  if(!is.null(augment_whitelist)){
+
+    # assign columns based on group of match to variables
+    #t =  stringr::str_match(c("13=doi", "ab=2:", "dd20=doi:134", "gobo"), pattern = "(?:(.+?)(=|$))(?:(.+?)(:|$))?(?:(.+?)$)?")
+    t =  stringr::str_match(string = augment_whitelist, pattern = "(?:(.+?)(=|$))(?:(.+?)(:|$))?(?:(.+?)$)?")
+
+    d_augment_whitelist = data.table(service = t[, 4],
+    external_id = t[, 6],
+    internal_id = t[,2],
+    DOI = NULL, # For convenience
+    PMID = NULL)
+
+    d_augment_whitelist[service == "doi", DOI := external_id]
+    d_augment_whitelist[service == "pmid", PMID := external_id]
+
+  }
+
+
   # read file and backup object
   docx = officer::read_docx(src_docx)
   doc_summar_o = doc_summar  = data.table::as.data.table(officer::docx_summary(docx,preserve = T,remove_fields = T))
   doc_summar[is.na(style_name), style_name := ""]
+  doc_summar[, texto := text]
+
+  # data table to temporariliy store xml intext citations
+  d_xmlintext_cites = NULL
+
 
   # get all l1 headings
   l1_inds = which(tolower(doc_summar$style_name) == "heading 1")
@@ -33,10 +70,6 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
 
   # find and parse titele page - first heading 1 up to second heading 1
   parsed_meta = parse_title_page(doc_summar[title_page_inds,])
-
-
-
-
 
   # predefined metadata
   predef_meta  = list()
@@ -89,38 +122,33 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
   yaml_preamble = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
 
 
-
-
-
   # delete  title page from document
   doc_summar = doc_summar[-title_page_inds,]
 
-  # create column to contain markdown text
-  doc_summar$mrkdwn = doc_summar$text
+  # remove [empty] headings
+  doc_summar = doc_summar[!(startsWith(tolower(style_name), "heading") & trimws(tolower(text)) == "[empty]"),]
 
-  # create xml nodes list for JATS xml, special format in that it is embedded into the doc dataframe, needs to have same length as NROW
-  # that is, each row as a cell/list entry for corresponding xml nodes
-  doc_summar$xml = vector(mode = "list", length = NROW(doc_summar))
-  doc_summar$xml_text = ""
-  doc_summar$xml_temp = doc_summar$text
-  doc_summar$xml_type = character()
-  doc_summar$xml_type = NA
 
 
 
   ## @@@@ doc_sumar will contain: text (original word contents), mrkdwn  (processed markedown), xml_temp (intermediate 'working' xml text ), xml_text (final xml conform text
 
+  # create xml nodes list for JATS xml, special format in that it is embedded into the doc dataframe, needs to have same length as NROW
+  # that is, each row as a cell/list entry for corresponding xml nodes
+  doc_summar$xml = vector(mode = "list", length = NROW(doc_summar))
+  doc_summar$xml_text = ""
+  doc_summar$xml_type = character()
+  doc_summar$xml_type = NA
 
-  # remove [empty] headings
-  doc_summar = doc_summar[!(startsWith(tolower(style_name), "heading") & trimws(tolower(mrkdwn)) == "[empty]"),]
-
+  ################## reference parsing ##################################
   # find,parse,  and remove references
   l1_inds = which(tolower(doc_summar$style_name) == "heading 1")
-  refparind = which(tolower(doc_summar$mrkdwn) == 'references' & tolower(doc_summar$style_name) == "heading 1")
+  refparind = which(tolower(doc_summar$text) == 'references' & tolower(doc_summar$style_name) == "heading 1")
+  ref_inds = NULL
 
 
   rmd_references = ""
-  if(length(refparind) == 0)   hgl_warn("No references found!!!")
+  if(length(refparind) == 0)   hgl_warn("No references found in manuscript!!!")
   else{
 
     # refinds are those paragraphs until end or next l1 heading
@@ -130,300 +158,547 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
     if(length(ti) == 0) lri = NROW(doc_summar) # no subsequent l1 heading, we go until end
     else lri = l1_inds[ti] -1 #deduct 1 because we do not want to have the next level 1 heading included
 
-    ################## reference parsing ##################################
     ref_inds = (refparind+1):lri # do not include the starging l1 heading , +1
 
     # create one large text value
-    #references_text = paste(doc_summar$mrkdwn[ref_inds], collapse = "\n")
-    references =  doc_summar$mrkdwn[ref_inds]
+    #references_text = paste(doc_summar$text[ref_inds], collapse = "\n")
+    references =  doc_summar$text[ref_inds]
+  }
 
-    path_temprefs_in  = paste0(working_folder, "/tempreftxts_in")
-    path_temprefs_out = paste0(working_folder, "/tempreftxts_out")
+  path_temprefs_in  = paste0(working_folder, "/tempreftxts_in")
+  path_temprefs_out = paste0(working_folder, "/tempreftxts_out")
+  path_xml_filepack_dir = paste0(working_folder, "/jats_xml_filepacking")
 
-    if(dir.exists(path_temprefs_in)) unlink(path_temprefs_in, recursive = T)
-    if(dir.exists(path_temprefs_out)) unlink(path_temprefs_out, recursive = T)
-    if(file.exists(paste0(working_folder, "/", "references.bib"))) unlink(paste0(working_folder, "/", "references.bib"))
+  if(dir.exists(path_temprefs_in)) unlink(path_temprefs_in, recursive = T)
+  if(dir.exists(path_temprefs_out)) unlink(path_temprefs_out, recursive = T)
 
-    if(reference_parsing != FALSE){
+  # reset xml filepackaging directory
+  if(dir.exists(path_xml_filepack_dir)) unlink(path_xml_filepack_dir, recursive = T)
+  dir.create(path_xml_filepack_dir)
 
+  if(file.exists(paste0(working_folder, "/", "references.bib"))) unlink(paste0(working_folder, "/", "references.bib"))
+  if(file.exists(paste0(working_folder, "/", "references_autoparsed.bib"))) unlink(paste0(working_folder, "/", "references_autoparsed.bib"))
 
-      dir.create(path_temprefs_in, showWarnings = FALSE)
-      dir.create(path_temprefs_out, showWarnings = FALSE)
+  if(reference_parsing != FALSE && endsWith(reference_parsing, ".bib")){ # use provided bibfile
 
-      # remove number from beginning
-      ref_itemnums = stringr::str_extract(string = references, pattern = "^[0-9]+[.]")
-      references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
+    rpath = ""
+    if(file.exists(reference_parsing)){
 
-       # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
-      sapply(1:length(references), FUN = \(x) { writeLines(text = references[x], con = paste0(path_temprefs_in, "/", x, ".txt")) })
+      rpath = reference_parsing
 
-      # remove from document
-      doc_summar = doc_summar[-c(refparind, ref_inds), ]
-      rmd_references = paste0("# References\n\n",
-                              "<div id=\"refs\"></div>")
+    } else if(file.exists(paste0(working_folder, "/../", reference_parsing))){ # also check parent of working folder
 
-      if(reference_parsing == "anystyle"){
+      rpath = paste0(working_folder, "/../", reference_parsing)
 
-        print("runing anystyle on extracted references ...")
-        ras = system(paste0("anystyle -w -f bib,json parse ",  path_temprefs_in , " ", path_temprefs_out))
-        stopifnot("anystyle failed" =  ras == 0 )
-      } else if(reference_parsing == "grobid"){
+    } else {
+      hgl_error(paste0("'", reference_parsing, "' file provided as 'reference_parsing', but no file found at this location"))
+    }
 
-        for(cri in 1:length(references)){
+    # copy to workingu dir/references.bib
+    dpath = paste0(working_folder, "/references.bib")
+    file.copy(from = rpath, to = dpath, overwrite = T)
+    hgl_note(paste0("Copied '", reference_parsing, "'  to '",paste0(working_folder, "/references.bib"), "', using for further procesing"))
 
-          resp_bib = ""
-          resp_xml = ""
-          resp_text  = ""
+    d_refs = data.table(bib2df::bib2df(file =dpath))
 
-          cref = references[cri]
-          res = httr::POST("localhost:8070/api/processCitation", body = list(citations = cref),
-                     encode = "form", httr::accept("application/xml")) # application/x-bibtex
+    d_refs$BIBLIOGRAPHY_NUMBER = NA
 
-          if(res$status_code > 204)  stop("grobid service reference parsing failed with error")
-          if(res$status_code == 204) {
-            hgl_warn(paste0("could not parse reference: ", cref))
+    # do not parse references inside figures and table tags
+    ttext = trimws(doc_summar$text)
+    content_inds = setdiff(1:NROW(doc_summar), which(startsWith(ttext, "[[table") | startsWith(ttext, "[[figure")))
 
-          } else{
+    # current max of bibliography_number
+    cbn_max = 1
 
-            # if not - hopefully successfull
-            resp_text = httr::content(res, as="text")
-            resp_xml = xml2::read_xml(resp_text)
-            resp_bib = tei_xml_to_bib(resp_xml, orderindex = cri)
+    # resut list for xmlintext citations
+    l_xmlintextcites = list()
 
-            cat(resp_text, file=paste0(path_temprefs_out, "/", cri, ".xml"))
-            cat(resp_bib, file=paste0(path_temprefs_out, "/", cri, ".bib"))
-          }
-        }
-      }
-      else {
-        stop("Unkown reference parsing backend")
-      }
-      # run anystyle
+    # add BIBLIOGRAPHY_NUMBER field to the data - parse all in text references and look up the number
+    # also generate xml intext citations along the way
+    doc_summar$xml_temp[content_inds] = stringr::str_replace_all(str = doc_summar$text[content_inds], pattern = "\\[((@[_\\-a-zA-Z0-9]+)(,? ?){0,1})+\\]", replacement = \(match) {
 
-
-      # grobid
-      #Examble: curl -X POST -H "Accept: application/x-bibtex" -d "citations=Graff, Expert. Opin. Ther. Targets (2002) 6(1): 103-113" localhost:8070/api/processCitation
-
-
-      # red back into R using bib2df  and join to big file, do numerical sort
-      temp_bibfiles_in = stringr::str_sort(paste0(path_temprefs_out, "/", list.files( path = path_temprefs_out, pattern = "*.bib")), numeric = T)
-
-
-
-        x = list()
-      for(cn in temp_bibfiles_in){
-        x[[cn]] <- bib2df::bib2df(cn)
-
-
-        # parse bibnum and index (index always awailable, number might fail)
-        bib_orderindex = gsub(x = basename(cn), replacement = "", pattern = ".bib")
-        bib_num <- NA
-
-        # if parsing failed bib2df returns 0 length data. framec
-        if(NROW(x[[cn]]) == 0){
-          x[[cn]] <- data.frame(bibliography_orderindex = bib_orderindex)
-        } else {
-
-          parsed_citnums = NA
-          parsed_citnums = ref_itemnums[as.numeric(bib_orderindex)] # needs to correspond to original index since filename corresponds to row index
-# #
-#           if("NUMBER" %in% colnames(x[[cn]]) && !is.na(x[[cn]]$NUMBER)){
-#             parsed_citnums = x[[cn]]$NUMBER
-#             x[[cn]]$NUMBER = NA
-#           }
-#           # overwrite if citation.number is given
-#           if ("CITATION.NUMBER" %in% colnames(x[[cn]]) && !is.na(x[[cn]]$CITATION.NUMBER)){
-#             parsed_citnums = x[[cn]]$CITATION.NUMBER
-#             x[[cn]]$CITATION.NUMBER = NA
-#          }
-
-          bib_num <- gsub(x = parsed_citnums, pattern = "[^0-9]", replacement = "") # only allow alphanumeric
-        }
-
-        x[[cn]]$bibliography_number = bib_num
-        x[[cn]]$bibliography_orderindex = bib_orderindex
-      }
-
-
-
-      d_refs = rbindlist(l = x, fill = TRUE) # fill with NA by specifying fill = 'TRUE'
-      d_refs$bibliography_number = as.numeric(d_refs$bibliography_number)
-      setkey(d_refs, bibliography_number) # sort
-
-      # if("CITATION.NUMBER" %in% names(d_refs)){
-      #   setnames(d_refs, "CITATION.NUMBER", "CITATION_NUMBER")
-      # }
-
-
-
-      # get rid of trailing letter appended by anystyle, store in new variable
-      d_refs$citekey =  stringr::str_replace_all(pattern = "((?<=[0-9]{4})[a-z]{1})|(-[a-z]{1})", string= d_refs$BIBTEXKEY, replacement = "")
-
-      # check for duplicatees
-      dups = unique(d_refs$citekey[duplicated(d_refs$citekey)])
-
-      # append letters to duplicates - hopefully not more than  24
-      for(cd in dups){
-        stopifnot("more than 24 duplicates for one citekey -> fix code" = d_refs[citekey == cd, .N] < 25)
-        d_refs[citekey == cd, citekey:= paste0(citekey, letters[1:NROW(.SD)])]
-      }
-
-      # write references.bib
-      t = d_refs
-      t$BIBTEXKEY = t$citekey
-      t$citekey = NULL
-      t = dplyr::as_tibble(t)
-
-      bib2df::df2bib(x = t, file = paste0(working_folder, "/", "references.bib")) # bug in the package , use another package
-      #RefManageR::WriteBib(RefManageR::as.BibEntry(t), file =paste0(working_folder, "/", "references.bib") )
-
-      # find all in text citatations - idea: three possible modes: text based detection using regex '(' or '[' brackets, field code based detection using xpath, or text based detection using citation keys (this would rquire providing a specializied citation style or hand- in of a bib file)
-      # "========protectedcite{}protectedcite
-      ttext = trimws(doc_summar$mrkdwn)
-      content_inds = setdiff(1:NROW(doc_summar), which(startsWith(ttext, "[[table") | startsWith(ttext, "[[figure")))
-
-      y = stringr::str_extract_all(str = doc_summar$mrkdwn[content_inds], pattern = "\\[(([0-9]+([-–][0-9]+)?)(?:, ?)?)+\\]") # TODO: does not allow for spaces currently and is rather strict, possibly handle that in the future
-
-      # save original intext citations, seperate by ', '
-      doc_summar$orig_citations[content_inds] = lapply(y, FUN = paste, sep = ", ", collapse = ", ")
-
-      # replace intext-citations with citekeys
-      doc_summar$mrkdwn[content_inds] = stringr::str_replace_all(str = doc_summar$mrkdwn[content_inds], pattern = "\\[(([0-9]+([-–][0-9]+)?)(?:, ?)?)+\\]", replacement = \(match) {
 
       # first get rid of encompassing [], then split into individual components 'ranges'
       t = stringr::str_replace_all(string = match, pattern = "\\[|\\]", replacement = "")
-      ranges = stringr::str_split(string = t, pattern = ",", simplify = T)
+      intextcites = stringr::str_split(t, pattern = "[,;]", simplify = F)[[1]]
+      locres = vector("character", length(intextcites))
 
+      for(cri in 1:length(intextcites)){
 
-        # go through ranges, if necessary expand and retrieve and add citation key to list
-        locrefs_nums = list()
-        locrefs_keys = list()
-        for(crange in ranges){
+        # look up in d_refs
+        cic = trimws(intextcites[cri], whitespace = "[ @]")
 
-          # remove possible trailing whitespace
-          crange = trimws(crange)
+        ccr = d_refs[BIBTEXKEY == cic,]
+        cbn = NA
+        bn = NA
 
-          if(grepl(x = crange, pattern = "[-–]")){
-
-            # range, extract start and end, and then create sequence (regex using positive lookahead and lookbehind)
-            start = stringr::str_extract(string= crange, pattern = "^[0-9]{1,}(?=[-–])")
-            end = stringr::str_extract(string= crange, pattern = "(?<=[-–])[0-9]{1,}$")
-            trefnums = start:end
-          }
-          else{
-            trefnums = as.numeric(crange)
-          }
-          # store results
-          locrefs_nums[[crange]] = trefnums
-          locrefs_keys[[crange]] = d_refs[bibliography_number %in% trefnums]$citekey
-
-
+        if(NROW(ccr) == 0){
+          hgl_warn(paste0("In-text citation '",cic,"' not found in provided .bib references "))
+        } else if(NROW(ccr) > 1){
+          hgl_error(paste0("In-text citation '",cic,"' not unique provided .bib references, multiple matches found."))
+        }else{
+          # must be 1 match
+          if(is.na(ccr$BIBLIOGRAPHY_NUMBER)){
+            # not yet cited, set the match to current max, and increase the later by 1
+            ccr$BIBLIOGRAPHY_NUMBER = cbn_max
+            cbn_max = cbn_max +1
+          } # otherwise a BIBLIOGRAPHY_NUMBER is already present, do nothing
+          bn = ccr$BIBLIOGRAPHY_NUMBER
         }
-        # construct string to return
-        replacement = paste0("[", paste0("========protectedat========", unlist(locrefs_keys),collapse = ";") , "]")
-        replacement
-      })
+
+        len = length(l_xmlintextcites)+1
+        locres[cri] = paste0("========protectedintextcite", len, "========")
+        l_xmlintextcites[[len]] <<- data.table(xml = paste0("<xref ref-type='bibr' rid='B", bn, "'>", bn, "</xref>"), index = len)
+      }
+
+      xml = paste0("[", paste0(locres, collapse = ";"), "]")
+      xml
+    })
+
+    # generate citation data
+    d_xmlintext_cites = rbindlist(l = l_xmlintextcites)
+
+    # remove potentialbibliography parts from document
+    if(!is.null(refparind) && !is.null(ref_inds)){
+
+      browser()
+      doc_summar = doc_summar[-c(refparind, ref_inds), ]
+    }
+
+    # put placeholder for CLS references into the RMD text
+    rmd_references = paste0("# References\n\n",
+                            "<div id=\"refs\"></div>")
+
+
+    doc_summar$mrkdwn = doc_summar$text
+
+    # protedct @ so that id does not get excapted
+    doc_summar$mrkdwn[content_inds] = stringr::str_replace_all(str = doc_summar$mrkdwn[content_inds], pattern = "\\[((@[_\\-a-zA-Z0-9]+)(,?;? ?){0,1})+\\]", replacement = \(match) {
+
+      stringr::str_replace_all(string = match, pattern = "@", replacement = "========protectedat========")
+    })
+
+
+  }
+  else if(reference_parsing != FALSE && reference_parsing %in% c("anystyle", "grobid")){ # parsing references
+
+
+    dir.create(path_temprefs_in, showWarnings = FALSE)
+    dir.create(path_temprefs_out, showWarnings = FALSE)
+
+    # remove number from beginning
+    ref_itemnums = stringr::str_extract(string = references, pattern = "^[0-9]+[.]")
+    references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
+
+     # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
+    sapply(1:length(references), FUN = \(x) { writeLines(text = references[x], con = paste0(path_temprefs_in, "/", x, ".txt")) })
+
+    # remove from document
+    doc_summar = doc_summar[-c(refparind, ref_inds), ]
+    rmd_references = paste0("# References\n\n",
+                            "<div id=\"refs\"></div>")
+
+    if(reference_parsing == "anystyle"){
+
+      ##################### anystyle  parsing #################
+      print("runing anystyle on extracted references ...")
+      ras = system(paste0("anystyle -w -f bib,json parse ",  path_temprefs_in , " ", path_temprefs_out))
+      stopifnot("anystyle failed" =  ras == 0 )
+
+    } else if(reference_parsing == "grobid"){
+
+      ##################### grobid parsing #################
+      #Examble: curl -X POST -H "Accept: application/x-bibtex" -d "citations=Graff, Expert. Opin. Ther. Targets (2002) 6(1): 103-113" localhost:8070/api/processCitation
+
+
+
+      for(cri in 1:length(references)){
+
+        resp_bib = ""
+        resp_xml = ""
+        resp_text  = ""
+
+        cref = references[cri]
+
+
+        # check consolidation
+        consolidate= "0"
+        if(!is.null(consolidate_grobid) && consolidate_grobid == "grobidlv1"&& !(cri %in% consolidate_blacklist) ) {
+          consolidate = "1"
+        } else if (!is.null(consolidate_grobid) && consolidate_grobid == "grobidlv2"){
+          consolidate = "2"
+        }
+
+        res = httr::POST("localhost:8070/api/processCitation", body = list(citations = cref, consolidateCitations = consolidate),
+                   encode = "form", httr::accept("application/xml")) # application/x-bibtex
+
+        if(res$status_code > 204)  stop("grobid service reference parsing failed with error")
+        if(res$status_code == 204) {
+          hgl_warn(paste0("could not parse reference: ", cref))
+
+        } else{
+
+          # if not - hopefully successfull
+          resp_text = httr::content(res, as="text")
+          resp_xml = xml2::read_xml(resp_text)
+          resp_bib = tei_xml_to_bib(resp_xml, orderindex = cri)
+
+          cat(resp_text, file=paste0(path_temprefs_out, "/", cri, ".xml"))
+          cat(resp_bib, file=paste0(path_temprefs_out, "/", cri, ".bib"))
+        }
+      }
+    }
+    else {
+      stop("Unkown reference parsing mode/backend")
+    }
+
+
+    ############################ binding reference parsing results  ####################
+    # red back into R using bib2df  and join to big file, do numerical sort
+    temp_bibfiles_in = stringr::str_sort(paste0(path_temprefs_out, "/", list.files( path = path_temprefs_out, pattern = "*.bib")), numeric = T)
+
+
+    # prepare for binding rows
+    x = list()
+    for(cn in temp_bibfiles_in){
+      x[[cn]] <- bib2df::bib2df(cn)
+
+
+      # parse bibnum and index (index always awailable, number might fail)
+      bib_orderindex = gsub(x = basename(cn), replacement = "", pattern = ".bib")
+      bib_num <- NA
+
+      # if parsing failed bib2df returns 0 length data. framec
+      if(NROW(x[[cn]]) == 0){
+        x[[cn]] <- data.frame(bibliography_orderindex = bib_orderindex)
+      } else {
+
+        parsed_citnums = NA
+        parsed_citnums = ref_itemnums[as.numeric(bib_orderindex)] # needs to correspond to original index since filename corresponds to row index
+
+
+        bib_num <- gsub(x = parsed_citnums, pattern = "[^0-9]", replacement = "") # only allow alphanumeric
+      }
+
+      x[[cn]]$BIBLIOGRAPHY_NUMBER = bib_num
+
+      # cehck for duplicated column names in the data r
+      clnames = colnames(x[[cn]])
+
+      # this shoudl finud R double name suffixes (x.1, x.2, ...)
+      cn_dubinds = which(stringr::str_detect(string = clnames, pattern = "\\.[0-9]+$"))
+
+      for(cdi in cn_dubinds){
+
+
+        # find the other colums
+        ccname = stringr::str_replace(string = clnames[cdi], pattern = "\\.[0-9]+$", replacement =  "")
+
+        dubinds = which(startsWith(clnames, ccname))
+
+        # find longest contennt
+        charlenghts = sapply(dubinds, \(i) nchar(x[[cn]][[clnames[i]]]))
+        maxi = which(charlenghts == max(charlenghts))[1] # if both the same, take first one
+
+        keepcol  = clnames[dubinds[maxi]]
+        keepcoli = dubinds[maxi]
+
+        todel = setdiff(dubinds, keepcoli)
+
+        x[[cn]][, todel] = NULL
+
+      }
+    }
+    d_refs = rbindlist(l = x, fill = TRUE) # fill with NA by specifying fill = 'TRUE'
+    d_refs$BIBLIOGRAPHY_NUMBER = as.numeric(d_refs$BIBLIOGRAPHY_NUMBER)
+    setkey(d_refs, BIBLIOGRAPHY_NUMBER) # sort
+
+    # if("CITATION.NUMBER" %in% names(d_refs)){
+    #   setnames(d_refs, "CITATION.NUMBER", "CITATION_NUMBER")
+    # }
+
+
+
+    # get rid of trailing letter appended by anystyle, store in new variable
+    d_refs$CITEKEY =  stringr::str_replace_all(pattern = "((?<=[0-9]{4})[a-z]{1})|(-[a-z]{1})", string= d_refs$BIBTEXKEY, replacement = "")
+
+    # check for duplicatees
+    dups = unique(d_refs$CITEKEY[duplicated(d_refs$CITEKEY)])
+
+    # append letters to duplicates - hopefully not more than  24
+    for(cd in dups){
+      stopifnot("more than 24 duplicates for one CITEKEY -> fix code" = d_refs[CITEKEY == cd, .N] < 25)
+      d_refs[CITEKEY == cd, CITEKEY:= paste0(CITEKEY, letters[1:NROW(.SD)])]
+    }
+
+    # copy back citeky to bibtexkey - needed for df2bib to work correctly (takes the value of this for the citation key)
+    d_refs$BIBTEXKEY = d_refs$CITEKEY
+
+
+    # Do not delete the CITEKEY, otherwise CSL parsing in pandoc/latex will stop to work: d_refs$CITEKEY = NULL
+
+    # write references.bib
+    bib2df::df2bib(x = dplyr::as_tibble(d_refs), file = paste0(working_folder, "/", "references_autoparsed.bib"))
+
+
+    ################# reference augmentation #############################
+
+    # agumentation: based on existing or argument-provided id (doi or pmid), look up the record in the respective database using RefManagaR
+    for(cri in 1:NROW(d_refs)){
+
+      cref = d_refs[cri, ]
+      # any specific augmentation specifications?
+      ws_spec = d_augment_whitelist[internal_id == cref$BIBTEXKEY || internal_id == cref$BIBLIOGRAPHY_NUMBER]
+
+
+      if(NROW(ws_spec) > 1) hgl_error(paste0("augmentation: id for ", crefBIBTEXKEY, " not unique in document tbibliography"))
+
+      doi  = if(!is.nullna(ws_spec$DOI)) ws_spec$DOI else  if(!is.nullna(cref$DOI)) cref$DOI else NULL
+      pmid = if(!is.nullna(ws_spec$PMID)) ws_spec$PMID else  if(!is.nullna(cref$PMID)) cref$PMID else NULL
+      be = NULL
+
+      # set service based on availability of ids, if not already specified, with doi as first priority
+      if(NROW(ws_spec) > 0 && is.na(ws_spec$service)){
+        if(!is.null(doi)) ws_spec$service = "doi"
+        else if(!is.null(pmid)) ws_spec$service = "pmid"
+        else hgl_warn(paste0("augmentation: augmentation specified, but no valid existing id (PMID nor DOI ) found for ", cref$BIBTEXKEY))
+      }
+
+
+      # check if either explicitly specified (see argument parsing at the beginning of the fuction) or globally specified and not blacklisted
+      if((!is.null(augment_global) && augment_global == "doi" && NROW(ws_spec) == 0) || (NROW(ws_spec) > 0  && !is.na(ws_spec$service) && ws_spec$service == "doi") ){
+
+        if(is.null(doi)){
+          hgl_warn(paste0("augmentation: doi augmentation specified , but no valid DOI found for ", cref$BIBTEXKEY))
+        }
+        else {
+          be = RefManageR::ReadCrossRef(filter = list(doi=doi))
+        }
+      }
+      else if((!is.null(augment_global) && augment_global == "pmid" && NROW(ws_spec) == 0) || (NROW(ws_spec) > 0  && !is.na(ws_spec$service) &&  ws_spec$service == "pmid" )){
+
+        if(is.null(pmid)) {
+          hgl_warn(paste0("augmentation: pubmed augmentation specified , but no valid PMID found for ", cref$BIBTEXKEY))
+        }
+        else {
+          be = RefManageR::GetPubMedByID(pmid)
+        }
+      } # no augmentation otherwise
+
+      if(!is.null(be)){
+
+        bibstr = RefManageR::toBiblatex(be)
+
+        fn = paste0(path_temprefs_out, "/augment_", cref$BIBLIOGRAPHY_NUMBER, ".bib")
+
+        RefManageR::WriteBib(file = fn, bib = be)
+
+        # read back in with bib2df, replace citekey
+        row = bib2df::bib2df(fn)
+        row$BIBTEXKEY = d_refs$BIBTEXKEY[cri]
+
+        d_refs = overwrite_bib2df_row(nrow = row, row_index = cri, df = d_refs, non_existing_fields = "append")
+      }
 
 
     }
-    else { # end condition refernce_parsing
 
-      # do not change in text citations
-      if(is.numeric(ref_inds[1])){
+    # write references.bib
+    bib2df::df2bib(x = dplyr::as_tibble(d_refs), file = paste0(working_folder, "/", "references_augmented.bib"))
 
-        #doc_summar$mrkdwn[ref_inds] = paste0("\\setlength{\\parindent}{0em}\n", doc_summar$mrkdwn[ref_inds])
-        refs <- doc_summar$mrkdwn[ref_inds]
+    ################## refernce correction ##############################
+    # overwrite reference entries if file provided
+    if(!is.null(reference_correction)){
 
-        # remove empty paragraphs
-        refs <- refs[!grepl(x = refs, pattern = "^\\s?$")]
-
-        # extract marker 1., 2., .... using regex
-        markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
-
-        if(any(is.na(markers)) && guess_refnumbers == TRUE){
-          markers = as.character(1:length(refs))
-        }
-
-        refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
-
-        # delete markers from refs
-        stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
-
-        # escape &, _ and [,]
-        refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
-        refs = stringr::str_replace_all(refs, pattern = "\\[", replacement = "{[}")
-        refs = stringr::str_replace_all(refs, pattern = "\\]", replacement = "{]}")
-        refs = stringr::str_replace_all(refs, pattern = "_", replacement = "\\\\_")
-
-        # remove dots
-        markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
-
-
-
-        # [] need to be grouped in latex optional options bec of parsing (https://tex.stackexchange.com/questions/84595/latex-optional-arguments-with-square-brackets)
-        #       doc_summar$mrkdwn[ref_inds[1]] = gen_list(items = refs, label = "{[_]}", markers = markers,
-        #                                                 options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
-
-
-        # https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-        #[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
-
-        #       refs = stringr::str_replace_all(string = refs,
-        #                                pattern = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
-        #                                replacement = "\\\\url{\\0}")
-
-        if(url_parsing){
-
-          # pattern from qdapRegex
-          refs = stringr::str_replace_all(string = refs,
-                                          pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
-                                          replacement = function(m){
-
-                                            r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                            r  = paste0("\\url{", r,"}.")
-                                            r
-                                            #browser()
-                                          })#"\\\\url{\\0}"
-
-        }
-
-
-        if(doi_parsing){
-
-
-          # pattern from qdapRegex
-          refs = stringr::str_replace_all(string = refs,
-                                          pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
-                                          replacement = function(m){
-
-                                            r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                            r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
-                                            r
-                                            #browser()
-                                          })#"\\\\url{\\0}"
-        }
-
-        rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
-                                                                options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))
-
-        doc_summar = doc_summar[-c(refparind, ref_inds),]
-
-
-        # remove from document
-        #rem_inds = ref_inds[-1]
-        # if(length(rem_inds) > 0){
-        #   doc_summar = doc_summar[-c(refparind, rem_inds),]
-        # }
+      # read in (faisl if invalid file)
+      if(file.exists(reference_correction)){
+        d_crefs = bib2df::bib2df(reference_correction)
+      } else if(file.exists(paste0(working_folder, "/../", reference_correction))){
+        d_crefs = bib2df::bib2df(paste0(working_folder, "/../", reference_correction))
       }
+
+      for(k in 1:NROW(d_crefs)){
+
+        ccr = d_crefs[k,]
+
+        # teh correction .bib file needs to have a CORRECTION_BN entry if match by BIBLIOGRAPHY_NUMBER is desired
+        if(!is.null(ccr$CORRECTION_BN)){
+
+          cbibnum = as.numeric(ccr$CORRECTION_BN)
+          ccr$CORRECTION_BN = NULL # delete correction number  as to not copy it into updated bibtex entry
+
+          # check if integer
+          if(!is.na(cbibnum) && is.numeric(cbibnum) && cbibnum %% 1  == 0){
+
+            cbibnum = as.integer(cbibnum)
+
+            # attempt to find in d_res
+            if(NROW(d_refs[BIBLIOGRAPHY_NUMBER == cbibnum]) > 1){
+              hgl_error("non-unique BIBLIOGRAPHY_NUMBER in d_refs")
+            }
+            else if(NROW(d_refs[BIBLIOGRAPHY_NUMBER == cbibnum]) == 0){
+              hgl_warn(paste0("reference_correction: provided BIBLIOGRAPHY_NUMBER '", cbibnum, " 'for correction not found among parsed references"))
+            }
+            else if(NROW(d_refs[BIBLIOGRAPHY_NUMBER == cbibnum]) == 1){
+
+              # get row index and update
+              rri = which(d_refs$BIBLIOGRAPHY_NUMBER == cbibnum)
+              d_refs = overwrite_bib2df_row(nrow = ccr, row_index = rri, df = d_refs, non_existing_fields = "fail")
+            }
+
+
+          } else {
+            hgl_warn("reference correction: Non-integer value in BIBLIOGRAPHY_NUMBER field")
+          }
+        }
+        else {
+
+          # attempt to match by CITEKEY
+          btxkey = ccr$BIBTEXKEY
+
+          if(NROW(d_refs[BIBTEXKEY == btxkey]) > 1){
+            hgl_error("non-unique BIBTEXKEY in d_refs")
+          }
+          else if(NROW(d_refs[BIBTEXKEY == btxkey]) == 0){
+            hgl_warn(paste0("reference_correction: provided BIBTEXKEY '", btxkey, " 'for correct not found among parsed refernces"))
+          } else if(NROW(d_refs[BIBTEXKEY == btxkey]) == 1){
+
+            # get row index and update
+            rri = which(d_refs$BIBTEXKEY == btxkey)
+            d_refs = overwrite_bib2df_row(nrow = ccr, row_index = rri, df = d_refs, non_existing_fields = "fail")
+          }
+        }
+      }
+    }
+
+    bib2df::df2bib(x = dplyr::as_tibble(d_refs), file = paste0(working_folder, "/", "references.bib"))
+
+    # find all in text citatations - idea: three possible modes: text based detection using regex '(' or '[' brackets, field code based detection using xpath, or text based detection using citation keys (this would rquire providing a specializied citation style or hand- in of a bib file)
+    # "========protectedcite{}protectedcite
+    # do not parse references inside figures and table tags
+    ttext = trimws(doc_summar$text)
+    content_inds = setdiff(1:NROW(doc_summar), which(startsWith(ttext, "[[table") | startsWith(ttext, "[[figure")))
+
+    # number based detection
+    y = stringr::str_extract_all(str = doc_summar$text[content_inds], pattern = "\\[(([0-9]+([-–][0-9]+)?)(?:, ?)?)+\\]") # TODO: does not allow for spaces currently and is rather strict, possibly handle that in the future
+
+    # save original intext citations, seperate by ', '
+    doc_summar$orig_citations[content_inds] = lapply(y, FUN = paste, sep = ", ", collapse = ", ")
+
+    doc_summar$text[content_inds] = intextrefnums_to_citekeys(doc_summar$text[content_inds], d_refs)
+
+      # write to xml, and mrkdwn, but before also
+    # postprocess JATS xml references
+    doc_summar$mrkdwn = doc_summar$text
+    tres = process_xml_intext_citations(text = doc_summar$text, d_refs =  d_refs)
+
+    doc_summar$xml_temp = tres$xml_text
+    d_xmlintext_cites = tres$d_intextcites
+  }
+  else { # end condition refernce_parsing is not FALSE -> passthrough mode where word citatiosn are not parsed and directly put into latex/rmd. NOt compatible with JATS generation
+
+    # write to xml before latex-format-specific changes
+    # operate on markdown  here
+
+    # create column to contain markdown tex, and xml text
+    doc_summar$mrkdwn = doc_summar$text
+    doc_summar$xml_temp = doc_summar$text
+
+    # do not change in text citations
+    if(is.numeric(ref_inds[1])){
+
+      #doc_summar$mrkdwn[ref_inds] = paste0("\\setlength{\\parindent}{0em}\n", doc_summar$mrkdwn[ref_inds])
+      refs <- doc_summar$mrkdwn[ref_inds]
+
+      # remove empty paragraphs
+      refs <- refs[!grepl(x = refs, pattern = "^\\s?$")]
+
+      # extract marker 1., 2., .... using regex
+      markers <- trimws(stringr::str_extract(string = refs, pattern = "^[0-9]+\\."))
+
+      if(any(is.na(markers)) && guess_refnumbers == TRUE){
+        markers = as.character(1:length(refs))
+      }
+
+      refs <- trimws(stringr::str_replace(string = refs, pattern = "^[0-9]+\\.", replacement = ""))
+
+      # delete markers from refs
+      stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
+
+      # escape &, _ and [,]
+      refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
+      refs = stringr::str_replace_all(refs, pattern = "\\[", replacement = "{[}")
+      refs = stringr::str_replace_all(refs, pattern = "\\]", replacement = "{]}")
+      refs = stringr::str_replace_all(refs, pattern = "_", replacement = "\\\\_")
+
+      # remove dots
+      markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
+
+
+
+      # [] need to be grouped in latex optional options bec of parsing (https://tex.stackexchange.com/questions/84595/latex-optional-arguments-with-square-brackets)
+      #       doc_summar$mrkdwn[ref_inds[1]] = gen_list(items = refs, label = "{[_]}", markers = markers,
+      #                                                 options = c("labelindent" = "0em", "labelwidth" = "2em", "align" = "left"))
+
+
+      # https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+      #[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)
+
+      #       refs = stringr::str_replace_all(string = refs,
+      #                                pattern = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
+      #                                replacement = "\\\\url{\\0}")
+
+      if(url_parsing){
+
+        # pattern from qdapRegex
+        refs = stringr::str_replace_all(string = refs,
+                                        pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
+                                        replacement = function(m){
+
+                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                          r  = paste0("\\url{", r,"}.")
+                                          r
+                                          #browser()
+                                        })#"\\\\url{\\0}"
+
+      }
+
+
+      if(doi_parsing){
+
+
+        # pattern from qdapRegex
+        refs = stringr::str_replace_all(string = refs,
+                                        pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                        replacement = function(m){
+
+                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                          r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
+                                          r
+                                          #browser()
+                                        })#"\\\\url{\\0}"
+      }
+
+      rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
+                                                              options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))
+
+      doc_summar = doc_summar[-c(refparind, ref_inds),]
+
+
+      # remove from document
+      #rem_inds = ref_inds[-1]
+      # if(length(rem_inds) > 0){
+      #   doc_summar = doc_summar[-c(refparind, rem_inds),]
+      # }
     }
   }
 
 
-  # there seems to be a problem with case sensitivity and style names between libreoffice and word, use tolowe (word uses capital, libreoffice not)
-  # doc_summar[tolower(style_name) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")] # do not put in TOC
 
 
   ############## headings ##############
+  # there seems to be a problem with case sensitivity and style names between libreoffice and word, use tolowe (word uses capital, libreoffice not)
+  # doc_summar[tolower(style_name) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")] # do not put in TOC
   # convert headings to markdown up to level 5
   doc_summar[tolower(style_name) == "heading 1", mrkdwn := paste0("# ", mrkdwn)]
   doc_summar[tolower(style_name) == "heading 2", mrkdwn := paste0("##  ", mrkdwn)]
@@ -520,7 +795,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
 
 
   # not entirely R style, but use global assigment to easily populate list based on regex pattern recognition
-  doc_summar[, xml_temp:= stringr::str_replace_all(string = text, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]",
+  doc_summar[, xml_temp:= stringr::str_replace_all(string = xml_temp, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]",
                                                    replacement = function(x){
                                                    len = length(list_inlinemath)+1
 
@@ -612,7 +887,7 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
 
                  c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
                  c_xml_type = "figure"
-                 c_result_xml = gen_xml_figure(fig_opts = c_command, fig_counter = fig_counter)
+                 c_result_xml = gen_xml_figure(fig_opts = c_command, fig_counter = fig_counter, xml_filepack_dir = path_xml_filepack_dir, base_folder = doc_folder)
                  fig_counter = fig_counter +1
                  #
                  #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
@@ -688,7 +963,6 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
   }
 
 
-
   # parse to xml  nodes that have not already been prossesd
   doc_summar[is.na(xml_type), `:=`(xml_type = "paragraph", xml_text = gen_xml_paragraphs(xml_temp,d_inlinemath ))]
 
@@ -697,15 +971,44 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
   ############ statements and declarations ############
   rmd_statements = ''
 
+  tll = list()
+  for(ca in metadata$authors){
+
+    if(!is.null(ca$contrib_roles)){
+
+        tll[[length(tll)+1]] =paste0(ca$name, ": ", paste0(ca$contrib_roles, collapse = ", "), ".")
+    }
+  }
+
+  indiv_author_contribs = ""
+  if(length(tll) > 0 ){
+    indiv_author_contribs = paste0(tll, collapse = " ")
+  }
+
   # any statements? populate corresponding article part, each with its own subheading
+  consumed_indiv_author_contribs = FALSE
   if(length(metadata$statements) > 0){
 
     rmd_statements = "\n\n# Declarations\n\n"
     for(cn in names(metadata$statements)){
 
       cstat <- metadata$statements[[cn]]
-      rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat %+% "\n\n"
+      rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
+
+      if(tolower(trimws(cn)) == "contributions" || tolower(trimws(cn)) == "author contributions" || tolower(trimws(cn)) == "author's contributions"|| tolower(trimws(cn)) == "authors' contributions"){
+         consumed_indiv_author_contribs = TRUE
+         rmd_statements = paste0(rmd_statements, "\n", indiv_author_contribs)
+
+      }
+      rmd_statements = rmd_statements %+% "\n\n"
     }
+
+  }
+
+  # author speciffic contributions not yet put into rmd
+  if(!consumed_indiv_author_contribs) {
+
+    rmd_statements = rmd_statements %+% "## Author contributions \n\n" %+% indiv_author_contribs %+% "\n\n"
   }
 
 
@@ -852,10 +1155,12 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
   }
 
 
+  ############### JATS XML output ######################
+  xml_metadata  = xml_reorder_metadata(metadata)
 
-  # more xml parts
-  xml_front = gen_xml_header(metadata)
+  xml_front = gen_xml_header(xml_metadata, base_folder = doc_folder, xml_filepack_dir = path_xml_filepack_dir)
 
+  xml_refs = NULL
   if(exists("d_refs")){
     xml_refs = gen_xml_references(d_refs)
   }
@@ -864,9 +1169,29 @@ markdownify = function(src_docx, working_folder = ".", meta_csv = NULL,
   }
 
   # write xml file if filename provided
-  if(!is.null(xml_outfile)){
-    xml_text = paste0(gen_xml_file(doc_summar, article_type = metadata$article_type, xml_meta  = xml_front, xml_references = xml_refs))
-    write(xml_text, file = xml_outfile) # overwrites if existing
+  if(!is.null(xml_outpath)){
+
+    # delete if already exists and create
+    if(dir.exists(xml_outpath)) unlink(xml_outpath, recursive = T)
+    dir.create(xml_outpath)
+
+    # check and generatei statements such as Data availability ...
+    if(length(xml_metadata$statements) > 0){
+      xml_statements = gen_xml_statements(xml_metadata$statements)
+    }
+
+    xml_text = paste0(gen_xml_file(doc_summar, article_type = xml_metadata$article_type,
+                                   xml_meta  = xml_front, xml_references = xml_refs,
+                                   d_xmlintext_cites = d_xmlintext_cites, xml_statements = xml_statements))
+
+    if(file.exists(paste0(path_xml_filepack_dir, "/document.xml"))) hgl_error(paste0("Error in writing out JATS xml:  document.xml already exists in '", path_xml_filepack_dir,"'"))
+    else write(xml_text, file = paste0(path_xml_filepack_dir, "/document.xml")) # overwrites if existing
+
+    # copy all to output dir - trick - base R does not allow copying of *contents* of directories - copy as single directory to parent folder, and then rename
+    file.copy(from = list.files(path = paste0(path_xml_filepack_dir), full.names = T), to = paste0(xml_outpath), recursive = T)
+
+    # attempt to create zip of contents
+    zip::zip(zipfile = paste0(xml_outpath, "/document.zip"), files = list.files(xml_outpath, full.names= TRUE), mode = "cherry-pick")
   }
 
   return(rmd_text)
