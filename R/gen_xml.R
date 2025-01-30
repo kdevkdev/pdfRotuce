@@ -20,8 +20,8 @@ pack_xml_file = function(src, base_folder, xml_filepack_dir){
   cpydest = paste0(xml_filepack_dir, "/", basename(src))
   cpysrc = paste0(base_folder, "/",src)
 
-  if(file.exists(cpydest))  hgl_error(paste0("pack_xml_file: trying to move xml figure file into xml packaging diretory, but file '",destfile, "' already exists"))
-  if(!file.exists(cpysrc))  hgl_error(paste0("pack_xml_file: trying to move xml figure file into xml packaging directoy, but could not find '",src, "' at location"))
+  if(file.exists(cpydest) && rlang::hash_file(cpydest) != rlang::hash_file(cpysrc))  hgl_error(paste0("pack_xml_file: trying to move xml figure file into xml packaging diretory, but a DIFFERENT file '",cpydest, "' already exists. Files need to be identical, otherwise files for JATS xml with non-unique names will overwrite each other."))
+  if(!file.exists(cpysrc))  hgl_error(paste0("pack_xml_file: trying to move xml figure file into xml packaging directoy, but could not find '",cpysrc, "' at location"))
 
   file.copy(from = cpysrc, to = cpydest, overwrite = T)
 

@@ -20,4 +20,6 @@ Imports:
     lubridate,
     crayon,
     zip,
-    RefManageR
+    RefManageR,
+    officer,
+    rlang

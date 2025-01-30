@@ -16,7 +16,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                        xml_outpath = NULL,
                        reference_parsing = F,
                        reference_correction = NULL,
-                       consolidate_grobid = NULL,# grobidlv1, grobidlv2
+                       refparser_inject = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=text, similar to override (and some to augment), but before the parsing stage. Could be used to fuzzy match without doi, or parse bibliography items of reports ...
+                       consolidate_grobid = "grobidlv1",# grobidlv1, grobidlv2
                        consolidate_blacklist = NULL, # only has effect if consolidation_global is provided
                        augment_global = NULL, # pmid, or doi
                        augment_whitelist = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=(doi|pmid):id
@@ -290,8 +291,15 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     ref_itemnums = stringr::str_extract(string = references, pattern = "^[0-9]+[.]")
     references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
 
+    if(!is.null(refparser_inject)){
+
+
+    }
+
+
      # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
     sapply(1:length(references), FUN = \(x) { writeLines(text = references[x], con = paste0(path_temprefs_in, "/", x, ".txt")) })
+
 
     # remove from document
     doc_summar = doc_summar[-c(refparind, ref_inds), ]
@@ -451,7 +459,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       ws_spec = d_augment_whitelist[internal_id == cref$BIBTEXKEY || internal_id == cref$BIBLIOGRAPHY_NUMBER]
 
 
-      if(NROW(ws_spec) > 1) hgl_error(paste0("augmentation: id for ", crefBIBTEXKEY, " not unique in document tbibliography"))
+      if(NROW(ws_spec) > 1) hgl_error(paste0("augmentation: id for ", cref$BIBTEXKEY, " not unique in document tbibliography"))
 
       doi  = if(!is.nullna(ws_spec$DOI)) ws_spec$DOI else  if(!is.nullna(cref$DOI)) cref$DOI else NULL
       pmid = if(!is.nullna(ws_spec$PMID)) ws_spec$PMID else  if(!is.nullna(cref$PMID)) cref$PMID else NULL
