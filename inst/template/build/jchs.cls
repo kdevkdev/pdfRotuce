@@ -60,7 +60,7 @@
 %\RequirePackage{tgpagella}
 
 \RequirePackage{fontspec}
-\directlua{ luaotfload.add_fallback("fallbacks", { "NotoSansSymbols2:style=Regular;" }) }
+	\directlua{ luaotfload.add_fallback("fallbacks", { "file:NotoSansSymbols2-Regular.ttf:style=Regular;" }) }
 
 
 % load font from manual location to enbale embedded shipping

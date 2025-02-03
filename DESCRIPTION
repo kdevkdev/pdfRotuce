@@ -22,4 +22,8 @@ Imports:
     zip,
     RefManageR,
     officer,
-    rlang
+    rlang,
+    xslt,
+    bookdown,
+    rmarkdown,
+    tinytex
