@@ -5,20 +5,22 @@
 #' @param working_folder
 #' @param meta_csv
 #' @param reference_parsing Default `FALSE`. IF `FALSE`, copy references as is without automated parsing. 'anystyle' or 'grobid' use the respective backends. Can also take the name of a .bib file to use to genrate the bibliography. In that case, in-text citations are expected to follow the '[@citekey1, @citekey2..]' syntax with alphanumeric plus - and _ being valid chars for citekeys,a nd ',' and ';' being valid chars for seperating listed citekeys. In that case, a bibliography in the mansucript file will be disregarded.
-#' @param reference_correction Only has effect if `reference_parsing` is not `FALSE`. Path to bibtex .bib file that contains manual overrides for references. Matching with entries in file: Recommended (Second priority) is automatically generated citeky, normally 'author'+ 'year', see 'working_path/references.bib' or files in the 'build/tempreftxts_out'. 1st priority is nonstandard bibtex field 'CORRECTION_BN', corresponding to the list item number in the refernces and in-text citation number. If a correction bibfile is provided, 'working_path/references.bib' will be altered compared to 'working_path/refernces_autoparses.bib'. If the file is not found at the specified path, the parent level of the working folder will also be checked (to cover the normal case where intermediate files are placed in the working path 'build' directory, and input files reside at the parent of the 'build' directory)
+#' @param reference_overwrite Only has effect if `reference_parsing` is not `FALSE`. Path to bibtex .bib file that contains manual overrides for references. Matching with entries in file: Recommended (Second priority) is automatically generated citeky, normally 'author'+ 'year', see 'working_path/references.bib' or files in the 'build/tempreftxts_out'. 1st priority is nonstandard bibtex field 'CORRECTION_BN', corresponding to the list item number in the refernces and in-text citation number. If a correction bibfile is provided, 'working_path/references.bib' will be altered compared to 'working_path/refernces_autoparses.bib'. If the file is not found at the specified path, the parent level of the working folder will also be checked (to cover the normal case where intermediate files are placed in the working path 'build' directory, and input files reside at the parent of the 'build' directory)
 #' @return
 #' @export
 #'
 #' @examples
+#'
+#'
 markdownify = function(src_docx, doc_folder, working_folder = ".",
                        meta_csv = NULL,
                        rmd_outfile = NULL,
                        xml_outpath = NULL,
                        reference_parsing = F,
-                       reference_correction = NULL,
-                       refparser_inject = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=text, similar to override (and some to augment), but before the parsing stage. Could be used to fuzzy match without doi, or parse bibliography items of reports ...
-                       consolidate_grobid = "grobidlv1",# grobidlv1, grobidlv2
-                       consolidate_blacklist = NULL, # only has effect if consolidation_global is provided
+                       reference_overwrite = NULL,
+                       refparsing_inject = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=text, similar to override (and some to augment), but before the parsing stage. Could be used to fuzzy match without doi, or parse bibliography items of reports ...
+                       grobid_consolidate = "grobidlv1",# grobidlv1, grobidlv2
+                       grobid_consolidate_blacklist = NULL, # only has effect if consolidation_global is provided
                        augment_global = NULL, # pmid, or doi
                        augment_whitelist = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=(doi|pmid):id
                        augment_blacklist = NULL,
@@ -32,7 +34,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     tab_capts = c()
 
 
-  if(!is.null(consolidate_blacklist)) consolidate_blacklist = stringr::str_split(consolidate_blacklist, pattern = ",")
+  if(!is.null(grobid_consolidate_blacklist)) grobid_consolidate_blacklist = stringr::str_split(grobid_consolidate_blacklist, pattern = ",")
   if(!is.null(augment_blacklist)) augment_blacklist = stringr::str_split(augment_blacklist, pattern = ",")
 
 
@@ -44,10 +46,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     t =  stringr::str_match(string = augment_whitelist, pattern = "(?:(.+?)(=|$))(?:(.+?)(:|$))?(?:(.+?)$)?")
 
     d_augment_whitelist = data.table(service = t[, 4],
-    external_id = t[, 6],
-    internal_id = t[,2],
-    DOI = NULL, # For convenience
-    PMID = NULL)
+      external_id = t[, 6],
+      internal_id = t[,2],
+      DOI = NULL, # For convenience
+      PMID = NULL)
 
     d_augment_whitelist[service == "doi", DOI := external_id]
     d_augment_whitelist[service == "pmid", PMID := external_id]
@@ -141,7 +143,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar$xml_type = character()
   doc_summar$xml_type = NA
 
-  ################## reference parsing ##################################
+  ############################## reference parsing ##################################
   # find,parse,  and remove references
   l1_inds = which(tolower(doc_summar$style_name) == "heading 1")
   refparind = which(tolower(doc_summar$text) == 'references' & tolower(doc_summar$style_name) == "heading 1")
@@ -288,13 +290,26 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     dir.create(path_temprefs_out, showWarnings = FALSE)
 
     # remove number from beginning
-    ref_itemnums = stringr::str_extract(string = references, pattern = "^[0-9]+[.]")
+    ref_itemnums = trimws(stringr::str_extract(string = references, pattern = "^[0-9]+[.]"))
     references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
 
-    if(!is.null(refparser_inject)){
+    ############ reference injection ##########################
+    d_refparser_inject = data.table()
+    if(!is.null(refparsing_inject)){
 
+      # would not need to match citekeyts
+      t =  stringr::str_match(string = refparsing_inject, pattern = "(?:(.+?)(=|$))(?:(.+))?")
+
+      d_refparser_inject$internal_id = trimws(t[, 2])
+      d_refparser_inject$payload = t[,4]
+      # find matching ref_itemnums - test using starts with
+      inject_ids = which(startsWith(ref_itemnums,d_refparser_inject$internal_id))
+
+      # overwrite bibliography entry befor writing to file
+      if(length(inject_ids) > 0) references[inject_ids] = d_refparser_inject$payload
 
     }
+
 
 
      # save single .txt for each reference - do it this way to keep track of the ordering in of original bibliography as much as possible
@@ -315,6 +330,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
     } else if(reference_parsing == "grobid"){
 
+
       ##################### grobid parsing #################
       #Examble: curl -X POST -H "Accept: application/x-bibtex" -d "citations=Graff, Expert. Opin. Ther. Targets (2002) 6(1): 103-113" localhost:8070/api/processCitation
 
@@ -331,9 +347,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
         # check consolidation
         consolidate= "0"
-        if(!is.null(consolidate_grobid) && consolidate_grobid == "grobidlv1"&& !(cri %in% consolidate_blacklist) ) {
+        if(!is.null(grobid_consolidate) && grobid_consolidate == "grobidlv1"&& !(cri %in% grobid_consolidate) ) {
           consolidate = "1"
-        } else if (!is.null(consolidate_grobid) && consolidate_grobid == "grobidlv2"){
+        } else if (!is.null(grobid_consolidate) && grobid_consolidate == "grobidlv2"){
           consolidate = "2"
         }
 
@@ -511,18 +527,25 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
     }
 
+    #we can
+    #- manually provide bibtex file.show
+    #- provide pubmed ids and dois for fetching addditional information and merging it to the parsed one
+    #- provide dois for using this as only source of information and discarding the bibliography information
+
+# correction, augmentation, merging,consolidation, replacement, overwriting
+
     # write references.bib
     bib2df::df2bib(x = dplyr::as_tibble(d_refs), file = paste0(working_folder, "/", "references_augmented.bib"))
 
     ################## refernce correction ##############################
     # overwrite reference entries if file provided
-    if(!is.null(reference_correction)){
+    if(!is.null(reference_overwrite)){
 
       # read in (faisl if invalid file)
-      if(file.exists(reference_correction)){
-        d_crefs = bib2df::bib2df(reference_correction)
-      } else if(file.exists(paste0(working_folder, "/../", reference_correction))){
-        d_crefs = bib2df::bib2df(paste0(working_folder, "/../", reference_correction))
+      if(file.exists(reference_overwrite)){
+        d_crefs = bib2df::bib2df(reference_overwrite)
+      } else if(file.exists(paste0(working_folder, "/../", reference_overwrite))){
+        d_crefs = bib2df::bib2df(paste0(working_folder, "/../", reference_overwrite))
       }
 
       for(k in 1:NROW(d_crefs)){
@@ -545,7 +568,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
               hgl_error("non-unique BIBLIOGRAPHY_NUMBER in d_refs")
             }
             else if(NROW(d_refs[BIBLIOGRAPHY_NUMBER == cbibnum]) == 0){
-              hgl_warn(paste0("reference_correction: provided BIBLIOGRAPHY_NUMBER '", cbibnum, " 'for correction not found among parsed references"))
+              hgl_warn(paste0("reference_overwrite: provided BIBLIOGRAPHY_NUMBER '", cbibnum, " 'for correction not found among parsed references"))
             }
             else if(NROW(d_refs[BIBLIOGRAPHY_NUMBER == cbibnum]) == 1){
 
@@ -568,7 +591,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
             hgl_error("non-unique BIBTEXKEY in d_refs")
           }
           else if(NROW(d_refs[BIBTEXKEY == btxkey]) == 0){
-            hgl_warn(paste0("reference_correction: provided BIBTEXKEY '", btxkey, " 'for correct not found among parsed refernces"))
+            hgl_warn(paste0("reference_overwrite: provided BIBTEXKEY '", btxkey, " 'for correct not found among parsed refernces"))
           } else if(NROW(d_refs[BIBTEXKEY == btxkey]) == 1){
 
             # get row index and update
