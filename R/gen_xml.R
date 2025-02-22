@@ -14,6 +14,20 @@ getLE = function(l, names){
   }
   return(FALSE)
 }
+# xml escape characters
+xe = function(s){
+
+  s1 = stringi::stri_replace_all_fixed(str = s,
+                                  pattern = c('&'),
+                                  replacement = c("&amp;"),
+                                  vectorise_all = F)
+
+# to on two steps do avoid replacing ampersandof already escaped chars with '&amp'
+  stringi::stri_replace_all_fixed(str = s1,
+                                  pattern = c('"', "'", '<', '>'),
+                                  replacement = c("&quot;", "&apos;", "&lt;", "&gt;"),
+                                  vectorise_all = F)
+}
 pack_xml_file = function(src, base_folder, xml_filepack_dir){
 
   # try to copy file into temporary xml file pack directory and configure the right paths
@@ -150,9 +164,9 @@ gen_xml_date = function(datetime, tag = "date", attributes = NULL){
 
   # datetime should be a (lubridate) datetime object
   paste("<",tag," iso-8601-date='", isodate, "' ", attstr, ">\n",
-        "<day>",lubridate::mday(datetime),"</day>\n",
-        "<month>",lubridate::month(datetime),"</month>\n",
-        "<year>",lubridate::year(datetime),"</year>\n",
+        "<day>",lubridate::mday(datetime) |> xe(),"</day>\n",
+        "<month>",lubridate::month(datetime)|> xe(),"</month>\n",
+        "<year>",lubridate::year(datetime)|> xe(),"</year>\n",
         "</",tag,">", sep = "")
 
 }
@@ -192,10 +206,10 @@ gen_xml_abstracts = function(metadata_abs, base_folder = NULL, xml_filepack_dir 
       tit = ""
       text = ""
       if(is.character(cctitle)){
-        tit = paste0("<title>",cctitle,"</title>\n")
+        tit = paste0("<title>",cctitle|> xe(),"</title>\n")
       }
       if(is.character(cctext)){
-        text = paste0("<p>", cctext, "</p>")
+        text = paste0("<p>", cctext|> xe(), "</p>")
       } else {
         stop("Invalid abstrat part, no text in gen_xml_abstracts")
       }
@@ -232,7 +246,7 @@ gen_xml_keywords = function(metadata_kwds){
     }
     kwds = trimws(stringr::str_split(string = metadata_kwds[[cn]], pattern = ",")[[1]])
 
-    xkwds = paste0("<kwd>", kwds, "</kwd>")
+    xkwds = paste0("<kwd>", kwds |> xe(), "</kwd>")
 
     res[[cn]] = paste0("<kwd-group ", xml_lang, " kwd-group-type='author'>\n",
                        paste(xkwds, collapse = "\n"),
@@ -285,14 +299,14 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
 
   # front
   journal_meta = paste0("<journal-meta>",
-                        "<journal-id journal-id-type='publisher'>",metadata$journal_publisher_id,"</journal-id>",
+                        "<journal-id journal-id-type='publisher'>",metadata$journal_publisher_id|> xe(),"</journal-id>",
                         "<journal-title-group>",
-                        "<journal-title>",metadata$journal_title, "</journal-title>",
-                        "<abbrev-journal-title>",metadata$journal_title_short,"</abbrev-journal-title>",
+                        "<journal-title>",metadata$journal_title|> xe(), "</journal-title>",
+                        "<abbrev-journal-title>",metadata$journal_title_short|> xe(),"</abbrev-journal-title>",
                         "</journal-title-group>",
-                        "<issn publication-format='electronic'>",metadata$issn,"</issn>",
+                        "<issn publication-format='electronic'>",metadata$issn|> xe(),"</issn>",
                         "<publisher>", #PMC  ids for publisher and pubmed shorthand need likely to be added backupon indexation
-                        "<publisher-name>",metadata$publisher,"</publisher-name>",
+                        "<publisher-name>",metadata$publisher|> xe(),"</publisher-name>",
                         "</publisher>",
                         "</journal-meta>")
 
@@ -304,11 +318,11 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
 
        names = ""
        if(!is.null(ca$family_name) && !is.null(ca$first_name)){
-         names = paste("<surname>",ca$family_name,"</surname>\n",
-                       "<given-names>",ca$first_name,"</given-names>",sep = "")
+         names = paste("<surname>",ca$family_name|> xe(),"</surname>\n",
+                       "<given-names>",ca$first_name|> xe(),"</given-names>",sep = "")
        }
        else{
-         names = paste("<surname>",ca$name,"</surname>", sep = "") # online validator fails if string-name element is used, but should be valid according to tag library
+         names = paste("<surname>",ca$name|> xe(),"</surname>", sep = "") # online validator fails if string-name element is used, but should be valid according to tag library
        }
 
        # we need to handle multiple affiliations per author, hence the loop
@@ -316,7 +330,7 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
        txr = vector("character", length(affil_ids))[[1]]
        for(cafri  in 1:length(affil_ids)){
 
-          txr[cafri] = paste0( "<xref ref-type='aff' rid='aff_", affil_ids[[cafri]]  ,"'/>")
+          txr[cafri] = paste0( "<xref ref-type='aff' rid='aff_", trimws(affil_ids[[cafri]])  ,"'/>")
        }
 
        # detect if corresponding
@@ -340,11 +354,11 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
 
               v_roles[cri] = paste0("<role vocab='credit' vocab-identifier='https://credit.niso.org/' ",
                              "vocab-term-identifier='", credit_urls[mi], "' ",
-                             "vocab-term='", tolower(crole), "'>", crole, "</role>")
+                             "vocab-term='", tolower(crole), "'>", crole|> xe(), "</role>")
             }
             else {
 
-              v_roles[cri] = paste0("<role>",crole,"</role>\n")
+              v_roles[cri] = paste0("<role>",crole|> xe(),"</role>\n")
             }
 
           }
@@ -368,7 +382,7 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
   affils_vec = vector("character", length(metadata$affiliations))
   for(cafi in 1:length(metadata$affiliations)){
 
-    affils_vec[cafi] = paste0("<aff id='aff_", metadata$affiliations[[cafi]]$id,  "'>",metadata$affiliations[[cafi]]$address,"</aff>")
+    affils_vec[cafi] = paste0("<aff id='aff_", metadata$affiliations[[cafi]]$id,  "'>",metadata$affiliations[[cafi]]$address |> xe(),"</aff>")
   }
   affiliations = paste0(affils_vec, collapse = "\n")
 
@@ -378,9 +392,9 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
 
     email = metadata$attributes$corresponding_email
     if(stringr::str_detect(string = email, pattern = ".+@.+\\..+")){ # primitive check if email to put email tag
-      email = paste0("<email>", email ,"</email>")
+      email = paste0("<email>", email|> xe() ,"</email>")
     }
-    corresp_note = paste0("<corresp id='corr_1'>*", metadata$string_corresponding, ": ", email, "</corresp>")
+    corresp_note = paste0("<corresp id='corr_1'>*", metadata$string_corresponding |> xe(), ": ", email, "</corresp>")
   }
 
 
@@ -412,10 +426,16 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
       stop(paste0("invalid date type (needs accepted, published or received):", adates[j]))
     }
 
-    if(parsed_adatetypes[j] == "published"){
+    if(tolower(parsed_adatetypes[j]) == "published"){
+
+      ctate = parsed_adates[j]
+      if(is.na(ctate)){
+        ctate = lubridate::parse_date_time("1700",  orders = "y")
+      }
+
 
       # publication-date needs date-type 'pub' https://jats.nlm.nih.gov/publishing/tag-library/1.3/attribute/date-type.html
-      pubdate = gen_xml_date(parsed_adates[j], tag = "pub-date", attributes = c('date-type' = "pub", 'publication-format'='electronic'))
+      pubdate = gen_xml_date(ctate, tag = "pub-date", attributes = c('date-type' = "pub", 'publication-format'='electronic'))
     }
     else {
       # put in history
@@ -424,19 +444,19 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
 
   }
   history = paste("<history>", paste(hist_list, collapse = "\n"), "</history>", sep = "\n")
-  volumeissue = paste("<volume>", metadata$volume,"</volume>\n",
-                      "<issue>", metadata$issue, "</issue>",
+  volumeissue = paste("<volume>", metadata$volume|> xe(),"</volume>\n",
+                      "<issue>", metadata$issue|> xe(), "</issue>",
                       "<elocation-id>1</elocation-id>\n",
                       sep = "")
 
 
 
   permissions = paste("<permissions>\n",
-                      "<copyright-statement>©",metadata$copyright_year, metadata$copyright,"</copyright-statement>\n",
+                      "<copyright-statement>©",metadata$copyright_year, metadata$copyright|> xe(),"</copyright-statement>\n",
                       "<copyright-year>",metadata$copyright_year,"</copyright-year>\n",
-                      "<copyright-holder>", metadata$copyright_holder,"</copyright-holder>\n",
+                      "<copyright-holder>", metadata$copyright_holder|> xe(),"</copyright-holder>\n",
                       "<license license-type='open-access'>",
-                      "<license-p>", metadata$license,"</license-p>",
+                      "<license-p>", metadata$license |> xe(),"</license-p>",
                       "</license>",
                       "</permissions>", sep = "")
 
@@ -452,25 +472,25 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
   if(v(fstatement)){
 
     paste0("<funding-group>",
-           "<funding-statement>", fstatement, "</funding-statement>",
+           "<funding-statement>", fstatement|> xe(), "</funding-statement>",
       "</funding-group>")
   }
 
   article_meta = paste("<article-meta>",
                           #"<article-id pub-id-type='publisher-id'>181325198</article-id>", # needed - Ask miguel?$
-                          paste0("<article-id pub-id-type='doi'>",metadata$doi,"</article-id>"),
+                          paste0("<article-id pub-id-type='doi'>",metadata$doi|> xe(),"</article-id>"),
                           "<article-version vocab='JAV' vocab-identifier='http://www.niso.org/publications/rp/RP-8-2008.pdf' vocab-term='Version of Record' article-version-type='VoR'>Version of Record</article-version>", # ask miguel
                           "<article-categories>",
                           "<subj-group>",
                           "<subject>Articles</subject>", # use two level groupinsg to be somewhat future proof
                           "<subj-group>",
-                          "<subject>",metadata$article_type,"</subject>",
+                          "<subject>",metadata$article_type|> xe(),"</subject>",
                           "</subj-group>",
                           "</subj-group>",
                           "</article-categories>",
 
                           # article title
-                          paste0("<title-group>\n<article-title>", metadata$title, "</article-title>\n</title-group>"),
+                          paste0("<title-group>\n<article-title>", metadata$title|> xe(), "</article-title>\n</title-group>"),
 
                           # authors - ask miguel if CREDIT statment will be used? if yes, check pnas original again
                           "<contrib-group content-type='authors'>",
@@ -516,15 +536,15 @@ gen_xml_authors = function(v_authors){
         if(length(anparts) == 1){
 
           authoritems[j] = paste0("<name>\n<surname>", # also remove curly brackets
-                                  trimws(anparts[1], whitespace = "[ \t\r\n}{]"),
+                                  trimws(anparts[1], whitespace = "[ \t\r\n}{]")|> xe(),
                                   "</surname>\n</name>")
 
 
         } else if (length(anparts) == 2){
 
           authoritems[j] = paste0("<name>\n<surname>",
-                                  trimws(anparts[1], whitespace = "[ \t\r\n}{]"),"</surname>\n",
-                                  "<given-names>",trimws(anparts[2], whitespace = "[ \t\r\n}{]"),
+                                  trimws(anparts[1]|> xe(), whitespace = "[ \t\r\n}{]"),"</surname>\n",
+                                  "<given-names>",trimws(anparts[2], whitespace = "[ \t\r\n}{]")|> xe(),
                                   "</given-names>\n</name>")
 
         }
@@ -592,15 +612,14 @@ gen_xml_references = function(d_refs){
     pubiddoi        = putxml.nullna(dr$DOI[i],                                              "pub-id", c("pub-id-type"="doi"))
 
 
-
     pages = ""
     if(!is.na(dr$PAGES[i])){
 
-      tspl = stringr::str_split(string = "40-30", pattern = "((--)|-)")[[1]]
+      tspl = stringr::str_split(string = dr$PAGES[i], pattern = "((--)|-)")[[1]]
       if(length(tspl)> 1){
-        pages = paste0("<fpage>",tspl[1],"</fpage>\n<lpage>",tspl[2],"</lpage>")
+        pages = paste0("<fpage>",tspl[1]|> xe(),"</fpage>\n<lpage>",tspl[2]|> xe(),"</lpage>")
       } else{
-        pages = paste0("<fpage>",tspl[1])
+        pages = paste0("<fpage>",tspl[1]|> xe(),"</fpage>")
       }
     }
 
@@ -624,7 +643,7 @@ gen_xml_references = function(d_refs){
 
     refitems[i]   = paste(
       paste0("<ref id='", cid , "' >"),
-      paste0("<label>", clab, "</label>"),
+      paste0("<label>", clab|> xe(), "</label>"),
       paste0("<element-citation ",  publicationtype, " ", publicationformat, " >"),
       pgauthors,
       pgeditors,
@@ -656,24 +675,26 @@ gen_xml_references = function(d_refs){
   xml_refs
 
 }
-gen_xml_displaymath = function(latex, counter = NULL){
+gen_xml_displaymath = function(latex, counter){
 
-  paste0("<disp-formula id='E1'>",
-         "<tex-math id='M1'>\\documentclass[12pt]{minimal} \\usepackage{wasysym} \\usepackage[substack]{amsmath} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage[mathscr]{eucal} \\usepackage{mathrsfs} \\DeclareFontFamily{T1}{linotext}{} \\DeclareFontShape{T1}{linotext}{m}{n} { &#x003C;-&#x003E; linotext }{} \\DeclareSymbolFont{linotext}{T1}{linotext}{m}{n} \\DeclareSymbolFontAlphabet{\\mathLINOTEXT}{linotext} \\begin{document} $$",
+
+  mid = paste0("id='DM_", counter, "'")
+  paste0("<disp-formula ",mid, ">",
+         "<tex-math><![CDATA[\\documentclass[12pt]{minimal} \\usepackage{wasysym} \\usepackage[substack]{amsmath} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage[mathscr]{eucal} \\usepackage{mathrsfs} \\DeclareFontFamily{T1}{linotext}{} \\DeclareFontShape{T1}{linotext}{m}{n} { &#x003C;-&#x003E; linotext }{} \\DeclareSymbolFont{linotext}{T1}{linotext}{m}{n} \\DeclareSymbolFontAlphabet{\\mathLINOTEXT}{linotext} \\begin{document} $$",
          latex,
-         "$$ \\end{document} </tex-math>",
+         "$$ \\end{document} ]]></tex-math>",
          "</disp-formula>", sep = "\n")
 
 
 
 }
-gen_xml_inlinemath = function(latex){
+gen_xml_inlinemath = function(latex, counter = NULL){
 
 
   paste0("<inline-formula>",
-         "<tex-math id='M1'>\\documentclass[12pt]{minimal} \\usepackage{wasysym} \\usepackage[substack]{amsmath} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage[mathscr]{eucal} \\usepackage{mathrsfs} \\DeclareFontFamily{T1}{linotext}{} \\DeclareFontShape{T1}{linotext}{m}{n} { &#x003C;-&#x003E; linotext }{} \\DeclareSymbolFont{linotext}{T1}{linotext}{m}{n} \\DeclareSymbolFontAlphabet{\\mathLINOTEXT}{linotext} \\begin{document} $$",
+         "<tex-math><![CDATA[\\documentclass[12pt]{minimal} \\usepackage{wasysym} \\usepackage[substack]{amsmath} \\usepackage{amsfonts} \\usepackage{amssymb} \\usepackage{amsbsy} \\usepackage[mathscr]{eucal} \\usepackage{mathrsfs} \\DeclareFontFamily{T1}{linotext}{} \\DeclareFontShape{T1}{linotext}{m}{n} { &#x003C;-&#x003E; linotext }{} \\DeclareSymbolFont{linotext}{T1}{linotext}{m}{n} \\DeclareSymbolFontAlphabet{\\mathLINOTEXT}{linotext} \\begin{document} $$",
          latex,
-         "$$ \\end{document} </tex-math>",
+         "$$ \\end{document} ]]></tex-math>",
          "</inline-formula>", sep = "\n")
 }
 gen_xml_paragraphs = function(ptext,d_inlinemath){
@@ -787,7 +808,7 @@ gen_xml_sections = function(doc_summar){
       }
     }
 
-    hxml_opentags[crow] = paste0(hxml_opentags[crow],"<sec ", sectype, "><title>",txt, "</title>")
+    hxml_opentags[crow] = paste0(hxml_opentags[crow],"<sec ", sectype, "><title>",txt|> xe(), "</title>")
 
     # find section end -> next row with 1 or 2 in the same column
     if(crow < NROW(headi)) {
@@ -900,15 +921,15 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
   row_strings = vector(mode = "character", length = NROW(ct_csv))
   for(i in 1:NROW(ct_csv)){
-    row_strings[i] = paste0("<tr>", paste0("<",celltags[i],">", ct_csv[i,] |> unlist(), "</", celltags[i], ">", collapse = ""), "</tr>")
+    row_strings[i] = paste0("<tr>", paste0("<",celltags[i],">", ct_csv[i,] |> unlist()|> xe(), "</", celltags[i], ">", collapse = ""), "</tr>")
   }
   tbodystring = paste0(row_strings, collapse = "\n")
 
   table_xml = paste0("<table-wrap id='", id ,"'>",
-   paste("<label>", label, "</label>"),
+   paste("<label>", label|> xe(), "</label>"),
    "<caption>",
     #"<title>Patient Care at End of Follow Up</title>", caption title if ever
-     paste0("<p>", tab_caption, "</p>"),
+     paste0("<p>", tab_caption|> xe(), "</p>"),
    "</caption>",
    "<table ",rf_str," cellpadding='3'>",
     colgroup,
@@ -952,9 +973,9 @@ gen_xml_figure = function(fig_opts, fig_counter, xml_filepack_dir, base_folder){
     stop("Figure src not provided")
   }
   figure_xml = paste(paste0("<fig id='", id, "'>"),
-                    paste0("<label>", label, "</label>"),
+                    paste0("<label>", label|> xe(), "</label>"),
                     "<caption>",
-                    paste0("<p>", fig_caption,"</p>"),
+                    paste0("<p>", fig_caption|> xe(),"</p>"),
                     "</caption>",
                     paste0("<graphic xmlns:xlink='http://www.w3.org/1999/xlink' xlink:href='", fig_src, "'>"),
                     "</graphic>
@@ -973,7 +994,7 @@ gen_xml_statements = function(statement_list){
     for(ci in 1:length(statement_list)){
 
       title = names(statement_list)[ci]
-      if(!is.null(title)) title = paste0("<title>", title, "</title>")
+      if(!is.null(title)) title = paste0("<title>", title|> xe(), "</title>")
 
       # type detection
       sectype = ""
@@ -1000,7 +1021,7 @@ gen_xml_statements = function(statement_list){
 
       ret[ci] = paste0("<",tag,">",
              title,
-             paste0("<p>",statement_list[[ci]], "</p>"),
+             paste0("<p>",statement_list[[ci]]|> xe(), "</p>"),
              "</", tag, ">", sep = "\n")
 
       return(paste0(ret, collapse = "\n"))

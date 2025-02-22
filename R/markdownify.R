@@ -858,6 +858,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\@", replacement = "\\\\@")]
   # doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn := stringr::str_replace_all(mrkdwn, pattern = "\\%", replacement = "\\\\%")]
   fig_counter = 1
+  counter_displaymath = 1
 
   # store commands so we can detect the previous one
   command_list = list()
@@ -886,6 +887,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       c_result = ""
       c_result_xml = ""
       c_xml_type = "command"
+
 
 
       if(length(c_command) > 0 & !inherits(c_command, "error")){
@@ -931,7 +933,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                  #print("Math detected")
                  formula = c_command['form']
                  c_result = paste0("$$", trimws(formula), "$$")
-                 c_result_xml = gen_xml_displaymath(latex = trimws(formula))
+                 c_result_xml = gen_xml_displaymath(latex = trimws(formula), counter_displaymath)
+                 counter_displaymath = counter_displaymath+1
                  c_xml_type = "display_math"
 
                },
@@ -1214,6 +1217,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     xml_text = paste0(gen_xml_file(doc_summar, article_type = xml_metadata$article_type,
                                    xml_meta  = xml_front, xml_references = xml_refs,
                                    d_xmlintext_cites = d_xmlintext_cites, xml_statements = xml_statements))
+
 
     if(file.exists(paste0(path_xml_filepack_dir, "/document.xml"))) hgl_error(paste0("Error in writing out JATS xml:  document.xml already exists in '", path_xml_filepack_dir,"'"))
     else write(xml_text, file = paste0(path_xml_filepack_dir, "/document.xml")) # overwrites if existing
