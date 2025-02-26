@@ -26,4 +26,5 @@ Imports:
     xslt,
     bookdown,
     rmarkdown,
-    tinytex
+    tinytex,
+    stringi
