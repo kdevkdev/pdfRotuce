@@ -129,7 +129,7 @@ parser_latex = NULL
       p_emphboldgroup = function(doc = 'emphboldgroup : EMPHBOLD expression EMPHBOLD',p){
 
         if(self$mode == "latex")      p$set(1, paste0("\\bfseries{\textit{",p$get(3), "}}"))
-        else if(self$mode == "xml")   p$set(1, paste0("<bold><italic>",p$get(3), "</italic></bold>"))
+        else if(self$mode == "xml")   p$set(1, paste0("<bold><italic>",p$get(3) |> xe(), "</italic></bold>"))
 
         #p$set(1, paste0("{{",p$get(3), "}}"))
         messlog("p_emphboldgroup: ",p$get(1))
@@ -137,7 +137,7 @@ parser_latex = NULL
       p_boldgroup = function(doc = 'boldgroup : BOLD expression BOLD',p){
 
         if(self$mode == "latex")      p$set(1, paste0("\\textbf{",p$get(3), "}"))
-        else if(self$mode == "xml")   p$set(1, paste0("<bold>",p$get(3), "</bold>"))
+        else if(self$mode == "xml")   p$set(1, paste0("<bold>",p$get(3)|> xe(), "</bold>"))
         #p$set(1, p$get(3))
         #p$set(1, paste0("{",p$get(3), "}"))
         messlog("p_boldgroup: ",p$get(1))
@@ -145,7 +145,7 @@ parser_latex = NULL
       p_emphgroup = function(doc = 'emphgroup : EMPH expression EMPH',p){
 
         if(self$mode == "latex")      p$set(1, paste0("\\textit{",p$get(3),  "}"))
-        else if(self$mode == "xml")   p$set(1, paste0("<italic>",p$get(3),  "</italic>"))
+        else if(self$mode == "xml")   p$set(1, paste0("<italic>",p$get(3)|> xe(),  "</italic>"))
 
         #p$set(1, paste0("{",p$get(3),  "}"))
         messlog("p_emphgroup: ",p$get(1))
@@ -155,7 +155,7 @@ parser_latex = NULL
       #   messlog("p_dspace: ",p$get(1))
       # },
       p_text = function(doc = 'text : TEXT',p){
-        p$set(1, p$get(2))
+        p$set(1, p$get(2)|> xe())
         messlog("p_text: ",p$get(1))
       },
 

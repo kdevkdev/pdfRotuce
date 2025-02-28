@@ -854,7 +854,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
 
   if(length(header_inds) == 0){
-    hgl_warn(paste0("Table #",  tab_counter ,  " - ", label ,": no header row provided (=first cell in column starting with '#'), assuming first row is header row. XML Jats needs at least 1 header row."))
+    # do o not work, behaviour is ok: hgl_warn(paste0("Table #",  tab_counter ,  " - ", label ,": no header row provided (=first cell in column starting with '#'), assuming first row is header row. XML Jats needs at least 1 header row."))
     header_inds = 1
   }
 
@@ -921,7 +921,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
   row_strings = vector(mode = "character", length = NROW(ct_csv))
   for(i in 1:NROW(ct_csv)){
-    row_strings[i] = paste0("<tr>", paste0("<",celltags[i],">", ct_csv[i,] |> unlist()|> xe(), "</", celltags[i], ">", collapse = ""), "</tr>")
+    row_strings[i] = paste0("<tr>", paste0("<",celltags[i], " " , colaligns, ">", ct_csv[i,] |> unlist(), "</", celltags[i], ">", collapse = ""), "</tr>")
   }
   tbodystring = paste0(row_strings, collapse = "\n")
 
@@ -932,7 +932,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
      paste0("<p>", tab_caption|> xe(), "</p>"),
    "</caption>",
    "<table ",rf_str," cellpadding='3'>",
-    colgroup,
+    "<colgroup>", colgroup, "</colgroup>",
     "<tbody>",
         tbodystring,
     "</tbody>

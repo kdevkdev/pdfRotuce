@@ -30,8 +30,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   type_width = 180
   type_height = 272
 
-  fig_capts =
-    tab_capts = c()
+  fig_capts = tab_capts = c()
 
 
   if(!is.null(grobid_consolidate_blacklist)) grobid_consolidate_blacklist = stringr::str_split(grobid_consolidate_blacklist, pattern = ",")
@@ -303,10 +302,14 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       d_refparser_inject$internal_id = trimws(t[, 2])
       d_refparser_inject$payload = t[,4]
       # find matching ref_itemnums - test using starts with
-      inject_ids = which(startsWith(ref_itemnums,d_refparser_inject$internal_id))
+      inject_ids = sapply(d_refparser_inject$internal_id, FUN = \(x) { which(startsWith(x = ref_itemnums, prefix = x))})
+
+
 
       # overwrite bibliography entry befor writing to file
       if(length(inject_ids) > 0) references[inject_ids] = d_refparser_inject$payload
+
+
 
     }
 
