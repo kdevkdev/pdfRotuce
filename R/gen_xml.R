@@ -763,8 +763,10 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
 
 gen_xml_sections = function(doc_summar){
 
-  # for JATS we need more elaborate parsing
+  # for JATS we need more elaborate parsing because we ned to know the level to set the number of taghs correctly
   headi = matrix(data = 0, nrow = NROW(doc_summar), ncol = 5)
+
+  # in the matrix set the responding column for the respective row to 1
   headi[,1] = doc_summar[,tolower(style_name) == "heading 1"]
   headi[,2] = doc_summar[,tolower(style_name) == "heading 2"]
   headi[,3] = doc_summar[,tolower(style_name) == "heading 3"]
@@ -774,13 +776,13 @@ gen_xml_sections = function(doc_summar){
   # get row indices with 1 entries
   hinds = which(headi |> rowSums() > 0 )
 
-  # 1. fill everything right of a level 1 cell with 2 to mark an interruption through an upper level
+  # 1. fill everything right of a 1-cell with 2 to mark an interruption through an upper level
   for(ci in hinds) headi[ci, ] = cumsum(headi[ci, ])+shift(x = cumsum(headi[ci, ]), n = 1, fill = 0)
 
 
   # 2. insert xml section start and endtags
-  hxml_opentags = rep("", times = NROW(headi))
-  hxml_endtags = rep("", times = NROW(headi))
+  hxml_pretags = rep("", times = NROW(headi))
+  hxml_postags = rep("", times = NROW(headi))
   for(crow in hinds) {
 
     # current heading start
@@ -789,10 +791,9 @@ gen_xml_sections = function(doc_summar){
 
     # put section type for some level 1 headings (https://jats.nlm.nih.gov/archiving/tag-library/1.4/attribute/sec-type.html)
     sectype = ""
-    txt = ""
+    txt = doc_summar$text[crow]
     if(ccol  ==1 ){
 
-      txt = doc_summar$text[crow]
 
       t = switch(tolower(trimws(txt)),
               conclusions = "conclusions",
@@ -808,26 +809,33 @@ gen_xml_sections = function(doc_summar){
       }
     }
 
-    hxml_opentags[crow] = paste0(hxml_opentags[crow],"<sec ", sectype, "><title>",txt|> xe(), "</title>")
+
+    hxml_postags[crow] = paste0(hxml_postags[crow],"<sec ", sectype, "><title>",txt|> xe(), "</title>")
 
     # find section end -> next row with 1 or 2 in the same column
+    lastrow = integer(0)
     if(crow < NROW(headi)) {
       sstart = crow+1
 
       lastrow = which(headi[sstart:NROW(headi), ccol] > 0)
 
       # was there no 1 or 2 below the current row in this column? then sedtion ends at the last row
-      if(length(lastrow) == 0) lastrow = NROW(headi) else lastrow = lastrow[1]+sstart -1
-
-    } else  lastrow = NROW(headi)
+      if(length(lastrow) > 0) hxml_pretags[lastrow[1]+crow] = paste0("</sec>", hxml_pretags[lastrow[1]+crow])
 
 
-    hxml_endtags[lastrow] = paste0("</sec>", hxml_endtags[lastrow])
+    }
+
+    # if the content is at the end, then the closing that needs to go behind
+    if(length(lastrow) == 0){
+      # at the target row at the end
+      hxml_postags[NROW(headi)] = paste0("</sec>", hxml_postags[NROW(headi)])
+    }
 
     #cat("cr: ", crow, "lr: ", lastrow, "\n")
 
   }
-  return(list(hxml_opentags = hxml_opentags, hxml_endtags = hxml_endtags))
+
+  return(list(hxml_pretags = hxml_pretags, hxml_postags = hxml_postags))
 }
 gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
@@ -1069,15 +1077,19 @@ gen_xml_file = function(doc_summar, article_type, xml_meta, xml_references, d_xm
                  xml_meta, sep = "\n")
 
   # get rid of NA entires - could be unsave though in case NAs do not match over rows
-  secopen = doc_summar$xml_secopen
+  secpre = doc_summar$xml_pretags
   text    = doc_summar$xml_text
-  secend  = doc_summar$xml_secend
+  secpos  = doc_summar$xml_postags
 
-  secopen[is.na(secopen)] = ""
+
+
+  secpre[is.na(secpre)] = ""
   text[is.na(text)] = ""
-  secend[is.na(secend)] = ""
+  secpos[is.na(secpos)] = ""
 
-  xmltext_rows = paste(trimws(secend), trimws(text), trimws(secopen))
+  xmltext_rows = paste(trimws(secpre), trimws(text), trimws(secpos))
+
+
 
   mid = paste0(xmltext_rows[nchar(xmltext_rows) > 0], collapse = "\n")
 

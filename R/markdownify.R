@@ -744,8 +744,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   # parse headings to xml sections and store into doc_summar
   r = gen_xml_sections(doc_summar)
-  doc_summar$xml_secopen = r$hxml_opentags
-  doc_summar$xml_secend  = r$hxml_endtags
+  doc_summar$xml_pretags = r$hxml_pretags
+  doc_summar$xml_postags  = r$hxml_postags
 
   # to debug
   # xml2::read_xml(paste0("<document>", paste0(hxmltags, collapse = ""), "</document>")) |> xml2::as_list()
@@ -1190,7 +1190,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   if(!is.null(rmd_outfile)){
     write(rmd_text, file = rmd_outfile) # overwrites if existing
   }
-
 
   ############### JATS XML output ######################
   xml_metadata  = xml_reorder_metadata(metadata)
