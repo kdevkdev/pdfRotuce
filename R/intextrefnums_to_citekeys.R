@@ -31,7 +31,7 @@ intextrefnums_to_citekeys = function(v_text, d_refs){
       locrefs_nums[[crange]] = trefnums
       t = d_refs[BIBLIOGRAPHY_NUMBER %in% trefnums]$CITEKEY
 
-      if(length(t) == 0 ) hgl_warn(paste0("intextrefnums_to_citekey: no citekey found for bibliography nunbers '", crange,"'"))
+      if(length(t) == 0 ) hgl_warn(paste0("intextrefnums_to_citekey: no citekey found for bibliography numbers '", crange,"'"))
       locrefs_keys[[crange]] = t
     }
     # construct string to return

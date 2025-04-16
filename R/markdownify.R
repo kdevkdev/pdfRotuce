@@ -292,6 +292,19 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     ref_itemnums = trimws(stringr::str_extract(string = references, pattern = "^[0-9]+[.]"))
     references = stringr::str_replace(string = references, pattern = "^[0-9]+[.]", replacement = "")
 
+    # if all NA - take index of position
+    if(all(is.na(ref_itemnums))) ref_itemnums = 1:length(ref_itemnums)
+    else if(any(is.na(ref_itemnums))) hgl_error("Could not parse bibliography references item numbers, please check")
+
+    # discard empty
+    empty_inds = which(trimws(references) == "")
+
+    # length 0 if none TRUE in which() above
+    if(length(empty_inds) > 0){
+      ref_itemnums = ref_itemnums[-empty_inds]
+      references = references[-empty_inds]
+    }
+
     ############ reference injection ##########################
     d_refparser_inject = data.table()
     if(!is.null(refparsing_inject)){
@@ -335,7 +348,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
       ##################### grobid parsing #################
-      #Examble: curl -X POST -H "Accept: application/x-bibtex" -d "citations=Graff, Expert. Opin. Ther. Targets (2002) 6(1): 103-113" localhost:8070/api/processCitation
+      #Example: curl -X POST -H "Accept: application/x-bibtex" -d "citations=Graff, Expert. Opin. Ther. Targets (2002) 6(1): 103-113" localhost:8070/api/processCitation
 
 
 
@@ -388,7 +401,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     # prepare for binding rows
     x = list()
     for(cn in temp_bibfiles_in){
+
+      print(cn)
       x[[cn]] <- bib2df::bib2df(cn)
+
 
 
       # parse bibnum and index (index always awailable, number might fail)
@@ -618,6 +634,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
     # save original intext citations, seperate by ', '
     doc_summar$orig_citations[content_inds] = lapply(y, FUN = paste, sep = ", ", collapse = ", ")
+
 
     doc_summar$text[content_inds] = intextrefnums_to_citekeys(doc_summar$text[content_inds], d_refs)
 
