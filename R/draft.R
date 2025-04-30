@@ -24,7 +24,7 @@ draft <- function(folder, overwrite = "none", article_type = "article"){
 
   stopifnot("invalid article type, must be 'editorial' or 'article'" = (article_type %in% c("editorial", "article")))
 
-  dir.create(paste0(folder)) # should fail if already exists
+  dir.create(paste0(folder), showWarnings = F) # should fail if already exists
 
   # copy template folder to newly created directory
   template_path <- system.file("./template", package = "pdfRotuce")
@@ -43,8 +43,6 @@ draft <- function(folder, overwrite = "none", article_type = "article"){
   r = file.copy(from = paste0(template_path, "/", "metadata_", article_type, ".csv"),  to = paste0(folder, "/metadata.csv"), overwrite = ow)
   r = file.copy(from = paste0(template_path, "/", "manuscript_", article_type, ".docx"),  to = paste0(folder, "/manuscript.docx"),  overwrite = ow)
 
-  # return true if no F from files.copy
-  return(all(r))
 
 }
 

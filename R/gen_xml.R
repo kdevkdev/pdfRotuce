@@ -411,7 +411,7 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
   # mandatory published missing?
   pubdate_i = which(parsed_adatetypes == "published")
   if(length(pubdate_i) != 1){
-    stop("multiple or no published dates in metadata.csv provided")
+    stop("multiple or no 'published' dates in metadata.csv provided")
   }
 
   pubpdate = ""
@@ -1049,16 +1049,17 @@ gen_xml_file = function(doc_summar, article_type, xml_meta, xml_references, d_xm
 
     xml_article_tuype = "research-article"
 
-  } else if(olower(article_type) == "review"){
+  } else if(tolower(article_type) == "review"){
 
     xml_article_type = "review-article"
 
-  } else if(olower(article_type) == "comment"){
+  } else if(tolower(article_type) == "comment"){
 
     xml_article_type = "article-commentary"
   }
   else{
-    stop("unkown article typer for JATS conversion")
+    hgl_warn("unkown article type " %+% article_type  %+% " for JATS conversion, might not confirm to suggested best practises in JATS standards")
+    xml_article_type = tolower(article_type)
   }
 
   header = paste("<?xml version='1.0' encoding='UTF-8'?>",

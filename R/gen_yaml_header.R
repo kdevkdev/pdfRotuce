@@ -41,8 +41,8 @@ gen_yaml_header = function(md, reference_parsing = T){
                   journalinfo = list(title = '', volume = '', issue = '', doi = '', article_type = '', string_volumeissue = ''),
                   abstracts = list(mainlang = list(parts = list(title = '', text = ''), title = '')),
                   keywords = c(),
-                  authors = list(list(name = '', affiliation_ids = '', orcid = ''),
-                                 list(name = '', affiliation_ids = '', orcid = '')),
+                  authors = list(list(name = '', affiliation_ids = '', orcid = '', co_with_prior = ''),
+                                 list(name = '', affiliation_ids = '', orcid = '', co_with_prior = '')),
 
                   affiliations = list(list(id = '', address = '', orcid = ''),
                                       list(id = '', address = '', orcid = '')),

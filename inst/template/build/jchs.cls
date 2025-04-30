@@ -139,9 +139,9 @@ justification=raggedright, skip = 2pt]{caption}
 \RequirePackage{authblk}
 \setcounter{Maxaffil}{0}% always footnote mode
 \setlength{\affilsep}{4.5mm}%distance between authors and affiliations
-\renewcommand\Authsep{, }% author separation string
-\renewcommand\Authand{ and }% if two authors
-\renewcommand\Authands{, }% before last author if more than two
+\renewcommand\Authsep{}% author separation string
+\renewcommand\Authand{}% if two authors
+\renewcommand\Authands{}% before last author if more than two
 
 \renewcommand\Authfont{\fontsize{12}{14}\selectfont}
 \renewcommand\Affilfont{\fontsize{9}{12}\selectfont}

@@ -676,6 +676,40 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       # delete markers from refs
       stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
+
+      if(url_parsing){
+
+        # pattern from qdapRegex, second one from stackoverflow
+        refs = stringr::str_replace_all(string = refs,
+                                        #pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
+                                        pattern = "(((http|ftp|https):\\/\\/)?([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-]))+", # try another one from  https://stackoverflow.com/questions/6038061/regular-expression-to-find-urls-within-a-string
+                                        replacement = function(m){
+
+                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                          r  = paste0("\\url{", r,"}")
+                                          r
+                                        })#"\\\\url{\\0}"
+
+
+      }
+
+
+      if(doi_parsing){
+
+
+        # pattern from qdapRegex
+        refs = stringr::str_replace_all(string = refs,
+                                        pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                        replacement = function(m){
+
+                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                          r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
+                                          r
+                                          #browser()
+                                        })#"\\\\url{\\0}"
+      }
+
+
       # escape &, _ and [,]
       refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
       refs = stringr::str_replace_all(refs, pattern = "\\[", replacement = "{[}")
@@ -699,36 +733,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       #                                pattern = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)",
       #                                replacement = "\\\\url{\\0}")
 
-      if(url_parsing){
 
-        # pattern from qdapRegex
-        refs = stringr::str_replace_all(string = refs,
-                                        pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
-                                        replacement = function(m){
-
-                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                          r  = paste0("\\url{", r,"}.")
-                                          r
-                                          #browser()
-                                        })#"\\\\url{\\0}"
-
-      }
-
-
-      if(doi_parsing){
-
-
-        # pattern from qdapRegex
-        refs = stringr::str_replace_all(string = refs,
-                                        pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
-                                        replacement = function(m){
-
-                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                          r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
-                                          r
-                                          #browser()
-                                        })#"\\\\url{\\0}"
-      }
 
       rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
                                                               options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))

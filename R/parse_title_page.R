@@ -124,7 +124,7 @@ parse_title_page = function(docdat){
 
           ta = apply(X = ct_tab, MARGIN = 1, FUN = \(x){
 
-
+              # detect corresponding author
               corresponding = FALSE
               if( stringr::str_detect(string = x[['affiliation_ids']], pattern = "\\*")){
 
@@ -139,11 +139,21 @@ parse_title_page = function(docdat){
               # this regex should work for with arbitrary number of escape chars
               name = x[['author']]
 
+              # detect co- status (co-first, co-senior/co-last, or also called shared author ship)
+              if(stringr::str_detect(name, pattern = "^&&")){
+
+                # delete double ampersand from string
+                name = trimws(stringr::str_replace(string = name, pattern = "^&&", replacement = ""))
+
+                # set flag for co
+                rl[['co_with_prior']] = yml_qt(T)
+              }
+
               # we are interested in the end of the match (the first position always includes the previous char)
               cpos = stringr::str_locate(string = name, pattern = "(?:(?:[^\\\\](?:\\\\\\\\)*))(?:,|;)")[2]
 
-              #nameparts = stringr::str_split_1(string = name, pattern = "(([^\\\\](\\\\\\\\)*))(,|;)")
 
+             # if two parts
              if(!is.na(cpos) && cpos > 1 & cpos +1< nchar(name)){
 
                 nameparts = vector("character", 2)
@@ -171,6 +181,7 @@ parse_title_page = function(docdat){
 
                 rl[['contrib_roles']] = roles
               }
+
 
 
               rl
