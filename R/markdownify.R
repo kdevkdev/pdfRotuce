@@ -38,7 +38,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   df = officer::docx_summary(docx,preserve = T,remove_fields = T, detailed = T)
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
-  browser()
   doc_summar[is.na(style_name), style_name := ""]
   doc_summar[, texto := text]
 
