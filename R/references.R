@@ -565,9 +565,28 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
       stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
 
-      # list for safeguarding ursl from doi parsing
-      refurl_safeguards = list()
+      # list for safeguarding url from doi parsing
+      refdoi_safeguards = list()
+      if(doi_parsing){
 
+
+        # pattern from qdapRegex
+        refs = stringr::str_replace_all(string = refs,
+                                        pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
+                                        replacement = function(m){
+
+                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
+                                          r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
+                                          r
+
+                                          i =length(refdoi_safeguards)+1
+                                          refdoi_safeguards[[i]] <<- r
+                                          paste0("____________refdoi", i, "refdoi____________")
+                                        })#"\\\\url{\\0}"
+      }
+
+      # list for safeguarding url from url parsing
+      refurl_safeguards = list()
       if(url_parsing){
 
         # pattern from qdapRegex, second one from stackoverflow
@@ -589,28 +608,20 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
       }
 
 
-      if(doi_parsing){
-
-
-        # pattern from qdapRegex
-        refs = stringr::str_replace_all(string = refs,
-                                        pattern = stringr::regex("\\b(?<!/)10[.]\\d{4,9}/[-._;()/:A-Z0-9]+\\b", ignore_case = T),
-                                        replacement = function(m){
-
-                                          r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                          r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
-                                          r
-                                          #browser()
-                                        })#"\\\\url{\\0}"
-      }
-
-
 
       # put back reference urls
+      if(length(refurl_safeguards) > 0){
       for(i in 1:length(refurl_safeguards)){
-
         # fill back in
         refs = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards[[i]])
+        }
+      }
+      # put back doi urls
+      if(length(refdoi_safeguards) > 0){
+        for(i in 1:length(refdoi_safeguards)){
+          # fill back in
+          refs = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refdoi",i,"refdoi____________")), replacement  = refdoi_safeguards[[i]])
+        }
       }
 
       # escape &, _ and [,]

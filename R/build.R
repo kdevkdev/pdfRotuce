@@ -52,7 +52,7 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     if(file.exists(pdf_outfile)){
 
       file.copy(from = pdf_outfile, to = pdf_outfileO, overwrite = T)
-      file.copy(from = rmd_outfile, to = rmd_outfileO, overwrite = T)
+      #file.copy(from = rmd_outfile, to = rmd_outfileO, overwrite = T) # no longer do this -> depends on tabchnk code
       file.copy(from = paste0(build_path, "/", "references.bib"), to = bib_outfileO, overwrite = T)
 
 

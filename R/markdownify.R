@@ -422,7 +422,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       cstat <- metadata$statements[[cn]]
       rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
 
-      if(tolower(trimws(cn)) == "contributions" || tolower(trimws(cn)) == "author contributions" || tolower(trimws(cn)) == "author's contributions"|| tolower(trimws(cn)) == "authors' contributions"){
+      # checkstring
+      chkstr = trimws(tolower(cn))
+      # check for words author an dcontribution in right order and some limited distance from each other
+      if(stringr::str_detect(string = chkstr, pattern = "author.{1,5}contribution")){
          consumed_indiv_author_contribs = TRUE
          rmd_statements = paste0(rmd_statements, "\n", indiv_author_contribs)
 
@@ -525,7 +528,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   # if any orcids present, put all authors with oricds in a separate section before the references
   rmd_orcinds = ""
-  if(!is.null(author_orcinds) & length(author_orcinds) > 0){
+  if(!is.null(author_orcinds) && length(author_orcinds) > 0 && any(author_orcinds)){
 
     td <- metadata$authors[author_orcinds] |> rbindlist(fill = TRUE)
 

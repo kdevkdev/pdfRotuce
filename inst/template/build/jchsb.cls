@@ -4,19 +4,30 @@
 \newcommand\versionnumber{0.1}
 
 \NeedsTeXFormat{LaTeX2e}
+%\ProvidesClass{ncc}[19/06/2017, v1.0]
 \ProvidesClass{jchs}
 
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions*
 \LoadClass{article}
 
+%\RequirePackage[utf8]{inputenc}
 \RequirePackage[english]{babel}
 
+% for huxtable
+%\RequirePackage{array}
+%\RequirePackage{caption}%gives error abovescaptionskip already defined, posssibly loaded elsewhere
+%\RequirePackage{supertabular}
 \RequirePackage{graphicx}
 \RequirePackage{siunitx}
 \RequirePackage[normalem]{ulem}
+%\RequirePackage{colortbl}
+%\RequirePackage{multirow}
 \RequirePackage{hhline}
 \RequirePackage{calc}
+%\RequirePackage{tabularx}
+%\RequirePackage{threeparttable}
+%\RequirePackage{wrapfig}
 \RequirePackage{adjustbox}
 \RequirePackage{cuted}
 \RequirePackage{abspos}
@@ -26,7 +37,14 @@
 \RequirePackage{placeins}
 \RequirePackage{framed}
 
-% tables
+
+
+%\RequirePackage{longtable}
+
+%\RequirePackage{hyperref}
+
+
+%\RequirePackage{supertabular}
 \RequirePackage{xltabular}
 
 
@@ -38,6 +56,9 @@
 
 
 %%%%%%%%%% font stuff %%%%%%%%%%%%%
+%\RequirePackage{opensans}
+%\RequirePackage{tgpagella}
+
 \RequirePackage{fontspec}
 	\directlua{ luaotfload.add_fallback("fallbacks", { "[fonts/notosanssymbols2/NotoSansSymbols2-Regular.ttf]:style=Regular;" }) }
 
@@ -69,11 +90,18 @@ RawFeature={fallback=fallbacks}]
 
 \DeclareTextFontCommand{\fontAffils}{\fontsize{50}{54}\selectfont}
 
-%%%%% end ont stuff %%%%%%%%%
+%\renewcommand{\normalsize}{\fontsize{10}{11}\selectfont}
+%\renewcommand{\large}{\fontsize{11}{13}\selectfont}
+%\renewcommand{\Large}{\fontsize{12}{14}\selectfont}
+%\renewcommand{\footnotesize}{\fontsize{7}{8}\selectfont}
+%\setstretch{1.1}
+
 
 \RequirePackage[hang,flushmargin]{footmisc}
 
 \RequirePackage[breakable]{tcolorbox}
+
+
 
 
 \RequirePackage{ifpdf}
@@ -81,10 +109,11 @@ RawFeature={fallback=fallbacks}]
 \RequirePackage{amsmath,amsfonts,amssymb}
 \RequirePackage{graphicx}
 \RequirePackage[table]{xcolor}
+%\RequirePackage{booktabs}
 \usepackage{graphicx}
 
 
-%page setup
+%\twocolumn
 \RequirePackage[left=1.6cm,%
 right=1.6cm,%
 top=2.5cm,%
@@ -117,12 +146,18 @@ justification=raggedright, skip = 2pt]{caption}
 \renewcommand\Authfont{\fontsize{12}{14}\selectfont}
 \renewcommand\Affilfont{\fontsize{9}{12}\selectfont}
 
+
 % https://tex.stackexchange.com/questions/496334/including-orcid-in-plain-latex-using-authblk
 \newbox{\myorcidaffilbox}
 \sbox{\myorcidaffilbox}{\large\smash{\includegraphics[height=9pt]{ORCIDiD_iconvector}}}
 	\newcommand{\orcidaffil}[1]{%
 	\href{https://orcid.org/#1}{\hspace*{1pt}\usebox{\myorcidaffilbox}}}
 
+
+
+% use - this instead: https://ctan.org/pkg/vancouver
+% https://bookdown.org/yihui/bookdown/citations.html
+% https://bookdown.org/yihui/rmarkdown-cookbook/bibliography.html
 
 %
 % writeLaTeX logo
@@ -139,8 +174,19 @@ justification=raggedright, skip = 2pt]{caption}
 \pagestyle{fancy}
 \fancyhf{}% Clear all headers/footers
 
+%% Headers
+%\lhead{}%
+%\chead{}%
+%\rhead{}%
+% Footers
+%\lfoot{}%
+%\cfoot{}%
+%\rfoot{\small\sffamily\bfseries\thepage/\pageref{LastPage}}%
 \renewcommand{\headrulewidth}{0pt}% % No header rule
 \renewcommand{\footrulewidth}{0pt}% % No footer rule
+
+
+
 
 
 %
@@ -220,6 +266,7 @@ justification=raggedright, skip = 2pt]{caption}
 \urlstyle{same}% do not use monospace for links
 
 
+%\setlist{nolistsep} % Uncomment to remove spacing between items in lists (enumerate, itemize)
 
 
 % for  author
@@ -230,6 +277,11 @@ justification=raggedright, skip = 2pt]{caption}
 }
 
 % dates
+%\newcommand{\articledates}[3]{
+	%	\def\thearticledates{
+		%		{\fontsize{9}{12}\selectfont#1 #2 #3\par}
+		%	}
+	%}
 % version with one  argument
 \newcommand{\articledates}[1]{\def\thearticledates{
 		{\fontsize{9}{12}\selectfont#1}
@@ -239,6 +291,11 @@ justification=raggedright, skip = 2pt]{caption}
 \newcommand{\journaldoi}[1]{\def\thejournaldoi{#1}}
 \newcommand{\journalarticletype}[1]{\def\thejournalarticletype{#1}}
 
+
+%
+% article meta data
+%
+%\newcommand{\keywords}[1]{\def\@keywords{#1}}
 
 
 
@@ -283,7 +340,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \leavevmode
 \\[7mm]
 {\sffamily\raggedright%left align
-
+%osfamily % use open sans
+%\fontspec{Open Sans}%
 {% we do not want a intent for the title, and we want it centered
 	\setstretch{1.08}\setlength{\JustifyingParindent}{0pt}%
 	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
@@ -301,15 +359,22 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 {
 	\vskip2mm
 	\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
-	{
-		\noindent
-		{\raggedright\bfseries ABSTRACT\par}
-	}
+		{
+			\noindent
+			{\raggedright\bfseries ABSTRACT\par}
+		}
 	
-	\noindent
+		
+			\noindent
 			
-	{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
+				{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
 			
+			
+%			\parbox{\dimexpr\linewidth-2\fboxsep\relax}
+%			{
+%				{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} \@keywords}
+%			}keywords
+		
 	\end{tcolorbox}
 	\vskip3mm
 }{} % if empty ldo not print anything to page
@@ -335,7 +400,14 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 % help variable so we can conveniently change the color in links )
 \definecolor{varlinkcolor}{RGB}{126,169,105}
 
+%\renewcommand\Authfont{\fontsize{12}{12}\usefont{OT1}{phv}{b}{n}}
+%\renewcommand\Affilfont{\fontsize{10}{10}\usefont{OT1}{phv}{b}{n}}
+%\newcommand{\keywordsfont}{\normalfont\rmfamily\fontsize{7}{10}\selectfont}
+
 \newlength{\tocsep}
 \setlength\tocsep{1.5pc} % Sets the indentation of the sections in the table of contents
 \setcounter{tocdepth}{3} % Show only three levels in the table of contents section: sections, subsections and subsubsections
 
+%-----------------------------------------------
+%% Automatically abbreviate journal names
+%\RequirePackage{jabbrv}

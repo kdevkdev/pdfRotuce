@@ -76,49 +76,11 @@ $if(lang)$
 \usepackage[bidi=default]{babel}
 \fi
 $endif$
-%$if(csl-refs)$
-%% Pandoc citation processing
-%\newlength{\cslhangindent}
-%\setlength{\cslhangindent}{1.5em}
-%\newlength{\csllabelwidth}
-%\setlength{\csllabelwidth}{3em}
-%\newlength{\cslentryspacingunit} % times entry-spacing
-%\setlength{\cslentryspacingunit}{\parskip}
-%% for Pandoc 2.8 to 2.10.1
-%\newenvironment{cslreferences}%
-%  {$if(csl-hanging-indent)$\setlength{\parindent}{0pt}%
-	%  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces$endif$}%
-%  {\par}
-%% For Pandoc 2.11+
-%\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
-% {% don't indent paragraphs
-	%  \setlength{\parindent}{0pt}
-	%  % turn on hanging indent if param 1 is 1
-	%  \ifodd #1
-	%  \let\oldpar\par
-	%  \def\par{\hangindent=\cslhangindent\oldpar}
-	%  \fi
-	%  % set entry spacing
-	%  \setlength{\parskip}{#2\cslentryspacingunit}
-	% }%
-% {}
-%\usepackage{calc}
-%\newcommand{\CSLBlock}[1]{#1\hfill\break}
-%\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
-%\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\sloppy #1}\break}
-%\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
-%$endif$
 
 $for(header-includes)$
-%_header-includes_
+$header-includes$
 $endfor$
 
-%  makes the margins screwy.
-% https://groups.google.com/forum/#!topic/latexusersgroup/4W_SwGk6zx4
-% http://ansuz.sooke.bc.ca/software/latex-tricks.php
-
-%\access{Advance Access Publication Date: $access_date.day$ $access_date.month$ $access_date.year$}
-%\appnotes{$if(manuscript_type)$$manuscript_type$$else$$subject_section$$endif$}
 
 
 \journaltitle{$journalinfo.title$}
@@ -134,6 +96,7 @@ $endfor$
 \setcounter{Maxaffil}{0}% always footnote mode
 
 
+% put authors on title page, properly accounting for sepearor characters (put & in case its a co-author)
 $for(authors/first)$
 \author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{$authors.name$}
 $endfor$
@@ -142,21 +105,16 @@ $if(authors/rest)$
 
 $for(authors/rest)$
 $if(authors.co_with_prior)$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{\& $authors.name$} %$if(authors.orcid)$\orcidaffil{$authors.orcid$}$endif$}
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{\& $authors.name$} 
 $else$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{, $authors.name$} %$if(authors.orcid)$\orcidaffil{$authors.orcid$}$endif$}
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{, $authors.name$} 
 $endif$
 $endfor$
 $endif$
-
-
-
 
 $for(affiliations)$
 \affil[$affiliations.id$]{$affiliations.address$}
 $endfor$
-
-
 
 % corresponding author needs to have the corresponding YAML field set. Leave out address
 $if(correspondingauthor.email)$
@@ -164,12 +122,6 @@ $if(correspondingauthor.email)$
 $endif$
 
 \articledates{$articledates$} % received, editorial decision, published
-
-%\articledates{Received $articledates.received$;}{Editorial decision $articledates.decision$;}{Accepted $articledates.accepted$} % received, editorial decision, published
-
-%\keywords{%
-%$for(keywords)$$keywords$$sep$, $endfor$%
-%}
 
 
 \AtBeginDocument{%something is overwriting our hyperlink colors, overwrite them again: https://tex.stackexchange.com/questions/246386/changing-color-of-cites-with-hypersetup-not-working
@@ -202,16 +154,8 @@ $endif$
 \textblockorigin{0mm}{0mm}
 
 
-% disable conthead from longtrr
-%\DefTblrTemplate{contfoot-text}{default}{}
-%\DefTblrTemplate{conthead-text}{default}{}
-%\DefTblrTemplate{conthead}{default}{}
-%\DefTblrTemplate{capcont}{default}{}
-%\DefTblrTemplate{caption}{default}{}
 
-%\usepackage{xurl}
-%\usepackage[obeyspaces,spaces,hyphens]{xurl}
-%\def\UrlBreaks{\do\/\do-}
+% breaking url characters
 \def\UrlBreaks{\do\/\do-\do.\do=\do_\do?\do\&\do\%\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X\do\Y\do\Z\do\0\do\1\do\2\do\3\do\4\do\5\do\6\do\7\do\8\do\9}
 
 
@@ -235,23 +179,16 @@ $endif$
 \minipage{\linewidth}
 \centering
 \includegraphics[width=\linewidth]{#1}
-\captionof{figure}{\raggedright\sffamily\fontsize{9}{11}\selectfont #2}}
+\captionof{figure}{\raggedright #2}}
 {\endminipage\par\medskip}
 
 \newenvironment{FigureMW}[2]
 {\begin{figure*}
 	\centering
 	\includegraphics[width=1\textwidth]{#1}
-	\captionof{figure}{\raggedright\sffamily\fontsize{9}{11}\selectfont #2}}
+	\captionof{figure}{\raggedright #2}}
 {\end{figure*}}
 
-% does not work
-%\newenvironment{FigureMC}[2]
-%{\vfill
-%\begin{wrapfigure}{l}{0.5\linewidth}
-%\includegraphics[width=1\linewidth]{#1}
-%\caption{figure}{\raggedright #2}}
-%{\end{wrapfigure}}
 
 % https://tex.stackexchange.com/questions/68516/avoid-that-figure-gets-its-own-page
 \renewcommand{\topfraction}{.8}
@@ -305,56 +242,23 @@ $endfor$\\
 \\
 \noindent
 {\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} 
-	$for(keywords)$$keywords$$sep$, $endfor$}
-	\end{abstract}
-	%$else$
-	%\begin{abstract}
-	%\end{abstract}
-	$endif$
+$for(keywords)$$keywords$$sep$, $endfor$}
+\end{abstract}
+$endif$
 	
 	
-	$if(abstract_sidelangs_hint)$
-	\newcommand{\abstracthint}{$abstract_sidelangs_hint$}
-	$endif$
+$if(abstract_sidelangs_hint)$
+\newcommand{\abstracthint}{$abstract_sidelangs_hint$}
+$endif$
 	
-	\maketitle\thispagestyle{empty} % no page number on first page
-	
-	%\end{strip}
+\maketitle\thispagestyle{empty} % no page number on first page
 	
 	
 	
+\colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
 	
-	
-	%\let\thefootnote\relax\footnote{© $copyright.year$ $copyright.text$\\\\}
-	
-	% newpage
-	%\vfill
-	%\null\clearpage
-	%\null\newpage %check textpos manual , the newpage section on why this is needed
-	
-	
-	\colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
-	
-	
-	% update geometry
-	% \newgeometry{
-% 	left=1.5cm,
-% 	right=1.5cm,
-% 	top=2.5cm,%
-% 	bottom=2.75cm,%
-% 	headheight=15mm}
 
 $body$
-
-
-
-
-% Bibliography
-% \hypersetup{urlcolor=blue}
-
-%\bibliographystyle{natbib}
-% \bibliography{$bibliography$}
-
 
 
 \end{document}
