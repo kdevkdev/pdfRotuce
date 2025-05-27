@@ -565,6 +565,9 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
       stopifnot("number of found reference numbers in bibliography not identical to number of references, check list" = length(markers) == length(refs))
 
 
+      # list for safeguarding ursl from doi parsing
+      refurl_safeguards = list()
+
       if(url_parsing){
 
         # pattern from qdapRegex, second one from stackoverflow
@@ -575,7 +578,11 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
 
                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
                                           r  = paste0("\\url{", r,"}")
-                                          r
+
+                                          i =length(refurl_safeguards)+1
+                                          refurl_safeguards[[i]] <<- r
+                                          paste0("____________refurl", i, "refurl____________")
+
                                         })#"\\\\url{\\0}"
 
 
@@ -597,6 +604,14 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
                                         })#"\\\\url{\\0}"
       }
 
+
+
+      # put back reference urls
+      for(i in 1:length(refurl_safeguards)){
+
+        # fill back in
+        refs = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards[[i]])
+      }
 
       # escape &, _ and [,]
       refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
