@@ -35,7 +35,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   # read file and backup object
   docx = officer::read_docx(src_docx)
-
   df = officer::docx_summary(docx,preserve = T,remove_fields = T, detailed = T)
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
   doc_summar[is.na(style_name), style_name := ""]
@@ -370,6 +369,27 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                                    "\\begin{multicols}{2}", sep = "\n",
                                    #"\\raggedcolumns",
                                    "```\n")},
+                start_singlecol={
+                    #print("Math detected")
+
+                  c_result = paste("\n```{=latex}",
+                                     "\\end{multicols}", sep = "\n",
+                                     #"\\raggedcolumns",
+                                     "```\n")
+
+
+                  },
+                end_singlecol={
+                  #print("Math detected")
+
+                  c_result = paste("\n```{=latex}",
+                                   "\\begin{multicols}{2}", sep = "\n",
+                                   #"\\raggedcolumns",
+                                   "```\n")
+
+
+                },
+
                {
                  # default
                    stop(paste0("unkown command '", c_comtext, "'"))
