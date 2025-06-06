@@ -157,6 +157,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   tab_counter = 1 # we keep a specific ounter, if ever cti would deviate because e.g. of failure
 
+  # keep track of used chunklabels so that we can generate unique ones (even if there are custom chunk labels)()
+  tab_chunk_labels = list()
+
   for(cti in cudoc_tabinds){
 
 
@@ -181,14 +184,19 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     ct_csv = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
 
 
-    ctab_chunk = gen_tabchunk(ct_csv = ct_csv,
+    chunkspec = gen_tabchunk(ct_csv = ct_csv,
                               tab_opts = tab_opts,
                               tab_counter = tab_counter,
-                              folder = working_folder)
+                              folder = working_folder,
+                              chunklabels = tab_chunk_labels)
+
+    ctab_chunk = chunkspec$chunk
 
     ctab_xml = gen_xml_table(ct_csv = ct_csv,
                              tab_opts = tab_opts,
                              tab_counter = tab_counter)
+
+    tab_chunk_labels[length(tab_chunk_labels)+1] =chunkspec$label
 
 
     # delete table rows and table options form document structure

@@ -15,7 +15,7 @@ escape_caption <- function(str){
 #' @export
 #'
 #' @examples
-gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder =""){
+gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels = list()){
 
   # table captions to return
   tab_capts = list()
@@ -48,6 +48,9 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder =""){
       stop(paste0("table label '", tab_chunk_label, "' contains other chars than letters (A-z) or numbers"))
     }
   }
+
+  # check if chunklabel is unique, append if necessary
+  while(tab_chunk_label %in% chunklabels) tab_chunk_label = paste0(tab_chunk_label, "-0")
 
   # caption provided?
   tab_caption = ""
@@ -115,4 +118,5 @@ cat(tex)
 ```
 ```"
 
+  return(list(chunk = ctab_chunk, label = tab_chunk_label))
 }

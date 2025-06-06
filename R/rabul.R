@@ -100,7 +100,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   l_innerspecs = list()
   l_outerspecs = list()
 
-browser()
+
   # detect header rows
   header_inds = which(startsWith(d[[1]], "#"))
 
@@ -323,7 +323,6 @@ browser()
                  post_envouter,"\n")
   }
   tex
-
 
 }
 
