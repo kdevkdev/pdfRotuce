@@ -120,7 +120,29 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
 
   ####### run cell markdown parser
-  tab = lapply(d, FUN =\(x){
+  if(F){
+
+    tab = lapply(d, FUN =\(x){
+
+      # boldify
+      #pattern <- "\\*\\*(?:[^{}]*|(?R))*\\*\\*"
+      #(result <- regmatches(x, gregexpr(pattern, x, perl = TRUE)))
+      # pars cell md
+
+      x = sapply(x, \(c) {
+
+        # use this isnstead
+        r = commonmark::markdown_latex(c)
+
+        r
+      })
+
+      x
+    })  |> data.frame()
+
+  }
+  else {
+    tab = lapply(d, FUN =\(x){
 
       # boldify
       #pattern <- "\\*\\*(?:[^{}]*|(?R))*\\*\\*"
@@ -152,6 +174,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
       #x = paste0("{", x, "}")
       x
     })  |> data.frame()
+  }
 
   rows = apply(X = tab, MARGIN = 1, paste0, collapse = " & ")
 
@@ -183,7 +206,8 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
   }
 
-
+  # here we put global definitiosn for the generated latex enfironment, for exammple setting list separation
+  globalspec  = ""
 
 
 
@@ -299,13 +323,14 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
       lab  = paste0("\\label{",label,"}")
     }
-    tex = paste0(pre_envouter,
+    tex = paste0(pre_envouter,"",
+                 #globalspec ,"\n",
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
                  "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  body,
                  lt_footnote,
                  end_envinner,"\n",
-                 post_envouter,"\n\\vspace{3mm}")
+                 "", post_envouter,"\n\\vspace{3mm}")
   }
   else{
 
@@ -314,13 +339,14 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
     innerspecs = paste0(collapse = ", ", l_innerspecs)
     outerspecs = paste0(collapse = ", ", l_outerspecs)
     # tabularray specification, see manual
-    tex = paste0(pre_envouter,
+    tex = paste0( pre_envouter,"",
+                 #globalspec ,"\n",
                  begin_envinner ,"\n",
                  "[", outerspecs, "]",
                  "{", innerspecs, "}",
                  "\n", body, "\n",
                  end_envinner,"\n",
-                 post_envouter,"\n")
+                 "}", post_envouter,"\n")
   }
   tex
 

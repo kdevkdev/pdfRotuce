@@ -181,22 +181,22 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     ct_dat = doc_summar[content_type == "table cell" & doc_index == cti]
 
     # if we need we can take into account the header here (is_header column in doc_summar)
-    ct_csv = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
+    ct_csv = data.table::dcast.data.table(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
+
 
 
     chunkspec = gen_tabchunk(ct_csv = ct_csv,
-                              tab_opts = tab_opts,
-                              tab_counter = tab_counter,
-                              folder = working_folder,
-                              chunklabels = tab_chunk_labels)
+                             tab_opts = tab_opts,
+                             tab_counter = tab_counter,
+                             folder = working_folder,
+                             chunklabels = tab_chunk_labels)
 
     ctab_chunk = chunkspec$chunk
+    tab_chunk_labels[length(tab_chunk_labels)+1] =chunkspec$label
 
     ctab_xml = gen_xml_table(ct_csv = ct_csv,
                              tab_opts = tab_opts,
                              tab_counter = tab_counter)
-
-    tab_chunk_labels[length(tab_chunk_labels)+1] =chunkspec$label
 
 
     # delete table rows and table options form document structure

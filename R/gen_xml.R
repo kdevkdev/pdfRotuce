@@ -841,7 +841,7 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
 
   # label. to autogenerate
   # caption title  - is it needed?
-  ct_csv_o = ct_csv
+  ct_csv_o = copy(ct_csv)
 
   label = tab_opts['label']
   if(is.null(tab_opts['label']) || is.na(label) || !is.character(label) ){
@@ -865,6 +865,8 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
     # do o not work, behaviour is ok: hgl_warn(paste0("Table #",  tab_counter ,  " - ", label ,": no header row provided (=first cell in column starting with '#'), assuming first row is header row. XML Jats needs at least 1 header row."))
     header_inds = 1
   }
+
+
 
   # remove '#'
   ct_csv[[1]] = gsub(pattern = "#", replacement = " ",  x =ct_csv[[1]])

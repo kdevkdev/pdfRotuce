@@ -40,6 +40,7 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     markdownify( src_docx = doc_file, doc_folder = folder, working_folder = build_path, meta_csv = metacsv_path, rmd_outfile = rmd_outfile, xml_outpath = xml_outpathO, ...)
   }
 
+
   # if successfull in writing file
   if(file.exists(rmd_outfile))
   {

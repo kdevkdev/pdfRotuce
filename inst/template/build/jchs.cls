@@ -280,7 +280,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		\colorlet{varlinkcolor}{black}%
 \end{flushright}}%
 \end{minipage}}}
-\leavevmode
+~\\
 \\[7mm]
 {\sffamily\raggedright%left align
 
