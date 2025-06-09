@@ -515,7 +515,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       # go through paragraphs/parts
       for(cp in ca_parts){
 
-        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% cp$title %+% "} " %+% cp$text %+% "\n\n"
+        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% rmd_char_escape(cp$title) %+% "} " %+% rmd_char_escape(cp$text) %+% "\n\n"
       }
     }
 
