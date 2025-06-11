@@ -280,8 +280,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		\colorlet{varlinkcolor}{black}%
 \end{flushright}}%
 \end{minipage}}}
-~\\
-\\[7mm]
+\vspace*{7mm}
+%~\\[7mm]
 {\sffamily\raggedright%left align
 
 {% we do not want a intent for the title, and we want it centered

@@ -96,7 +96,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @export
 #'
 #' @examples
-rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE){
+rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE, compat_cell_md_parsing = F){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -120,7 +120,8 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
 
   ####### run cell markdown parser
-  if(F){
+  if(F)#!compat_cell_md_parsing)
+  {
 
     tab = lapply(d, FUN =\(x){
 
@@ -134,6 +135,8 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
         # use this isnstead
         r = commonmark::markdown_latex(c)
 
+        r = stringr::str_replace_all(r, pattern = "\\\\", replacement = "\\\\par ")
+        #r = stringr::str_replace_all(r, pattern = "\\\\", replacement = "\n")
         r
       })
 
@@ -323,7 +326,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
       lab  = paste0("\\label{",label,"}")
     }
-    tex = paste0(pre_envouter,"",
+    tex = paste0(pre_envouter,"\\setlist{nosep}", # use enumitems package to disable list
                  #globalspec ,"\n",
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
                  "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",

@@ -12,10 +12,10 @@ markdownify(
   rmd_outfile = NULL,
   xml_outpath = NULL,
   reference_parsing = F,
-  reference_correction = NULL,
-  refparser_inject = NULL,
-  consolidate_grobid = "grobidlv1",
-  consolidate_blacklist = NULL,
+  reference_overwrite = NULL,
+  refparsing_inject = NULL,
+  grobid_consolidate = "grobidlv1",
+  grobid_consolidate_blacklist = NULL,
   augment_global = NULL,
   augment_whitelist = NULL,
   augment_blacklist = NULL,
@@ -27,7 +27,7 @@ markdownify(
 \arguments{
 \item{reference_parsing}{Default \code{FALSE}. IF \code{FALSE}, copy references as is without automated parsing. 'anystyle' or 'grobid' use the respective backends. Can also take the name of a .bib file to use to genrate the bibliography. In that case, in-text citations are expected to follow the '\link{@citekey1, @citekey2..}' syntax with alphanumeric plus - and _ being valid chars for citekeys,a nd ',' and ';' being valid chars for seperating listed citekeys. In that case, a bibliography in the mansucript file will be disregarded.}
 
-\item{reference_correction}{Only has effect if \code{reference_parsing} is not \code{FALSE}. Path to bibtex .bib file that contains manual overrides for references. Matching with entries in file: Recommended (Second priority) is automatically generated citeky, normally 'author'+ 'year', see 'working_path/references.bib' or files in the 'build/tempreftxts_out'. 1st priority is nonstandard bibtex field 'CORRECTION_BN', corresponding to the list item number in the refernces and in-text citation number. If a correction bibfile is provided, 'working_path/references.bib' will be altered compared to 'working_path/refernces_autoparses.bib'. If the file is not found at the specified path, the parent level of the working folder will also be checked (to cover the normal case where intermediate files are placed in the working path 'build' directory, and input files reside at the parent of the 'build' directory)}
+\item{reference_overwrite}{Only has effect if \code{reference_parsing} is not \code{FALSE}. Path to bibtex .bib file that contains manual overrides for references. Matching with entries in file: Recommended (Second priority) is automatically generated citeky, normally 'author'+ 'year', see 'working_path/references.bib' or files in the 'build/tempreftxts_out'. 1st priority is nonstandard bibtex field 'CORRECTION_BN', corresponding to the list item number in the refernces and in-text citation number. If a correction bibfile is provided, 'working_path/references.bib' will be altered compared to 'working_path/refernces_autoparses.bib'. If the file is not found at the specified path, the parent level of the working folder will also be checked (to cover the normal case where intermediate files are placed in the working path 'build' directory, and input files reside at the parent of the 'build' directory)}
 }
 \description{
 Converts word .docx files to .Rmd files that can be rendered to PDFs using latex

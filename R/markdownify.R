@@ -40,9 +40,11 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar[is.na(style_name), style_name := ""]
   doc_summar[, texto := text]
 
-
   # get all l1 headings
   l1_inds = which(tolower(doc_summar$style_name) == "heading 1")
+
+  stopifnot("No level 1 heading style found" = length(l1_inds)>0 )
+
   title_page_inds = l1_inds[1]:(l1_inds[2]-1)
 
   # find and parse titele page - first heading 1 up to second heading 1

@@ -15,7 +15,8 @@ rabulify(
   xltabular = T,
   colwidths = NULL,
   colaligns = NULL,
-  fullgrid = FALSE
+  fullgrid = FALSE,
+  compat_cell_md_parsing = F
 )
 }
 \arguments{

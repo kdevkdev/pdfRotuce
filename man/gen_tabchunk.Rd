@@ -4,7 +4,7 @@
 \alias{gen_tabchunk}
 \title{Title}
 \usage{
-gen_tabchunk(ct_csv, tab_opts, tab_counter, folder = "")
+gen_tabchunk(ct_csv, tab_opts, tab_counter, folder = "", chunklabels = list())
 }
 \arguments{
 \item{folder}{}
