@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" >
+  <xsl:strip-space elements=""/>
+  <!--  <xsl:output method="xml" indent="yes"/> -->
+  <xsl:output method="text"/>
+    <xsl:template match="/*">
+       <xsl:apply-templates  />
+    </xsl:template>
+    <xsl:template match="paragraph">  
+      <xsl:apply-templates  />
+      <xsl:text>&#xa;</xsl:text>
+      <xsl:if test="count(ancestor::*) &lt; 2">
+        <xsl:text>&#xa;</xsl:text><!-- Additional newline when at root level -->
+      </xsl:if>
+    </xsl:template>
+    <xsl:template match="list">
+      <xsl:choose>
+        <xsl:when test="@type and @type='bullet'">
+          <xsl:text>\begin{itemize}&#xa;</xsl:text>
+            <xsl:apply-templates select="item"  />
+          <xsl:text>\end{itemize}&#xa;&#xa;</xsl:text>
+        </xsl:when>
+        <xsl:when test="@type and @type='number'">
+          <xsl:text>\begin{enumerate}&#xa;</xsl:text>
+            <xsl:apply-templates select="item"  />
+          <xsl:text>\end{enumerate}&#xa;&#xa;</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="text"  />
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:template>
+    <xsl:template match="item">
+      <xsl:text>\item </xsl:text>
+        <xsl:apply-templates select="paragraph"/>
+    </xsl:template>
+    <xsl:template match="strong">
+          <xsl:text>\textbf{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+    </xsl:template>
+    <xsl:template match="emph">
+          <xsl:text>\textit{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+    </xsl:template>
+    <xsl:template match="code">
+          <xsl:text>\texttt{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+    </xsl:template>
+    <xsl:template match="text">
+      <xsl:value-of select="."/>
+    </xsl:template>
+    <xsl:template match="linebreak">
+      <xsl:text>\par&#xa;</xsl:text>
+    </xsl:template>
+    <xsl:template match="softbreak">
+      <xsl:text>\par&#xa;</xsl:text>
+    </xsl:template>    
+    <xsl:template match="heading">
+      <xsl:choose>
+        <xsl:when test="@level and @level='1'">
+          <xsl:text>\chapter{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+        </xsl:when>
+        <xsl:when test="@level and @level='2'">
+          <xsl:text>\section{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+        </xsl:when>
+        <xsl:when test="@level and @level='3'">
+          <xsl:text>\subsection{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+        </xsl:when>
+        <xsl:when test="@level and @level='4'">
+          <xsl:text>\subsub{</xsl:text>
+            <xsl:apply-templates  />
+          <xsl:text>}</xsl:text>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates  />
+        </xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>&#xa;</xsl:text>
+      <xsl:text>&#xa;</xsl:text>
+    </xsl:template>
+    <xsl:template match="code_block">
+      <xsl:text>\begin{verbatim}&#xa;</xsl:text>
+        <xsl:value-of select="."/>
+      <xsl:text>\end{verbatim}&#xa;</xsl:text><!-- No further recursions-->
+    </xsl:template>
+    <xsl:template match="block_quote">
+      <xsl:text>\begin{displayquote}&#xa;</xsl:text>
+        <xsl:apply-templates  />
+      <xsl:text>\end{displayquote}&#xa;</xsl:text>
+    </xsl:template>
+</xsl:stylesheet>

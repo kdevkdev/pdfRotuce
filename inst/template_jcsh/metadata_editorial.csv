@@ -1,0 +1,11 @@
+aname,value,comment
+articledates,Received 26 April 2022; Accepted 22 July 2022; Published unpublished,Articledates for titlepage
+copyright_year,2024,Year and other text to prepepend to footnote on title page
+volume,1,Volume
+issue,1,Issue
+string_volumeissue,"2024, VOL. 1","String for the title page top header – can be set to any string, e.g. for special issues"
+doi,https://doi.org/10.1000/182,DOI
+pageheader,Muller et al. ,Author name for title page
+article_type,Editorial,"Article type for title page. One of Original research, Review, Comment ..."
+has_abstract,yes,Whether the article is supposed to have an abstract
+string_corresponding,Contact,Text after * that indicates the corresponding author - *text:xx@gmail.com

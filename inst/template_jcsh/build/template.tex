@@ -1,0 +1,265 @@
+\RequirePackage[2024/11/01]{latexrelease}
+\documentclass[twoside]{jchs}
+%\documentclass[twoside,10pt]{jchs}
+
+% based on bioinfo and ncc
+
+%\x{$copyrightyear$} \pubyear{$pubyear$}
+%\usepackage{tabularray}
+\usepackage[absolute]{textpos}
+
+$if(highlighting-macros)$
+% Pandoc syntax highlighting
+$highlighting-macros$
+$endif$
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+	\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+$if(tables)$
+% From pandoc table feature
+%\usepackage{longtable,booktabs,array}
+$if(multirow)$
+\usepackage{multirow}
+$endif$
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\makeatletter
+%\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+%\makesavenoteenv{longtable}
+$endif$
+
+$if(csl-refs)$
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+	\begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+% allow citations to break across lines
+\let\@cite@ofmt\@firstofone
+% avoid brackets around text for \cite:
+\def\@biblabel#1{}
+\def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{2.4em}% 3em before
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+{\begin{list}{}{%
+			\setlength{\itemindent}{0pt}
+			\setlength{\leftmargin}{0pt}
+			\setlength{\parsep}{0pt}
+			\setlength{\topsep}{0pt}
+			\setlength{\partopsep}{0pt}
+			% turn on hanging indent if param 1 is 1
+			\ifodd #1
+			\setlength{\leftmargin}{\cslhangindent}
+			\setlength{\itemindent}{-1\cslhangindent}
+			\fi
+			% set entry spacing
+			\setlength{\itemsep}{#2\baselineskip}}}
+	{\end{list}}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+$endif$
+$if(lang)$
+\ifLuaTeX
+\usepackage[bidi=basic]{babel}
+\else
+\usepackage[bidi=default]{babel}
+\fi
+$endif$
+
+$for(header-includes)$
+$header-includes$
+$endfor$
+
+
+
+\journaltitle{$journalinfo.title$}
+\journalvolumestring{$journalinfo.string_volumeissue$}
+\journaldoi{https://doi.org/$journalinfo.doi$}
+\journalarticletype{$journalinfo.article_type$}
+
+% set tite
+\title{$title_full$}
+
+
+% set authors and affiliations
+\setcounter{Maxaffil}{0}% always footnote mode
+
+
+% put authors on title page, properly accounting for sepearor characters (put & in case its a co-author)
+$for(authors/first)$
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{$authors.name$}
+$endfor$
+
+$if(authors/rest)$
+
+$for(authors/rest)$
+$if(authors.co_with_prior)$
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{\& $authors.name$} 
+$else$
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{, $authors.name$} 
+$endif$
+$endfor$
+$endif$
+
+$for(affiliations)$
+\affil[$affiliations.id$]{$affiliations.address$}
+$endfor$
+
+% corresponding author needs to have the corresponding YAML field set. Leave out address
+$if(correspondingauthor.email)$
+\corrauthor[]{{\bfseries *$string_corresponding$:}} {$correspondingauthor.email$}
+$endif$
+
+\articledates{$articledates$} % received, editorial decision, published
+
+
+\AtBeginDocument{%something is overwriting our hyperlink colors, overwrite them again: https://tex.stackexchange.com/questions/246386/changing-color-of-cites-with-hypersetup-not-working
+\hypersetup{urlcolor=varlinkcolor}}
+
+% start with black links for the title page. The reason for this hacky construction with a variable color definition is that pandoc seems to override the hyperref setup. So we need to ensure that varlincolor gets set after the package inclusion by pandoc
+\colorlet{varlinkcolor}{black}
+
+
+% define headers and footers here due to template usage
+\fancyhead[LE]{$pageheader.even$}
+\fancyhead[RO]{$pageheader.odd$}
+\fancyfoot[C]{\thepage\ } % add back page number
+
+
+\fancypagestyle{lscape}{% 
+\fancyhf{} % clear all header and footer fields 
+\fancyfoot[LE]{%
+	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$pageheader.even$}}\end{textblock}}
+\fancyfoot[LO] {%
+	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$pageheader.odd$}}\end{textblock}}
+\fancyhead[C]{\begin{textblock}{1}[0,0.5](19,14.5){\rotatebox{90}{\thepage}}\end{textblock}}
+
+\renewcommand{\headrulewidth}{0pt} 
+\renewcommand{\footrulewidth}{0pt}
+}
+
+\setlength{\TPHorizModule}{10mm}
+\setlength{\TPVertModule}{\TPHorizModule}
+\textblockorigin{0mm}{0mm}
+
+
+
+% breaking url characters
+\def\UrlBreaks{\do\/\do-\do.\do=\do_\do?\do\&\do\%\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t\do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X\do\Y\do\Z\do\0\do\1\do\2\do\3\do\4\do\5\do\6\do\7\do\8\do\9}
+
+
+\usepackage[hyphens]{url}
+\Urlmuskip=0mu plus 1mu
+\gappto{\UrlBreaks}{\UrlOrds}
+
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks%  save the current one
+\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j%
+\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t%
+\do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D%
+\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N%
+\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X%
+\do\Y\do\Z}
+
+\def\UrlBigBreaks{\do\/\do-\do:}
+
+\newenvironment{FigureMC}[2]
+{\par
+\medskip\noindent
+\minipage{\linewidth}
+\centering
+\includegraphics[width=\linewidth]{#1}
+\captionof{figure}{\raggedright #2}}
+{\endminipage\par\medskip}
+
+\newenvironment{FigureMW}[2]
+{\begin{figure*}
+	\centering
+	\includegraphics[width=1\textwidth]{#1}
+	\captionof{figure}{\raggedright #2}}
+{\end{figure*}}
+
+
+% https://tex.stackexchange.com/questions/68516/avoid-that-figure-gets-its-own-page
+\renewcommand{\topfraction}{.8}
+\renewcommand{\bottomfraction}{.8}
+\renewcommand{\floatpagefraction}{.8}
+
+
+
+% for multicol  longtblrs
+% https://tex.stackexchange.com/questions/555318/environment-to-balance-a-table-in-a-multicol
+\makeatletter
+\newsavebox\ltmcbox
+%\newsavebox\xxbox
+\newenvironment{multicolslongtable}{
+\setbox\ltmcbox\vbox\bgroup
+\makeatletter\col@number\@ne\makeatother
+}{
+\unskip
+\unpenalty
+\unpenalty\egroup
+\unvbox\ltmcbox
+}
+
+\newenvironment{multicolslongtable*}{\col@number\@ne
+}{
+}
+
+%\setcounter{tracingmulticols}{5}  - for debugging multicols
+
+\begin{document}
+\thispagestyle{empty}
+\enlargethispage{-2\baselineskip}
+%\begin{strip}
+\begin{textblock}{18}(1.5,27.2)
+\footnotesize{\noindent © $copyright.year$ $copyright.text$ $license$}
+\end{textblock}
+
+
+% for picture in abstract - https://tex.stackexchange.com/questions/642034/how-to-add-image-with-wrap-around-text-in-abstract
+\input{insbox}
+
+$if(abstracts.mainlang)$
+\begin{abstract}
+$if(abstract_picture)$
+\emergencystretch 1pt
+\InsertBoxR{0}{\includegraphics[width=0.4\linewidth]{$abstract_picture$}}
+$endif$
+$for(abstracts.mainlang.parts)$
+{\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\ 	
+$endfor$\\
+\\
+\noindent
+{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} 
+$for(keywords)$$keywords$$sep$, $endfor$}
+\end{abstract}
+$endif$
+	
+	
+$if(abstract_sidelangs_hint)$
+\newcommand{\abstracthint}{$abstract_sidelangs_hint$}
+$endif$
+	
+\maketitle\thispagestyle{empty} % no page number on first page
+	
+	
+	
+\colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
+	
+
+$body$
+
+
+\end{document}

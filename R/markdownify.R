@@ -24,10 +24,12 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                        augment_global = NULL, # pmid, or doi
                        augment_whitelist = NULL, # format: (@citekey|BIBLIOGRAPHY_NUM)=(doi|pmid):id
                        augment_blacklist = NULL,
-                       url_parsing = T, doi_parsing = T, guess_refnumbers = T){
+                       url_parsing = T, doi_parsing = T, guess_refnumbers = T,
+                       compat_cell_md_parsing = F){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
   type_width = 180
+
   type_height = 272
 
   fig_capts = tab_capts = c()
@@ -191,14 +193,16 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                              tab_opts = tab_opts,
                              tab_counter = tab_counter,
                              folder = working_folder,
-                             chunklabels = tab_chunk_labels)
+                             chunklabels = tab_chunk_labels,
+                             compat_cell_md_parsing)
 
     ctab_chunk = chunkspec$chunk
     tab_chunk_labels[length(tab_chunk_labels)+1] =chunkspec$label
 
     ctab_xml = gen_xml_table(ct_csv = ct_csv,
                              tab_opts = tab_opts,
-                             tab_counter = tab_counter)
+                             tab_counter = tab_counter,
+                             compat_cell_md_parsing = compat_cell_md_parsing)
 
 
     # delete table rows and table options form document structure

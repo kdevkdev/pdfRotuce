@@ -101,8 +101,11 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   l_outerspecs = list()
 
 
+  firstcol = d[[1]]
+  firstcol[is.na(firstcol)] = ""
+
   # detect header rows
-  header_inds = which(startsWith(d[[1]], "#"))
+  header_inds = which(startsWith(firstcol, "#"))
 
   # manual colbreaks inds
   colbreak_inds  = which(apply(d, 1, \(r) {grep("\\[\\[colbreak\\]\\]", r) |> sum()}) > 0 )
@@ -120,7 +123,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
 
   ####### run cell markdown parser
-  if(F)#!compat_cell_md_parsing)
+  if(!compat_cell_md_parsing)#!compat_cell_md_parsing)
   {
 
     tab = lapply(d, FUN =\(x){
@@ -133,13 +136,40 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
       x = sapply(x, \(c) {
 
         # use this isnstead
-        r = commonmark::markdown_latex(c)
+        cmm_xml_txt  = commonmark::markdown_xml(c)
 
-        r = stringr::str_replace_all(r, pattern = "\\\\", replacement = "\\\\par ")
+        cmm_xml = xml2::read_xml(cmm_xml_txt)
+
+        # strip namesspace to avoid having to specify the namespace in the xslt file
+        cmm_xml = xml2::xml_ns_strip(cmm_xml)
+
+        # to develop https://xsltfiddle-beta.liberty-development.net/
+        xlst =  xml2::read_xml(system.file("commonmark_xml_to_tablelatex.xml", package="pdfRotuce"))
+
+        # define xslt transformation
+        latex = xslt::xml_xslt(cmm_xml,xlst)
+
+        # escape
+        latex = gsub(x = latex, pattern = "&", replacement = "\\&", fixed = T)
+        latex = gsub(x = latex, pattern = "#", replacement = "\\#", fixed = T)
+        latex = gsub(x = latex, pattern = "\\{", replacement = "\\{")
+        latex = gsub(x = latex, pattern = "\\}", replacement = "\\}")
+        latex = gsub(x = latex, pattern = "[", replacement = "{[}", fixed = T)
+        latex = gsub(x = latex, pattern = "]", replacement = "{]}", fixed = T)
+        latex = paste0("{", latex ,"}")
+
+
+        #latex = gsub(x = latex,pattern = "[ ]{3}", replacement = "  \\\\hspace*{1mm} ") # 3 empty spaces
+        latex = gsub(x = latex,pattern = "[%]", replacement = "\\\\%")
+
+
+        #r = stringr::str_replace_all(r, pattern = "\\\\", replacement = "\\\\par ")
         #r = stringr::str_replace_all(r, pattern = "\\\\", replacement = "\n")
-        r
+        #r
+        latex
       })
 
+      names(x) = NULL
       x
     })  |> data.frame()
 

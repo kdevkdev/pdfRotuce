@@ -716,6 +716,7 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
 
         if(xml2::xml_length(xml_nodes) >0 ){
 
+          # strip namesspace to avoid having to specify the namespace in the xslt file
           xml2::xml_ns_strip(xml_nodes)
 
           # to develop https://xsltfiddle-beta.liberty-development.net/
@@ -731,7 +732,7 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
 
           docnode = xml2::xml_find_first(xml_jats, "/*")
 
-          if(is.na(xml_jats)){
+          if(is.na(docnode)){
             stop("no valid root node in transfomred JATS xml")
           }
 
@@ -837,7 +838,7 @@ gen_xml_sections = function(doc_summar){
 
   return(list(hxml_pretags = hxml_pretags, hxml_postags = hxml_postags))
 }
-gen_xml_table = function(ct_csv, tab_opts, tab_counter){
+gen_xml_table = function(ct_csv, tab_opts, tab_counter,compat_cell_md_parsing = F){
 
   # label. to autogenerate
   # caption title  - is it needed?
@@ -875,10 +876,39 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter){
   ct_csv = apply(ct_csv, MARGIN = c(1,2), FUN = \(x) {
 
     # cell md
-    x = parse_cellmd_xml(x)
+    if(!compat_cell_md_parsing){
 
-    # 3 empty spaces
-    x = gsub(x = x,pattern = "[ ]{3}", replacement = "<preformat>   </preformat>") # 3 empty spaces
+
+      # parse markdown to xml and parse xml
+      cmm_xml_txt  = commonmark::markdown_xml(x)
+      cmm_xml = xml2::read_xml(cmm_xml_txt)
+      cmm_xml = xml2::xml_ns_strip(cmm_xml) # strip namesspace to avoid having to specify the namespace in the xslt file
+
+      # load xslt and transfomr to jats
+      xlst =  xml2::read_xml(system.file("commonmark_xml_to_jats_xml_table.xml", package="pdfRotuce"))
+      xml_jats = xslt::xml_xslt(cmm_xml,xlst)
+
+      #docnode = xml2::xml_root(xml_jats)
+      xml_top =xml2::xml_find_first(xml_jats, "/top")
+
+      r  = xml_top |> as.character()
+
+      # manually remove <top> and </top>.
+      # to place everythign in a top element seems to be the easiest solution to get several elements and text connverted to txt
+      r = stringr::str_replace(pattern = "^<top>", string = r, replacement = "") # starttag
+      r = stringr::str_replace(pattern = "</top>$", string = r, replacement = "") # endttag
+      r = stringr::str_replace(pattern = "^<top/>$", string = r, replacement = "") # of no content
+      r = trimws(r)
+      r
+    }
+    else {
+      x = parse_cellmd_xml(x)
+
+      # 3 empty spaces
+      r = gsub(x = x,pattern = "[ ]{3}", replacement = "<preformat>   </preformat>") # 3 empty spaces
+
+    }
+    r
   })
 
   colgroup = ""

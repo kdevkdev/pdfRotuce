@@ -8,7 +8,11 @@
 #' @export
 #'
 #' @examples
-draft <- function(folder, overwrite = "none", article_type = "article"){
+draft <- function(folder, overwrite = "none", article_type = "article", template = "jcsh"){
+
+  # cleanse article type and template to prevent safety issues
+  article_type = stringr::str_replace_all(string = article_type, pattern = "[^a-zA-Z]", replacement = "")
+  template = stringr::str_replace_all(string = template, pattern = "[^a-zA-Z]", replacement = "")
 
 
   # create directories
@@ -27,7 +31,7 @@ draft <- function(folder, overwrite = "none", article_type = "article"){
   dir.create(paste0(folder), showWarnings = F) # should fail if already exists
 
   # copy template folder to newly created directory
-  template_path <- system.file("./template", package = "pdfRotuce")
+  template_path <- system.file(paste0("./template_", template), package = "pdfRotuce")
 
 
 
@@ -44,5 +48,7 @@ draft <- function(folder, overwrite = "none", article_type = "article"){
   r = file.copy(from = paste0(template_path, "/", "manuscript_", article_type, ".docx"),  to = paste0(folder, "/manuscript.docx"),  overwrite = ow)
 
 
+  # create info file to indicate in the filname what tempalte and type we copied from
+  file.create(paste0(folder, "/", article_type, "_", template, ".info"))
 }
 

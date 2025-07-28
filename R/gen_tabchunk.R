@@ -15,7 +15,7 @@ escape_caption <- function(str){
 #' @export
 #'
 #' @examples
-gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels = list()){
+gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels = list(), compat_cell_md_parsing = F){
 
   # table captions to return
   tab_capts = list()
@@ -113,7 +113,7 @@ ncol =  NCOL(tab_dat)
               footnote = '" %+% tab_footnote %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
-              fullgrid = " %+% tab_fullgrid %+% ")
+              fullgrid = " %+% tab_fullgrid %+% ", compat_cell_md_parsing =  "%+%compat_cell_md_parsing %+%")
 cat(tex)
 ```
 ```"
