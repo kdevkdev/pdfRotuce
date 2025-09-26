@@ -45,10 +45,13 @@ draft <- function(folder, overwrite = "none", article_type = "article", template
 
   # these we also need to rename
   r = file.copy(from = paste0(template_path, "/", "metadata_", article_type, ".csv"),  to = paste0(folder, "/metadata.csv"), overwrite = ow)
+  r = file.copy(from = paste0(template_path, "/", "metadata0_periodical.csv"),  to = paste0(folder, "/metadata0_periodical.csv"), overwrite = ow)
   r = file.copy(from = paste0(template_path, "/", "manuscript_", article_type, ".docx"),  to = paste0(folder, "/manuscript.docx"),  overwrite = ow)
 
 
   # create info file to indicate in the filname what tempalte and type we copied from
-  file.create(paste0(folder, "/", article_type, "_", template, ".info"))
+  infofilename = paste0(folder, "/", article_type, "_", template, ".info")
+  file.create(infofilename)
+  cat(paste0("date: ", format(Sys.time(), "%d %B, %Y - %H:%M:%S"), "\noverwrite: ", overwrite, "\ntemplate: ", template, "\narticle_type: ", article_type), file = infofilename, append = T)
 }
 

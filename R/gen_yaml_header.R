@@ -8,18 +8,10 @@ gen_hardcoded_meta = function(reference_parsing ){
 
   md = list()
 
-  # few hardcoded values - should go into some conflig file when a good solutions is thought ofs
-  md$copyright = "The Author(s). Published by Umeå university Library and owned by the Community Health Systems-Connect, a network of five universities from South Africa, Sweden Tanzania, Uganda and Zambia."
-  md$license = "J Community Systems for Health is a Fair Open Access journal distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted use, distribution, and reproduction in any medium, provided the original work is properly cited."
-  md$copyright_holder = "The Author(s)"
-  md$journal_title = "JOURNAL OF COMMUNITY SYSTEMS FOR HEALTH"
-  md$journal_title_short = "J Community Systems for Health"
+  # parameters relevant for parsing
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
-
                                                                       latex_engine   = "lualatex" |> yml_qt()))
-  md$publisher = "Umeå University Library"
-  md$journal_publisher_id = "JCSH"
-  md$issn = "3035-692X"
+
 
   # only put references.bib file as bibliography if appropriate - (ie if not in passthrough mode)
   if(reference_parsing != FALSE){
@@ -31,33 +23,8 @@ gen_hardcoded_meta = function(reference_parsing ){
 }
 gen_yaml_header = function(md, reference_parsing = T){
 
-  # md : metadata to fill in
 
-
-  # first create empty structure
-  yml_data = list(title_full = '',
-                  copyright = list(year = '', text = ''),
-                  license = '',
-                  journalinfo = list(title = '', volume = '', issue = '', doi = '', article_type = '', string_volumeissue = ''),
-                  abstracts = list(mainlang = list(parts = list(title = '', text = ''), title = '')),
-                  keywords = c(),
-                  authors = list(list(name = '', affiliation_ids = '', orcid = '', co_with_prior = ''),
-                                 list(name = '', affiliation_ids = '', orcid = '', co_with_prior = '')),
-
-                  affiliations = list(list(id = '', address = '', orcid = ''),
-                                      list(id = '', address = '', orcid = '')),
-                  correspondingauthor = list(address = '', email = ''),
-                  articledates = list(received = '', decision = '', accepted = ''),
-                  pageheader = list(even = '', odd = ''),
-                  output = '',
-                  bibliography = '',
-                  csl = '',
-                  abstract_sidelangs_hint = '',
-                  abstract_picture = '',
-                  string_corresponding = '',
-                  publisher = '',
-                  issn = '')
-
+  yml_data = list()
 
   # copy over -> to it this way to have default values availabvlw
   yml_data$title_full                         = md$title
@@ -66,6 +33,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$license                            = md$license
 
   yml_data$journalinfo$title                  = md$journal_title
+  yml_data$journalinfo$title_short            = md$journal_title_short
   yml_data$journalinfo$volume                 = md$volume
   yml_data$journalinfo$issue                  = md$issue
   yml_data$journalinfo$string_volumeissue     = md$string_volumeissue
@@ -79,44 +47,27 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$authors                            = md$authors
   yml_data$affiliations                       = md$affiliations
   yml_data$correspondingauthor$email          = md$attributes$corresponding_email
+  yml_data$correspondingauthor$allstring      = md$attributes$corresponding_allstring
+  yml_data$responsible_editor                 = md$attributes$responsible_editor
   yml_data$articledates                       = md$articledates
-  yml_data$pageheader$odd                     = md$journal_title_short
-  yml_data$pageheader$even                    = md$pageheader
+  yml_data$author_shortname                   = md$author_shortname
   yml_data$output                             = md$output
   yml_data$bibliography                       = md$bibliography
   yml_data$csl                                = md$csl
   yml_data$has_abstract                       = md$has_abstract
   yml_data$abstract_sidelangs_hint            = md$abstract_sidelangs_hint
   yml_data$string_corresponding               = md$string_corresponding
+  yml_data$string_contact                     = md$string_contact
+  yml_data$string_responsibleeditor           = md$string_responsibleeditor
+  yml_data$string_articlehistory              = md$string_articlehistory
+  yml_data$string_keywords                    = md$string_keywords
+  yml_data$string_keywords_spanish            = md$string_keywords_spanish
+  yml_data$string_multilang_abstract_title    = md$string_multilang_abstract_title
+  yml_data$string_bibliography_title          = md$string_bibliography_title
+  yml_data$string_declarations_title          = md$string_declarations_title
 
-  # yml_data$title_full                         = md$title |> yml_qt()
-  # yml_data$copyright$year                     = md$copyright_year |> yml_qt()
-  # yml_data$copyright$text                     = md$copyright |> yml_qt()
-  # yml_data$license                            = md$license |> yml_qt()
-  #
-  # yml_data$journalinfo$title                  = md$journal_title |> yml_qt()
-  # yml_data$journalinfo$volume                 = md$volume |> yml_qt()
-  # yml_data$journalinfo$issue                  = md$issue |> yml_qt()
-  # yml_data$journalinfo$string_volumeissue     = md$string_volumeissue |> yml_qt()
-  # yml_data$journalinfo$doi                    = md$doi  |> yml_qt() # ideally if the doi is the article specific one this should be restructured
-  # yml_data$journalinfo$article_type           = md$article_type  |> yml_qt()
-  # yml_data$journalinfo$issn                   = md$issn |> yml_qt()
-  # yml_data$journalinfo$publisher              = md$publisher |> yml_qt()
-  #
-  # yml_data$abstracts                          = md$abstracts
-  # yml_data$keywords                           = md$attributes$keywords
-  # yml_data$authors                            = md$authors
-  # yml_data$affiliations                       = md$affiliations
-  # yml_data$correspondingauthor$email          = md$attributes$corresponding_email |> yml_qt()
-  # yml_data$articledates                       = md$articledates |> yml_qt()
-  # yml_data$pageheader$odd                     = md$journal_title_short |> yml_qt()
-  # yml_data$pageheader$even                    = md$pageheader |> yml_qt()
-  # yml_data$output                             = md$output
-  # yml_data$bibliography                       = md$bibliography |> yml_qt()
-  # yml_data$csl                                = md$csl |> yml_qt()
-  # yml_data$has_abstract                       = md$has_abstract |> yml_qt()
-  # yml_data$abstract_sidelangs_hint            = md$abstract_sidelangs_hint |> yml_qt()
-  # yml_data$string_corresponding               = md$string_corresponding |> yml_qt()
+
+
 
 
   if(!is.null(md$attributes$abstract_picture) && !is.na(md$attributes$abstract_picture) && is.character(md$attributes$abstract_picture) && nchar(md$attributes$abstract_picture) > 1)

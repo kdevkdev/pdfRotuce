@@ -215,7 +215,7 @@ parse_title_page = function(docdat){
   # check if any additional language abstracts have ben specified. If yes, generate a hint text to be place below the main abstract
   abside_languages = setdiff(names(retlist$abstracts), "mainlang")
 
-  lang_propernames = c(es = "Español")
+  lang_propernames = c(es = "Español", som = "Somali")
 
   # generate hint toext
   if(length(abside_languages) > 0){

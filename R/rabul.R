@@ -96,7 +96,10 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @export
 #'
 #' @examples
-rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL, colaligns = NULL, fullgrid = FALSE, compat_cell_md_parsing = F){
+rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL,
+                    colaligns = NULL,
+                    fullgrid = FALSE,
+                    compat_cell_md_parsing = F){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -142,6 +145,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
         # strip namesspace to avoid having to specify the namespace in the xslt file
         cmm_xml = xml2::xml_ns_strip(cmm_xml)
+
 
         # to develop https://xsltfiddle-beta.liberty-development.net/
         xlst =  xml2::read_xml(system.file("commonmark_xml_to_tablelatex.xml", package="pdfRotuce"))
@@ -329,17 +333,16 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
 
 
-    if(mode == "wide"){
-      pre_envouter = "\\end{multicols}"
-      post_envouter = "\\begin{multicols}{2}\\raggedcolumns"
-      # pre_envouter = "\\begin{table*}\\begin{multicolslongtable}" # put for floating table. Only works with non-long tables
-      # post_envouter = "\\end{multicolslongtable}\\end{table*}"
-    }
-    else if(mode == "landscape"){
+    if(mode == "landscape"){
       # https://tex.stackexchange.com/questions/19017/how-to-place-a-table-on-a-new-page-with-landscape-orientation-without-clearing-t
 
       pre_envouter = "\\end{multicols}\\begin{landscape}\\centering\\thispagestyle{lscape}\\pagestyle{lscape}"
       post_envouter = "\\end{landscape}\\clearpage\\begin{multicols}{2}"
+    } else if(mode == "wide"){
+      pre_envouter = "\\end{multicols}"
+      post_envouter = "\\begin{multicols}{2}\\raggedcolumns"
+      # pre_envouter = "\\begin{table*}\\begin{multicolslongtable}" # put for floating table. Only works with non-long tables
+      # post_envouter = "\\end{multicolslongtable}\\end{table*}"
     }
     else if(mode == "twocolumn"){ # default
       pre_envouter = "\\begin{multicolslongtable}"

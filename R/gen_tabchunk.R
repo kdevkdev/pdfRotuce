@@ -64,10 +64,11 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
 
   # whole page stretch or single columns?
   tab_mode = "twocolumn" # default
-  if('wide' %in% tab_opts){
+  if('landscape' %in% tab_opts){
+    tab_mode = "landscape"
+  }
+  else if('wide' %in% tab_opts){
       tab_mode = "wide"
-  } else if('landscape' %in% tab_opts){
-      tab_mode = "landscape"
   }
 
   # longtable?
@@ -113,7 +114,7 @@ ncol =  NCOL(tab_dat)
               footnote = '" %+% tab_footnote %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
-              fullgrid = " %+% tab_fullgrid %+% ", compat_cell_md_parsing =  "%+%compat_cell_md_parsing %+%")
+              fullgrid = " %+% tab_fullgrid %+% ", compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
 cat(tex)
 ```
 ```"

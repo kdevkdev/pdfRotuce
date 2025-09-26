@@ -1,11 +1,15 @@
-aname,value,comment
-articledates,Received 26 April 2022; Accepted 22 July 2022; Published unpublished,Articledates for titlepage
-volume,1,Volume
-issue,1,Issue
-string_volumeissue,"2021, VOL. 1","String for the title page top header – can be set to any string, e.g. for special issues"
-copyright_year,2025,Year and other text to prepepend to footnote on title page
-doi, https://doi.org/10.36368/shaj.v1i1.262 ,DOI
-pageheader,Muller et al. ,Author name for title page
-article_type,Original research,"Article type for title page. One of Original research, Review, Comment ..."
-has_abstract,yes,Whether the article is supposed to have an abstract
-string_corresponding,Corresponding author,Text after * that indicates the corresponding author - *text:xx@gmail.com
+aname,value,comment,,
+articledates, "Received 26 April 2022; Accepted 22 July 2022; Published unpublished", Articledates for titlepage
+volume,1,Volume,,
+issue,1,Issue,,
+string_volumeissue,"2021, VOL. 1","String for the title page top header – can be set to any string, e.g. for special issues",,
+doi,10.36368/shaj.v1i1.262 ,DOI,,
+author_shortname,Muller et al. ,Author name for title page,,
+article_type,Original article,"Article type for title page. One of Original research, Review, Comment ...",,
+has_abstract,yes,Whether the article is supposed to have an abstract,,
+string_contact,CONTACT,Heading for text on author to contact at the bottom,,
+string_responsibleeditor,"RESPONSIBLE EDITOR",Heading of for name of responsible editor to the right of abstrat,,
+string_articlehistory, "ARTICLE HISTORY"
+string_keywords, "KEYWORDS"
+string_bibliography_title,References, Heading of bibliography
+string_multilang_abstract_title,Summary in Somali, Heading of side language(s)s abstracts

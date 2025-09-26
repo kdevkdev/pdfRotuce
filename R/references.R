@@ -44,7 +44,8 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
   ref_inds = NULL
 
 
-  rmd_references = ""
+  #rmd_references = ""
+  yaml_references = ""
   if(length(refparind) == 0)   hgl_warn("No references found in manuscript!!!")
   else{
 
@@ -161,13 +162,22 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
     # remove potentialbibliography parts from document
     if(!is.null(refparind) && !is.null(ref_inds)){
 
-      browser()
+
       doc_summar = doc_summar[-c(refparind, ref_inds), ]
     }
 
     # put placeholder for CLS references into the RMD text
-    rmd_references = paste0("# References\n\n",
-                            "<div id=\"refs\"></div>")
+    # rmd_references = paste0("# References\n\n",
+    #                         "<div id=\"refs\"></div>")
+
+    # https://pandoc.org/MANUAL.html
+    # put into metadata field instead of div above, so that we can use teh $refs$ variable
+    rmd_references = "---
+refs: |
+   ::: {#refs}
+   :::
+..."
+
 
 
     doc_summar$mrkdwn = doc_summar$text
@@ -225,8 +235,14 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
 
     # remove from document
     doc_summar = doc_summar[-c(refparind, ref_inds), ]
-    rmd_references = paste0("# References\n\n",
-                            "<div id=\"refs\"></div>")
+    # rmd_references = paste0("# References\n\n",
+    #                         "<div id=\"refs\"></div>")
+
+    # https://pandoc.org/MANUAL.html
+    # put into metadata field instead of div above
+    rmd_references = "refs: |
+   ::: {#refs}
+   :::"
 
     if(reference_parsing == "anystyle"){
 
@@ -633,10 +649,17 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
       # remove dots
       markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
 
+      reftex = "\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
+                                                       options = c("labelindent" = "0em",
+                                                                   "labelwidth" = "2.4em",
+                                                                   "align" = "left" ,
+                                                                   "leftmargin" = "2.7em")) %+% ""
+      #rmd_references = reftex
 
 
-      rmd_references = "# References\n\n\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
-                                                              options = c("labelindent" = "0em", "labelwidth" = "2.4em", "align" = "left" , "leftmargin" = "2.7em"))
+      #rmd_references =
+      yaml_references = yaml::as.yaml(list(refs = reftex))
+
 
       doc_summar = doc_summar[-c(refparind, ref_inds),]
 
@@ -644,5 +667,5 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
     }
   }
 
-  return(list(doc_summar = doc_summar, rmd_references = rmd_references, d_xmlintext_cites = d_xmlintext_cites))
+  return(list(doc_summar = doc_summar, yaml_references = yaml_references, d_xmlintext_cites = d_xmlintext_cites))
 }

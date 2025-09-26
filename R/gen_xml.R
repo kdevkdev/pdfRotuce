@@ -401,7 +401,9 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
 
 
   # todo: abstract and keyworsd
-  adates = stringr::str_split_1(string = metadata$articledates, pattern = ";")
+  #adates = stringr::str_split_1(string = metadata$articledates, pattern = ";")
+  # at this point should be already split
+  adates = metadata$articledates
 
   # parse dataes - two  orders allowed: 30 september 2024, 2024 september 30 , september 30 2024
   parsed_adates = lubridate::parse_date_time(x = adates, orders = c("dmy", "ymd", "mdy"))

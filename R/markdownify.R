@@ -52,12 +52,24 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # find and parse titele page - first heading 1 up to second heading 1
   parsed_meta = parse_title_page(doc_summar[title_page_inds,])
 
-  # predefined metadata
+  # predefined metadata & metadata for
   predef_meta  = list()
+  periodical_meta = list()
+
+  # get article specific metadata from csv
+  if(file.exists(paste0(doc_folder, "/metadata0_periodical.csv"))){
+
+    # load periodical metadata
+    pd_mp = read.csv(file = paste0(doc_folder, "/metadata0_periodical.csv"), header = F, fileEncoding = "UTF-8")
+    pmvals = pd_mp[[2]]
+    names(pmvals) = pd_mp[[1]]
+
+    periodical_meta = as.list(pmvals)
+  }
 
 
-  # get metadata from csv
-  if(!is.null(meta_csv)){
+  # get article specific metadata from csv
+  if(!is.null(meta_csv) & file.exists(meta_csv)){
 
     pd_tab = read.csv(file = meta_csv, header = F, fileEncoding = "UTF-8")
 
@@ -65,18 +77,39 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     tvals = pd_tab[[2]]
     names(tvals) = pd_tab[[1]]
 
+    checkvec = c("volume", "issue", "string_volumeissue",
+                 "doi", "has_abstract", "article_type", "author_shortname", "string_corresponding", "string_contact",
+                 "string_responsibleeditor", "string_articleihstory", "string_keywords",
+                 "string_spanish_keywords", "string_declarations_title","string_keywords_spanish",
+                 "string_multilang_abstract_title", "string_bibliography_title")
+
+
+    # whitelist of values to copy
+    for(cn in checkvec){
+      predef_meta[[cn]] = tvals[cn]
+    }
 
     # copy over provided values, uppercase for article typer
-    if(is.element("articledates", names(tvals)))             predef_meta$articledates              = tvals["articledates"]                   else hgl_warn("'articledates' missing in meta csv")
-    if(is.element("volume", names(tvals)))                   predef_meta$volume                    = tvals["volume"]                         else hgl_warn("'volume' missing in meta csv")
-    if(is.element("issue",  names(tvals)))                   predef_meta$issue                     = tvals["issue"]                          else hgl_warn("'issue' missing in meta csv")
-    if(is.element("string_volumeissue",  names(tvals)))      predef_meta$string_volumeissue        = tvals["string_volumeissue"]             else hgl_warn("'string_volumeissue' missing in meta csv")
-    if(is.element("copyright_year", names(tvals)))           predef_meta$copyright_year            = tvals["copyright_year"]                 else hgl_warn("'copyright_year' missing in meta csv")
-    if(is.element("doi", names(tvals)))                      predef_meta$doi                       = tvals["doi"]                            else hgl_warn("'doi' missing in meta csv")
-    if(is.element("pageheader", names(tvals)))               predef_meta$pageheader                = tvals["pageheader"]                     else hgl_warn("'pageheader' missing in meta csv")
-    if(is.element("has_abstract", names(tvals)))             predef_meta$has_abstract              = tvals["has_abstract"]                   else hgl_warn("'has_abstrat' missing in meta csv")
-    if(is.element("article_type", names(tvals)))             predef_meta$article_type              = toupper(tvals["article_type"])          else hgl_warn("'article_type' missing in meta csv")
-    if(is.element("string_corresponding", names(tvals)))     predef_meta$string_corresponding      = tvals["string_corresponding"]           else hgl_warn("'string_corresponding' missing in meta csv")
+    # if(is.element("volume", names(tvals)))                    predef_meta$volume                    = tvals["volume"]                         else hgl_warn("'volume' missing in meta csv")
+    # if(is.element("issue",  names(tvals)))                    predef_meta$issue                     = tvals["issue"]                          else hgl_warn("'issue' missing in meta csv")
+    # if(is.element("string_volumeissue",  names(tvals)))       predef_meta$string_volumeissue        = tvals["string_volumeissue"]             else hgl_warn("'string_volumeissue' missing in meta csv")
+    # if(is.element("doi", names(tvals)))                       predef_meta$doi                       = tvals["doi"]                            else hgl_warn("'doi' missing in meta csv")
+    # if(is.element("has_abstract", names(tvals)))              predef_meta$has_abstract              = tvals["has_abstract"]                   else hgl_warn("'has_abstrat' missing in meta csv")
+
+    # if(is.element("author_shortname", names(tvals)))          predef_meta$author_shortname          = tvals["author_shortname"]               else hgl_warn("'author_shortname' missing in meta csv")
+    # if(is.element("string_corresponding", names(tvals)))      predef_meta$string_corresponding      = tvals["string_corresponding"]           else hgl_warn("'string_corresponding' missing in meta csv")
+    # if(is.element("string_contact", names(tvals)))            predef_meta$string_contact            = tvals["string_contact"]                 else hgl_warn("'string_contact missing in meta csv")
+    # if(is.element("string_responsibleeditor", names(tvals)))  predef_meta$string_responsibleeditor  = tvals["string_responsibleeditor"]       else hgl_warn("'string_responsibleeditor' missing in meta csv")
+    # if(is.element("string_articlehistory", names(tvals)))     predef_meta$string_articlehistory     = tvals["string_articlehistory"]          else hgl_warn("'string_articlehistory' missing in meta csv")
+    # if(is.element("string_keywords", names(tvals)))           predef_meta$string_keywords           = tvals["string_keywords"]                else hgl_warn("'string_keywords' missing in meta csv")
+    # if(is.element("string_articlehistory", names(tvals)))     predef_meta$string_articlehistory     = tvals["string_articlehistory"]          else hgl_warn("'string_articlehistory' missing in meta csv")
+    # if(is.element("string_keywords", names(tvals)))           predef_meta$string_keywords           = tvals["string_keywords"]                else hgl_warn("'string_keywords' missing in meta csv")
+
+
+    # some more processing
+    if(is.element("article_type", names(tvals)))              predef_meta$article_type              = toupper(tvals["article_type"])          else hgl_warn("'article_type' missing in meta csv")
+    # split articledates by ';'
+    if(is.element("articledates", names(tvals)))             predef_meta$articledates = stringr::str_split(simplify= T, pattern = ";", string =tvals["articledates"]) |> as.vector() |> trimws() else hgl_warn("'articledates' missing in meta csv")
 
     if(startsWith(predef_meta$doi,"https://doi.org/") || startsWith(predef_meta$doi,"http://doi.org/")){
 
@@ -92,7 +125,36 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
   # combine metadata specified in parsed document with metadata provided in CSV
-  metadata = c(predef_meta, parsed_meta, hardcoded_meta)
+  metadata = c(predef_meta, parsed_meta, periodical_meta, gen_hardcoded_meta(reference_parsing = reference_parsing))
+
+  # also pack keywords from metadata$atrributes into the respective abstracts
+
+  # find all attrributes starting with keywords
+  kw_names = stringr::str_extract_all(string = names(metadata$attributes), pattern = "^keywords.*") |> unlist()
+
+  for(ckwn in kw_names){
+
+    ckws = metadata$attributes[[ckwn]]
+
+    # detect langague suffix after '_', or mainlangaugeS
+    if(ckwn == "keywords"){
+      clan = 'mainlang'
+    } else{
+      clan = stringr::str_replace_all(string = ckwn, pattern = "keywords_", replacement = "")
+    }
+
+    # check if present
+    if(!is.null(metadata$abstracts[[clan]])){
+
+      metadata$abstracts[[clan]]$keywords = ckws
+
+    } else{
+      # if ever a template requires sidelang keywords without abstracts then att the sidelang abstract here and keywords after.
+      hgl_warn("'" %+% ckwn %+% " provided but no abstract for language '" %+% clan %+% "' present.")
+    }
+  }
+
+
 
   yaml_preamble = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
 
@@ -257,7 +319,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # put protected at for refs
   doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]
 
-  # TODO: implement global table and figure lits for JATS XML, see todo
 
   # noindent
   doc_summar[, mrkdwn:= gsub(x = trimws(mrkdwn), pattern = "^\\[\\[noindent\\]\\](.?)", replacement = "\\\\noindent \\1")]
@@ -430,8 +491,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
   ############ statements and declarations ############
-  rmd_statements = ''
+  yaml_statements = ''
 
+  # generate author contributions
   tll = list()
   for(ca in metadata$authors){
 
@@ -450,21 +512,25 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   consumed_indiv_author_contribs = FALSE
   if(length(metadata$statements) > 0){
 
-    rmd_statements = "\n\n# Declarations\n\n"
+    #rmd_statements = "\n\n# Declarations\n\n"
     for(cn in names(metadata$statements)){
 
       cstat <- metadata$statements[[cn]]
-      rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
+      # todo potentially parse markdown?
+
+      #rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
+      yaml_statements = yaml_statements %+% "\\subsection{" %+%cn %+% "}\n" %+% "\\noindent " %+% cstat
 
       # checkstring
       chkstr = trimws(tolower(cn))
-      # check for words author an dcontribution in right order and some limited distance from each other
+      # check for words author and contributions in right order and some limited distance from each other - to detect later if it still has to be added
       if(stringr::str_detect(string = chkstr, pattern = "author.{1,5}contribution")){
          consumed_indiv_author_contribs = TRUE
-         rmd_statements = paste0(rmd_statements, "\n", indiv_author_contribs)
+
+         yaml_statements = paste0(yaml_statements, "\n", indiv_author_contribs) # att this to the setion
 
       }
-      rmd_statements = rmd_statements %+% "\n\n"
+      yaml_statements = yaml_statements %+% "\n\n"
     }
 
   }
@@ -472,13 +538,16 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # author speciffic contributions not yet put into rmd
   if(!consumed_indiv_author_contribs) {
 
-    rmd_statements = rmd_statements %+% "## Author contributions \n\n" %+% indiv_author_contribs %+% "\n\n"
+    yaml_statements = yaml_statements %+% "\\subsection{Author contributions}\n\n" %+% indiv_author_contribs %+% "\n\n"
   }
+
+  yaml_statements = yaml::as.yaml(list(statements = yaml_statements))
+
 
 
 
   ############ other language abstracts ############
-  rmd_multilang_abstracts = ""
+  yaml_multilang_abstracts = ""
   if(any(names(metadata$abstracts)!="mainlang")){
 
     # figure out what additional languages there are (remove mainlang, usually english)
@@ -489,7 +558,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
 
-    rmd_multilang_abstracts = "\n\\vspace{2mm}"
+    yaml_multilang_abstracts = "\n\\vspace{2mm}"
     first <- TRUE
 
     for(can in names(side_langs_abstracts)){
@@ -501,11 +570,11 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       article_lang_title = side_langs_abstracts[[can]]$title
 
 
-      cab_tit = toupper(switch(can, "", "es" = "RESUMEN")) # Resumén. Generate abstract term for each language, default empty
+      cab_tit = toupper(switch(can, "", "es" = "RESUMEN", "som" = "CINWAAN")) # Resumén. Generate abstract term for each language, default empty
 
       if(first){ # but horizontal rule
-        #rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
-        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
+        #yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
+        yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
         first <- FALSE
       }
 
@@ -513,15 +582,15 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
       if(!is.null(article_lang_title) && !is.na(article_lang_title) && article_lang_title != ""){
 
-        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries \\vskip 0mm" %+% article_lang_title %+% "}\\vskip 3mm"
+        yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\bfseries \\vskip 0mm" %+% article_lang_title %+% "}\\vskip 3mm"
       }
-      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "}\\vskip 1mm"
+      yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "}\\vskip 1mm"
 
 
       # go through paragraphs/parts
       for(cp in ca_parts){
 
-        rmd_multilang_abstracts = rmd_multilang_abstracts %+% "{\\bfseries " %+% rmd_char_escape(cp$title) %+% "} " %+% rmd_char_escape(cp$text) %+% "\n\n"
+        yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\bfseries " %+% rmd_char_escape(cp$title) %+% "} " %+% rmd_char_escape(cp$text) %+% "\n\n"
       }
     }
 
@@ -533,15 +602,16 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       if(csidelang == "es"){
         keywordtitle = "{\\raggedright\\bfseries Palabras clave: }"
       }
-      rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\vskip 3mm" %+% keywordtitle
-      rmd_multilang_abstracts = rmd_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]
+      yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\vskip 3mm" %+% keywordtitle
+      yaml_multilang_abstracts = yaml_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]
     }
 
-    rmd_multilang_abstracts = rmd_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\n\n"
+    yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\n\n"
 
   }
 
 
+  yaml_multilang_abstracts = yaml::as.yaml(list(multilang_abstracts = yaml_multilang_abstracts))
 
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
@@ -561,7 +631,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
   # if any orcids present, put all authors with oricds in a separate section before the references
-  rmd_orcinds = ""
+  yaml_orcinds = ""
   if(!is.null(author_orcinds) && length(author_orcinds) > 0 && any(author_orcinds)){
 
     td <- metadata$authors[author_orcinds] |> rbindlist(fill = TRUE)
@@ -571,43 +641,61 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       plural = "s"
     }
 
-    rmd_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
-    rmd_orcinds = rmd_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
-    rmd_orcinds = rmd_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
-                                                 td$orcid, "}{",
-                                                 td$orcid,"}"), collapse = " \\\\\n") %+% "}\n\n"
+#    yaml_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
+    #yaml_orcinds = yaml_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
 
-    rmd_orcinds = rmd_orcinds %+% "\n```"
+    yaml_orcinds = "\\noindent\\raggedright\n"
+    yaml_orcinds = yaml_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
+                                                 td$orcid, "}{",
+                                                 td$orcid,"}"), collapse = "\n\n")
+
+    yaml_orcinds = yaml::as.yaml(list(orcids = yaml_orcinds))
+    #yaml_orcinds = yaml_orcinds %+% "\n```"
   }
+
+  # partials output - enables bigger flexibilty in combination with the latex tempalte
+  #unlink(working_folder %+% "/partials", recursive = T)
+  #dir.create(working_folder %+% "/partials")
+  #write(x = rmd_multilang_abstracts, file = working_folder %+% "/partials/multilang_abstracts.tex")
+  #write(x = rmd_statements, file = working_folder %+% "/partials/rmd_statements.tex")
+  #write(x = res_parse_references$rmd_references, file = working_folder %+% "/partials/rmd_references.tex")
 
 
   rmd_text = c(yaml_preamble, chunk_setup, fig_capts, tab_capts,
-               "```{=latex}", # maybe sometimes a restart of the column environemnt might be helpful_
-               "\\begin{multicols}{2}",
+               #"```{=latex}", # maybe sometimes a restart of the column environemnt might be helpful_
+               #"\\begin{multicols}{2}",
                #"\\raggedcolumns",
                #"\\interlinepenalty=10000",
-               "```",
+               #"```",
                outmrkdwn,
-               "```{=latex}",
-               "```",
-               rmd_statements,
-               rmd_orcinds,
-               "```{=latex}",
-               "\\end{multicols}",
-               "```",
-               "\\raggedbottom",
-               rmd_multilang_abstracts,
-               "```{=latex}",
-               "\\begin{multicols}{2}",
+               "\n",
+               "\n",
+               "---",
+               yaml_statements,
+               "\n",
+               yaml_orcinds,
+               "\n",
+               yaml_multilang_abstracts,
+               "\n",
+               res_parse_references$yaml_references, # YAML to store refs in a variable
+               "---\n"
+               #rmd_statements,
+               #rmd_orcinds,
+               #"```{=latex}",
+               #"\\end{multicols}",
+               #"```",
+               #"\\raggedbottom",
+               #rmd_multilang_abstracts,
+               #"```{=latex}",
+               #"\\begin{multicols}{2}",
                #"\\raggedcolumns",
                #"\\interlinepenalty=10000",
-               "```",
-               res_parse_references$rmd_references,
+               #"```",
 
-               "```{=latex}",
-               #"\\bibliography{$bibliography$}",
-               "\\end{multicols}",
-               "```")
+               #"```{=latex}",
+               #"\\end{multicols}",
+               #"```"
+               )
 
   #[[figure,src: 'figures/Fig4.png', wide, caption: 'Promotores de salud capacitados.', label: 'fig4']]
 

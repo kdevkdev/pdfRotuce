@@ -93,9 +93,6 @@ $endfor$
 \title{$title_full$}
 
 
-% set authors and affiliations
-\setcounter{Maxaffil}{0}% always footnote mode
-
 
 % put authors on title page, properly accounting for sepearor characters (put & in case its a co-author)
 $for(authors/first)$
@@ -122,7 +119,11 @@ $if(correspondingauthor.email)$
 \corrauthor[]{{\bfseries *$string_corresponding$:}} {$correspondingauthor.email$}
 $endif$
 
-\articledates{$articledates$} % received, editorial decision, published
+\articledates{
+	$for(articledates)$
+	$articledates$
+	${ sep };$endfor$ % received, editorial decision, published .. .
+} % received, editorial decision, published .. .
 
 
 \AtBeginDocument{%something is overwriting our hyperlink colors, overwrite them again: https://tex.stackexchange.com/questions/246386/changing-color-of-cites-with-hypersetup-not-working
@@ -133,17 +134,17 @@ $endif$
 
 
 % define headers and footers here due to template usage
-\fancyhead[LE]{$pageheader.even$}
-\fancyhead[RO]{$pageheader.odd$}
+\fancyhead[LE]{$author_shortname$}
+\fancyhead[RO]{$journalinfo.title_short$}
 \fancyfoot[C]{\thepage\ } % add back page number
 
 
 \fancypagestyle{lscape}{% 
 \fancyhf{} % clear all header and footer fields 
 \fancyfoot[LE]{%
-	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$pageheader.even$}}\end{textblock}}
+	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$author_shortname$}}\end{textblock}}
 \fancyfoot[LO] {%
-	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$pageheader.odd$}}\end{textblock}}
+	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$journalinfo.title_short$}}\end{textblock}}
 \fancyhead[C]{\begin{textblock}{1}[0,0.5](19,14.5){\rotatebox{90}{\thepage}}\end{textblock}}
 
 \renewcommand{\headrulewidth}{0pt} 
@@ -258,8 +259,36 @@ $endif$
 	
 \colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
 	
+\begin{multicols}{2}
+	\raggedcolumns
+	\interlinepenalty=10000
+	$body$
+	\raggedcolumns
+	\section{$string_declarations_title$}
+	$statements$
+	\raggedcolumns
+	$orcids$
+\end{multicols}
 
-$body$
+% sidelang abstracts - hardcoded spanish
+\section{$string_multilang_abstract_title$}
+\vspace{2mm}
+%$--${ partials/multilang_abstracts.tex() }
+\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\sffamily
+	{\bfseries $abstracts.es.title$ } 
+	\vskip 1mm
+	$for(abstracxts.es.parts)$
+        	{\bfseries $it.title$} $it.text$ $sep$\\ 
+     $endfor$
+\vskip 3mm{\raggedright\bfseries $string_keywords_spanish$: }  $abstracts.es.keywords$ 
+\end{tcolorbox}
+\vspace{3mm}
 
+\begin{multicols}{2}
+	\raggedcolumns
+	\section{$string_bibliography_title$}	
+\raggedcolumns
+	$refs$
+\end{multicols}
 
 \end{document}

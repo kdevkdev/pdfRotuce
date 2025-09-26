@@ -1,5 +1,5 @@
 \RequirePackage[2024/11/01]{latexrelease}
-\documentclass[twoside]{shaj}
+\documentclass[oneside,a4paper]{shaj}
 %\documentclass[twoside,10pt]{jchs}
 
 % based on bioinfo and ncc
@@ -89,40 +89,56 @@ $endfor$
 \journaldoi{https://doi.org/$journalinfo.doi$}
 \journalarticletype{$journalinfo.article_type$}
 
+
+
 % set tite
 \title{$title_full$}
 
 
-% set authors and affiliations
-\setcounter{Maxaffil}{0}% always footnote mode
-
 
 % put authors on title page, properly accounting for sepearor characters (put & in case its a co-author)
+\newcommand{\custauths}{
 $for(authors/first)$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{$authors.name$}
+{$authors.name$}\textsuperscriptAuthor{$authors.affiliation_ids$}
 $endfor$
-
 $if(authors/rest)$
-
 $for(authors/rest)$
 $if(authors.co_with_prior)$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{\& $authors.name$} 
+{\& $authors.name$}\textsuperscriptAuthor{$authors.affiliation_ids$}
 $else$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{, $authors.name$} 
+{, $authors.name$}\textsuperscriptAuthor{$authors.affiliation_ids$}
 $endif$
 $endfor$
 $endif$
-
-$for(affiliations)$
-\affil[$affiliations.id$]{$affiliations.address$}
-$endfor$
-
+}
+\newcommand{\custcorr}{
 % corresponding author needs to have the corresponding YAML field set. Leave out address
-$if(correspondingauthor.email)$
+$if(correspondingauthor.fullstring)$
 \corrauthor[]{{\bfseries *$string_corresponding$:}} {$correspondingauthor.email$}
 $endif$
+}
 
-\articledates{$articledates$} % received, editorial decision, published
+% dont use authblk because it does not offer enought customization
+\newcommand{\custaffil}{
+$for(affiliations)$
+%\affil[$affiliations.id$]{$affiliations.address$}
+\textsuperscriptAffil{$affiliations.id$}$affiliations.address$
+${ sep }, $endfor$
+}
+
+% for putting keyworsd on title page
+\keywordscust{{\sanssemibold  $string_keywords$}
+	
+$for(keywords)$$keywords$$sep$, $endfor$}
+\respeditor{{\sanssemibold $string_responsibleeditor$}
+
+$responsible_editor$}
+
+\articledates{$if(articledates)${\sanssemibold $string_articlehistory$}
+$endif$
+$for(articledates)$
+$articledates$
+${ sep }\\$endfor$} % received, editorial decision, published .. .
 
 
 \AtBeginDocument{%something is overwriting our hyperlink colors, overwrite them again: https://tex.stackexchange.com/questions/246386/changing-color-of-cites-with-hypersetup-not-working
@@ -133,18 +149,21 @@ $endif$
 
 
 % define headers and footers here due to template usage
-\fancyhead[LE]{$pageheader.even$}
-\fancyhead[RO]{$pageheader.odd$}
-\fancyfoot[C]{\thepage\ } % add back page number
+%\fancyhead[LE]{$pageheader.even$}
+%\fancyhead[RO]{$pageheader.odd$}
+%https://tex.stackexchange.com/questions/449859/what-is-the-difference-between-leftmark-and-rightmark-in-fancyhdr
+\fancyhead[R]{\ifthenelse{\isodd{\value{page}}}{\raggedleft\sffamily\fontsize{7}{9}\selectfont $journalinfo.title$}{}}
+\fancyhead[L]{\ifthenelse{\isodd{\value{page}}}{}{\sffamily\fontsize{7}{9}\selectfont $author_shortname$}}
+\fancyfoot[C]{\sffamily\fontsize{7}{9}\selectfont\thepage} % add back page number
 
 
 \fancypagestyle{lscape}{% 
 \fancyhf{} % clear all header and footer fields 
-\fancyfoot[LE]{%
-	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$pageheader.even$}}\end{textblock}}
-\fancyfoot[LO] {%
-	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$pageheader.odd$}}\end{textblock}}
-\fancyhead[C]{\begin{textblock}{1}[0,0.5](19,14.5){\rotatebox{90}{\thepage}}\end{textblock}}
+\fancyfoot[R]{%
+	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{\sffamily $journalinfo.title$}}\end{textblock}}
+\fancyfoot[L] {%
+	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{\sffamily $author_shortname$}}\end{textblock}}
+\fancyhead[C]{\begin{textblock}{1}[0,0.5](19,14.5){\sffamily\rotatebox{90}{\thepage}}\end{textblock}}
 
 \renewcommand{\headrulewidth}{0pt} 
 \renewcommand{\footrulewidth}{0pt}
@@ -217,14 +236,28 @@ $endif$
 }{
 }
 
-%\setcounter{tracingmulticols}{5}  - for debugging multicols
+\geometry{left=2cm,%
+right=2cm,%
+top=2cm,%
+bottom=2.5cm,%
+headheight=12pt}%
 
 \begin{document}
+%	right=2cm,%
+%	top=2cm}
 \thispagestyle{empty}
-\enlargethispage{-2\baselineskip}
 %\begin{strip}
-\begin{textblock}{18}(1.5,27.2)
-\footnotesize{\noindent © $copyright.year$ $copyright.text$ $license$}
+\begin{textblock}{17.00}(2,26.1)
+{\color{themecolor1}\noindent\hrulefill}
+\vskip3.4mm
+\noindent
+\fontsize{7}{9}\selectfont{\sanssemibold $string_contact$ }\sffamily $correspondingauthor.allstring$
+
+\end{textblock}
+\begin{textblock}{17.00}(2,27.7)
+{\fontsize{6.3}{9}\selectfont\noindent $copyright.year$ $copyright.text$ $license$
+
+}
 \end{textblock}
 
 
@@ -238,12 +271,10 @@ $if(abstract_picture)$
 \InsertBoxR{0}{\includegraphics[width=0.4\linewidth]{$abstract_picture$}}
 $endif$
 $for(abstracts.mainlang.parts)$
-{\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\ 	
+{\bfseries\color{themecolor1}$abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\ 	
 $endfor$\\
 \\
 \noindent
-{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} 
-$for(keywords)$$keywords$$sep$, $endfor$}
 \end{abstract}
 $endif$
 	
@@ -251,15 +282,29 @@ $endif$
 $if(abstract_sidelangs_hint)$
 \newcommand{\abstracthint}{$abstract_sidelangs_hint$}
 $endif$
-	
-\maketitle\thispagestyle{empty} % no page number on first page
+%\afterpage{\aftergroup{\restoregeometry}}	
+\enlargethispage{-4\baselineskip}
+\maketitle%\thispagestyle{empty} % no page number on first page
 	
 	
 	
 \colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
 	
-
-$body$
-
+\begin{multicols}{2}
+	\raggedcolumns
+	\interlinepenalty=10000
+	$body$
+	\raggedcolumns
+	\section{$string_multilang_abstract_title$}
+	$multilang_abstracts$
+	\raggedcolumns
+	$statements$
+	\raggedcolumns
+	$orcids$
+	\raggedcolumns
+	
+	\section{$string_bibliography_title$}	
+	$refs$
+\end{multicols}
 
 \end{document}

@@ -148,26 +148,26 @@ justification=raggedright, skip = 2pt]{caption}
 %
 \RequirePackage[explicit]{titlesec}
 \titleformat{\section}
-{\color{jchsheadercolor}\Large\bfseries}
+{\color{themesectionheadingcolor}\Large\bfseries}
 % {\thesection} with numbers
 {}
 {0pt}
 {\MakeUppercase{#1}}
 []
 \titleformat{name=\section,numberless}
-{\color{jchsheadercolor}\Large\bfseries}
+{\color{themesectionheadingcolor}\Large\bfseries}
 {}
 {-0.5pt}
 {\MakeUppercase{#1}}
 []
 \titleformat{\subsection}
-{\color{jchsheadercolor}\bfseries}
+{\color{themesectionheadingcolor}\bfseries}
 {}
 {-0.5pt} % not sure why needed but otherwise 	subsections sem to have some  indent. 
 {#1}
 []
 \titleformat{\subsubsection}
-{\color{jchsheadercolor}\small\bfseries\itshape}
+{\color{themesectionheadingcolor}\small\bfseries\itshape}
 {}
 {-0.5pt}
 {#1}
@@ -274,7 +274,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	\begin{flushright}%
 		\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
 		\colorlet{varlinkcolor}{blue}%
-		\begin{tcolorbox}[colframe=jchsorange, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
+		\begin{tcolorbox}[colframe=themecolor1, colback=white, halign=center,fontupper=\fontsize{10}{12}\selectfont, boxsep=0pt,width=63mm, left=0mm, right=0mm]
 			\sffamily We are a {\textbf{Fair Open Access}} journal
 		\end{tcolorbox}%
 		\colorlet{varlinkcolor}{black}%
@@ -286,7 +286,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 {% we do not want a intent for the title, and we want it centered
 	\setstretch{1.08}\setlength{\JustifyingParindent}{0pt}%
-	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{jchsheadercolor}{\textls[20]{\@title}}\par%
+	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{themesectionheadingcolor}{\textls[20]{\@title}}\par%
 }
 \vskip3mm
 {  \@author}
@@ -300,7 +300,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \ifdef{\theabstract}
 {
 	\vskip2mm
-	\begin{tcolorbox}[colframe=jchslightorange, colback=jchslightorange, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
+	\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
 	{
 		\noindent
 		{\raggedright\bfseries ABSTRACT\par}
@@ -325,10 +325,10 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 \definecolor{color1}{RGB}{0,0,0} % Color of section headings
 
-\definecolor{jchsorange}{HTML}{ffc000} % color aroiund 'we are a  open access journal'
+\definecolor{themecolor1}{HTML}{ffc000} % color aroiund 'we are a  open access journal'
 \definecolor{urlcolor}{HTML}{0563c1} % url color
-\definecolor{jchslightorange}{HTML}{ffe8d9} %{fbe5d6} % abstract background color
-\definecolor{jchsheadercolor}{HTML}{ed7d31} % orange title text color
+\definecolor{themecolor2}{HTML}{ffe8d9} %{fbe5d6} % abstract background color
+\definecolor{themesectionheadingcolor}{HTML}{ed7d31} % orange title text color
 
 \definecolor{jchshlightgray}{HTML}{d9d9d9}
 
