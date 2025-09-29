@@ -260,13 +260,11 @@ $endif$
 \colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
 	
 \begin{multicols}{2}
-	\raggedcolumns
-	\interlinepenalty=10000
+  \raggedcolumns
+	%\interlinepenalty=10000
 	$body$
-	\raggedcolumns
 	\section{$string_declarations_title$}
 	$statements$
-	\raggedcolumns
 	$orcids$
 \end{multicols}
 
@@ -277,7 +275,7 @@ $endif$
 \begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\sffamily
 	{\bfseries $abstracts.es.title$ } 
 	\vskip 1mm
-	$for(abstracxts.es.parts)$
+	$for(abstracts.es.parts)$
         	{\bfseries $it.title$} $it.text$ $sep$\\ 
      $endfor$
 \vskip 3mm{\raggedright\bfseries $string_keywords_spanish$: }  $abstracts.es.keywords$ 
