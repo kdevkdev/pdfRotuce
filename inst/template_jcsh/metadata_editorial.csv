@@ -2,7 +2,7 @@ aname,value,comment
 articledates,Received 26 April 2022; Accepted 22 July 2022; Published unpublished,Articledates for titlepage
 volume,1,Volume
 issue,1,Issue
-string_volumeissue,"2024, VOL. 1","String for the title page top header – can be set to any string, e.g. for special issues"
+string_volumeissue,"2025, VOL. 1","String for the title page top header – can be set to any string, e.g. for special issues"
 doi,https://doi.org/10.1000/182,DOI
 article_type,Editorial,"Article type for title page. One of Original research, Review, Comment ..."
 has_abstract,yes,Whether the article is supposed to have an abstract
