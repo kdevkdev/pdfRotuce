@@ -21,7 +21,8 @@ markdownify(
   augment_blacklist = NULL,
   url_parsing = T,
   doi_parsing = T,
-  guess_refnumbers = T
+  guess_refnumbers = T,
+  compat_cell_md_parsing = F
 )
 }
 \arguments{

@@ -48,7 +48,12 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     bckp_tinytexclean <- options(tinytex.clean = FALSE)
     # try to rendr
     # put all rmd, latex related files in build path and manually copy, as far as i understand rmarkdown::render does not allow to specify output_file and output_dir that do not correspond to each other
-    respath = rmarkdown::render(input = rmd_outfile, output_dir = build_path, clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
+    respath_pdf  = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = "bookdown::pdf_document2",  clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
+    #respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = "bookdown::html_document2", clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
+
+    # for some reason the custom template provided in the yaml header of manuscript.Rdm does not work for thehtml_document2,hence specify explicitly heare
+    #respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = bookdown::html_document2(template = "template.html"), clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
+
 
     if(file.exists(pdf_outfile)){
 

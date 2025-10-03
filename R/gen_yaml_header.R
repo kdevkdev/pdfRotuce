@@ -10,7 +10,8 @@ gen_hardcoded_meta = function(reference_parsing ){
 
   # parameters relevant for parsing
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
-                                                                      latex_engine   = "lualatex" |> yml_qt()))
+                                                                      latex_engine   = "lualatex" |> yml_qt()),
+                                     'bookdown::html_format2' = list(template = "template.html" |> yml_qt()))
 
 
   # only put references.bib file as bibliography if appropriate - (ie if not in passthrough mode)

@@ -4,7 +4,7 @@
 \alias{draft}
 \title{Title}
 \usage{
-draft(folder, overwrite = "none", article_type = "article")
+draft(folder, overwrite = "none", article_type = "article", template = "jcsh")
 }
 \arguments{
 \item{overwrite}{either \code{"all"}, \code{"build"}, or \code{"none"} (default). All overwrtites all files including the manuscript template, \code{"build"} just the files in the \code{build} folder.}

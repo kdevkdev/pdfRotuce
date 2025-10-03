@@ -644,10 +644,11 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 #    yaml_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
     #yaml_orcinds = yaml_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
 
-    yaml_orcinds = "\\noindent\\raggedright\n"
     yaml_orcinds = yaml_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
                                                  td$orcid, "}{",
                                                  td$orcid,"}"), collapse = "\n\n")
+
+    yaml_orcinds = yaml_orcinds
 
     yaml_orcinds = yaml::as.yaml(list(orcids = yaml_orcinds))
     #yaml_orcinds = yaml_orcinds %+% "\n```"
