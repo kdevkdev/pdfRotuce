@@ -158,6 +158,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
         latex = gsub(x = latex, pattern = "#", replacement = "\\#", fixed = T)
         latex = gsub(x = latex, pattern = "\\{", replacement = "\\{")
         latex = gsub(x = latex, pattern = "\\}", replacement = "\\}")
+        latex = gsub(x = latex, pattern = "_", replacement = "\\\\_")
         latex = gsub(x = latex, pattern = "[", replacement = "{[}", fixed = T)
         latex = gsub(x = latex, pattern = "]", replacement = "{]}", fixed = T)
         latex = paste0("{", latex ,"}")

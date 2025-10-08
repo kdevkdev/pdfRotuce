@@ -11,7 +11,9 @@ gen_hardcoded_meta = function(reference_parsing ){
   # parameters relevant for parsing
   md$output                   = list('bookdown::pdf_document2' = list(template =  "template.tex"  |> yml_qt(),
                                                                       latex_engine   = "lualatex" |> yml_qt()),
-                                     'bookdown::html_format2' = list(template = "template.html" |> yml_qt()))
+                                     'bookdown::html_format2' = list(template = "template.html" |> yml_qt(),
+                                                                     toc = TRUE,
+                                                                     toc_depth = 3))
 
 
   # only put references.bib file as bibliography if appropriate - (ie if not in passthrough mode)
@@ -29,9 +31,12 @@ gen_yaml_header = function(md, reference_parsing = T){
 
   # copy over -> to it this way to have default values availabvlw
   yml_data$title_full                         = md$title
+  yml_data$title                              = md$title # also put here to stop pandoc from complaining that its mandatory
   yml_data$copyright$year                     = md$copyright_year
   yml_data$copyright$text                     = md$copyright
   yml_data$license                            = md$license
+
+
 
   yml_data$journalinfo$title                  = md$journal_title
   yml_data$journalinfo$title_short            = md$journal_title_short
