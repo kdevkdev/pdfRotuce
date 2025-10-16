@@ -17,7 +17,7 @@ parse_cellmd_latex = function(md){
   rt
 }
 
-gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, colaligns= NULL, fullgrid = F){
+gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, colaligns= NULL, gridmode  = "academicgrid"){
 
   # scheme not yet used
   nfillcols = ncol - 1
@@ -52,7 +52,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
     colsepc = ""
 
     colvline = ""
-    if(fullgrid == TRUE){
+    if(gridmode == "fullgrid"){
       colvline = "|"
     }
 
@@ -90,7 +90,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @param xltabular
 #' @param colwidths
 #' @param colaligns
-#' @param fullgrid
+#' @param gridmode
 #'
 #' @return
 #' @export
@@ -98,7 +98,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 #' @examples
 rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL,
                     colaligns = NULL,
-                    fullgrid = FALSE,
+                    gridmode = "academicgrid",
                     compat_cell_md_parsing = F){
   l_innerspecs = list()
   l_outerspecs = list()
@@ -237,11 +237,19 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   # https://sv.overleaf.com/learn/latex/Errors/Misplaced_%5Cnoalign - all hlines after first haline need to be preceeded with \\ (escape needed)s
   rowhline = "\n \\hline "
   firsthline = "\n \\hline "
+
   lasthline = "\n \\hline"
-  if(fullgrid == TRUE){
+  if(gridmode == "fullgrid"){
     body = paste0(firsthline, paste0(rows, rowhline, collapse = "\n"))
-  } else{
+  } else if(gridmode == "topdowngrid"){
     body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
+  }
+  else {
+    # academicgrid
+    rows[header_inds] = paste0(rowhline, rows[header_inds] , rowhline)
+
+    body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
+
   }
 
   # here we put global definitiosn for the generated latex enfironment, for exammple setting list separation
@@ -251,7 +259,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   row_specspan = paste0("1-",NROW(d))
 
-  colspecs = gen_colspecs(ncol= ncol(tab), scheme = "twocol", xltabular = xltabular, colwidths = colwidths, colaligns = colaligns, fullgrid = fullgrid)
+  colspecs = gen_colspecs(ncol= ncol(tab), scheme = "twocol", xltabular = xltabular, colwidths = colwidths, colaligns = colaligns, gridmode = gridmode)
 
   #l_innerspecs[["colspec"]] = paste0("colspec = {", paste0(rep("X", times = NCOL(tab)), collapse = ""), "}")
   l_innerspecs[["colspec"]] = paste0("colspec = {",colspecs , "}")

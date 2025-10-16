@@ -16,7 +16,6 @@ escape_caption <- function(str){
 #'
 #' @examples
 gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels = list(), compat_cell_md_parsing = F){
-
   # table captions to return
   tab_capts = list()
 
@@ -87,9 +86,11 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
     tab_colaligns = tab_opts['colaligns'][[1]] |> dput() |> capture.output()
   }
 
-  tab_fullgrid = "FALSE"
+  tab_gridmode = "academicgrid"
   if('fullgrid' %in% tab_opts){
-    tab_fullgrid = "TRUE"
+    tab_gridmode = "fullgrid"
+  } else if('topdowngrid' %in% tab_opts){
+    tab_gridmode = "topdowngrid"
   }
 
   tab_footnote = NULL
@@ -114,7 +115,7 @@ ncol =  NCOL(tab_dat)
               footnote = '" %+% tab_footnote %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
-              fullgrid = " %+% tab_fullgrid %+% ", compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
+              gridmode = '" %+% tab_gridmode %+% "', compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
 cat(tex)
 ```
 ```"
