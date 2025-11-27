@@ -91,7 +91,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   }
 
   # remove abstract again if 'has_abstract' has been specified or if mainlang not defined
-  if(yml_data$has_abstract == "no" || is.null(yml_data$abstracts$mainlang)){
+  if((!is.null(yml_data$has_abstract) && yml_data$has_abstract == "no") || is.null(yml_data$abstracts$mainlang)){
     yml_data$abstracts = NULL
   }
 
