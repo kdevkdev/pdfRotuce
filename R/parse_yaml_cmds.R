@@ -23,7 +23,7 @@ parse_yaml_cmds = function(c_comtext, convert_straight_singlequote = T){
   c_command = tryCatch({yaml::read_yaml(text = yaml_str) |> unlist(recursive = F)}, # keys will be put as names
                        error = \(e){
 
-                         print("YAML syntax yerror, check command")
+                         print("YAML syntax yerror, check command - '" %+%  yaml_str %+% "'")
                          #browser()
                        })
 

@@ -38,12 +38,23 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # read file and backup object
   docx = officer::read_docx(src_docx)
   df = officer::docx_summary(docx,preserve = T,remove_fields = T, detailed = T)
+
+
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
-  doc_summar[is.na(style_name), style_name := ""]
+
+  # combine runs here. As of now, detailed = True unfortately seems to remove table contents
+  doc_summar = combine_runs(doc_summar)
+
+
+  # copy over stylename from to paragraph stylename (same as if detailed = T)
+  #doc_summar[,paragraph_stylename := style_name]
+
+  #doc_summar[is.na(paragraph_stylename), paragraph_stylename := ""]
   doc_summar[, texto := text]
 
+
   # get all l1 headings
-  l1_inds = which(tolower(doc_summar$style_name) == "heading 1")
+  l1_inds = which(tolower(doc_summar$paragraph_stylename) == "heading 1")
 
   stopifnot("No level 1 heading style found" = length(l1_inds)>0 )
 
@@ -163,7 +174,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar = doc_summar[-title_page_inds,]
 
   # remove [empty] headings
-  doc_summar = doc_summar[!(startsWith(tolower(style_name), "heading") & trimws(tolower(text)) == "[empty]"),]
+  doc_summar = doc_summar[!(startsWith(tolower(paragraph_stylename), "heading") & trimws(tolower(text)) == "[empty]"),]
 
 
 
@@ -199,14 +210,14 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   ############## headings ##############
   # there seems to be a problem with case sensitivity and style names between libreoffice and word, use tolowe (word uses capital, libreoffice not)
-  # doc_summar[tolower(style_name) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")] # do not put in TOC
+  # doc_summar[tolower(paragraph_stylename) == "heading 1" & startsWith(mrkdwn, "*"), mrkdwn := paste0("# ", substr(mrkdwn, 2, nchar(mrkdwn)), " {-}")] # do not put in TOC
   # convert headings to markdown up to level 5
-  doc_summar[tolower(style_name) == "heading 1", mrkdwn := paste0("# ", mrkdwn)]
-  doc_summar[tolower(style_name) == "heading 2", mrkdwn := paste0("##  ", mrkdwn)]
-  doc_summar[tolower(style_name) == "heading 3", mrkdwn := paste0("###  ", mrkdwn)]
-  doc_summar[tolower(style_name) == "heading 4", mrkdwn := paste0("####  ", mrkdwn)]
-  doc_summar[tolower(style_name) == "heading 5", mrkdwn := paste0("#####  ", mrkdwn)]
-  doc_summar[startsWith(tolower(style_name),"heading"), xml_type:= "heading"]
+  doc_summar[tolower(paragraph_stylename) == "heading 1", mrkdwn := paste0("# ", mrkdwn)]
+  doc_summar[tolower(paragraph_stylename) == "heading 2", mrkdwn := paste0("##  ", mrkdwn)]
+  doc_summar[tolower(paragraph_stylename) == "heading 3", mrkdwn := paste0("###  ", mrkdwn)]
+  doc_summar[tolower(paragraph_stylename) == "heading 4", mrkdwn := paste0("####  ", mrkdwn)]
+  doc_summar[tolower(paragraph_stylename) == "heading 5", mrkdwn := paste0("#####  ", mrkdwn)]
+  doc_summar[startsWith(tolower(paragraph_stylename),"heading"), xml_type:= "heading"]
 
 
   # parse headings to xml sections and store into doc_summar
@@ -214,12 +225,12 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar$xml_pretags = r$hxml_pretags
   doc_summar$xml_postags  = r$hxml_postags
 
-  # to debug
+    # to debug
   # xml2::read_xml(paste0("<document>", paste0(hxmltags, collapse = ""), "</document>")) |> xml2::as_list()
   # cbind(headi, hxmltags)
 
   ############## process tables ##############
-  cudoc_tabinds = unique(doc_summar[content_type == "table cell"]$doc_index)
+  cudoc_tabinds = unique(doc_summar[content_type == "table cell"]$table_index)
 
   tab_counter = 1 # we keep a specific ounter, if ever cti would deviate because e.g. of failure
 
@@ -230,7 +241,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
     # detect empty paragraphs ahead
-    empties = doc_summar[, doc_index > cti & !grepl(x = mrkdwn, pattern = "$\\s?^")]
+    max_table_di = max(doc_summar[table_index == cti]$doc_index)
+    min_table_di = min(doc_summar[table_index == cti]$doc_index)
+
+    empties = doc_summar[, doc_index > max_table_di & !grepl(x = mrkdwn, pattern = "$\\s?^")]
     ind_next_nonempty = min(which(empties)) # first non-empty
 
     tab_opts_raw = doc_summar[ind_next_nonempty,]
@@ -244,10 +258,12 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       tab_opts  = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
     }
 
-    ct_dat = doc_summar[content_type == "table cell" & doc_index == cti]
+    ct_dat = doc_summar[content_type == "table cell" & table_index == cti]
 
     # if we need we can take into account the header here (is_header column in doc_summar)
-    ct_csv = data.table::dcast.data.table(ct_dat, row_id ~ cell_id, value.var = "mrkdwn")[,-1] # not first
+    # aggreagte separated cells by putting a newline in
+    ct_csv = data.table::dcast.data.table(ct_dat, row_id ~ cell_id, value.var = "mrkdwn",
+                                          fun.aggregate = \(x){paste(x, collapse = "\n", sep = "")})[,-1] # not first
 
 
 
@@ -267,14 +283,14 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                              compat_cell_md_parsing = compat_cell_md_parsing)
 
 
-    # delete table rows and table options form document structure
-    before = doc_summar[doc_index < cti]
+    # delete table rows and table options from document structure
+    before = doc_summar[doc_index < min_table_di]
 
     if(!is.null(tab_opts_raw)){
 
-      after = doc_summar[doc_index > cti & doc_index != tab_opts_raw$doc_index]
+      after = doc_summar[doc_index > max_table_di & doc_index != tab_opts_raw$doc_index]
     } else{
-      after = doc_summar[doc_index > cti]
+      after = doc_summar[doc_index > max_table_di]
     }
 
     doc_summar = data.table::rbindlist(l = list(before,

@@ -9,11 +9,11 @@ parse_title_page = function(docdat){
 
 
   # check for level 2 heading METADATA and ABSTRACT (for abstract at most one)
-  stopifnot("Check that there is exactly one heading 'ABSTRACT' with style 'heading 2' on the manuscript titlepage " = sum( tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "abstract")<=1)
-  stopifnot("Check that there is exactly one heading 'METADATA' with style 'heading 2' on the manuscxript titlepage"  = sum(tolower(docdat$style_name) == "heading 2" & tolower(trimws(docdat$text)) == "metadata") == 1)
+  stopifnot("Check that there is exactly one heading 'ABSTRACT' with style 'heading 2' on the manuscript titlepage " = sum( tolower(docdat$paragraph_stylename) == "heading 2" & tolower(trimws(docdat$text)) == "abstract")<=1)
+  stopifnot("Check that there is exactly one heading 'METADATA' with style 'heading 2' on the manuscxript titlepage"  = sum(tolower(docdat$paragraph_stylename) == "heading 2" & tolower(trimws(docdat$text)) == "metadata") == 1)
 
   # first heading 1 is title
-  l1_title_ind = which(tolower(docdat$style_name) == "heading 1")
+  l1_title_ind = which(tolower(docdat$paragraph_stylename) == "heading 1")
 
 
   retlist[["title"]] = trimws(docdat[l1_title_ind,]$text) # could happend that unwanted space added?
@@ -22,7 +22,7 @@ parse_title_page = function(docdat){
   docdat = docdat[-l1_title_ind,]
 
   # divide into parts
-  docdat[text != "", part_id := cumsum(tolower(style_name) == "heading 2")]
+  docdat[text != "", part_id := cumsum(tolower(paragraph_stylename) == "heading 2")]
 
 
   # prereserver
@@ -51,7 +51,7 @@ parse_title_page = function(docdat){
       # check if we have a title
       abstract_title = NA
 
-      if(NROW(abdat) > 0 && tolower(abdat$style_name[1]) == "heading 3"){
+      if(NROW(abdat) > 0 && tolower(abdat$paragraph_stylename[1]) == "heading 3"){
         abstract_title = abdat$text[1]
         abdat = abdat[-1,] # delete also abstract title
       } else{
@@ -84,7 +84,7 @@ parse_title_page = function(docdat){
     else if(section_heading == "metadata"){
 
       # first tables
-      cudoc_tabinds = unique(cdat[content_type == "table cell"]$doc_index)
+      cudoc_tabinds = unique(cdat[content_type == "table cell"]$table_index)
 
       stopifnot("four tables in metadata section of titlepage needed: one for affiliations, one for authors, one for statements, and one for other attributes" =  length(cudoc_tabinds) == 4)
       stopifnot("metadata part empty" = NROW(cdat) > 1)
@@ -97,7 +97,7 @@ parse_title_page = function(docdat){
 
       for(cti in cudoc_tabinds){
 
-        ct_dat = cdat[content_type == "table cell" & doc_index == cti]
+        ct_dat = cdat[content_type == "table cell" & table_index == cti]
         ct_tab = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "text")[,-1] # not first
 
 

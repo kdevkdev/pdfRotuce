@@ -770,11 +770,11 @@ gen_xml_sections = function(doc_summar){
   headi = matrix(data = 0, nrow = NROW(doc_summar), ncol = 5)
 
   # in the matrix set the responding column for the respective row to 1
-  headi[,1] = doc_summar[,tolower(style_name) == "heading 1"]
-  headi[,2] = doc_summar[,tolower(style_name) == "heading 2"]
-  headi[,3] = doc_summar[,tolower(style_name) == "heading 3"]
-  headi[,4] = doc_summar[,tolower(style_name) == "heading 4"]
-  headi[,5] = doc_summar[,tolower(style_name) == "heading 5"]
+  headi[,1] = doc_summar[,tolower(paragraph_stylename) == "heading 1"]
+  headi[,2] = doc_summar[,tolower(paragraph_stylename) == "heading 2"]
+  headi[,3] = doc_summar[,tolower(paragraph_stylename) == "heading 3"]
+  headi[,4] = doc_summar[,tolower(paragraph_stylename) == "heading 4"]
+  headi[,5] = doc_summar[,tolower(paragraph_stylename) == "heading 5"]
 
   # get row indices with 1 entries
   hinds = which(headi |> rowSums() > 0 )
