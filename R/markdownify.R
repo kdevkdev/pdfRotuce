@@ -42,6 +42,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
 
+  browser()
   # combine runs here. As of now, detailed = True unfortately seems to remove table contents
   doc_summar = combine_runs(doc_summar)
 
@@ -310,8 +311,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 ```"
 
   ########################################### command parsing ####################################################
-  # list for inline math formulas
-  list_inlinemath = list()
+  # data.table for inline math formulas
+  d_inlinemath = data.table()
 
 
   # inline paragraph commands - do not need escaping
@@ -322,15 +323,24 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # not entirely R style, but use global assigment to easily populate list based on regex pattern recognition
   doc_summar[, xml_temp:= stringr::str_replace_all(string = xml_temp, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]",
                                                    replacement = function(x){
-                                                   len = length(list_inlinemath)+1
 
-                                                   # saldy need to run regex again - groups not provided
-                                                   latex = stringr::str_extract(string = x, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", group = 1)
+                                                     r = xo = x
+                                                     x = x[!is.na(x)] # do no t propagate NAs
 
-                                                   list_inlinemath[[len]] <<- data.table(latex = latex, index = len)
-                                                   paste0("========protectedinlinemath", len, "========") })]
+                                                     len = length(x)
+                                                     latex = stringr::str_extract(string = x, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", group = 1)
+                                                     d_inlinemath <<- data.table(index = 1:len, latex = latex)
 
-  d_inlinemath = rbindlist(l = list_inlinemath)
+
+                                                     rnna = paste0("========protectedinlinemath", 1:len, "========")
+
+                                                     # keep NA for return
+                                                     r[!is.na(r)] = rnna
+                                                     r
+
+                                                   })]
+
+
 
   # put protected at for refs
   doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]

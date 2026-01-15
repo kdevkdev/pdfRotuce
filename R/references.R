@@ -152,6 +152,8 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
         l_xmlintextcites[[len]] <<- data.table(xml = paste0("<xref ref-type='bibr' rid='B", bn, "'>", bn, "</xref>"), index = len)
       }
 
+
+
       xml = paste0("[", paste0(locres, collapse = ";"), "]")
       xml
     })
@@ -592,13 +594,12 @@ refs: |
                                         replacement = function(m){
 
                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                          r  = paste0("\\href{https://doi.org/", r,"}{ ", r, "}.")
-                                          r
+                                          r  = paste0("\\href{https://doi.org/", r,"}{", r, "}.")
 
-                                          i =length(refdoi_safeguards)+1
-                                          refdoi_safeguards[[i]] <<- r
-                                          paste0("____________refdoi", i, "refdoi____________")
-                                        })#"\\\\url{\\0}"
+
+                                          refdoi_safeguards <<- as.list(r)
+                                          paste0("____________refdoi", 1:length(r), "refdoi____________")
+                                           })#"\\\\url{\\0}"
       }
 
       # list for safeguarding url from url parsing
@@ -614,9 +615,8 @@ refs: |
                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
                                           r  = paste0("\\url{", r,"}")
 
-                                          i =length(refurl_safeguards)+1
-                                          refurl_safeguards[[i]] <<- r
-                                          paste0("____________refurl", i, "refurl____________")
+                                          refurl_safeguards <<- as.list(r)
+                                          paste0("____________refurl", 1:length(r), "refurl____________")
 
                                         })#"\\\\url{\\0}"
 

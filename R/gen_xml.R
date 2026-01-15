@@ -743,6 +743,8 @@ gen_xml_paragraphs = function(ptext,d_inlinemath){
           # fill back in latex formulas
           xml_jatsstr = stringr::str_replace_all(xml_jatsstr, pattern = "========protectedinlinemath[:digit:]+========", replacement = \(x) {
 
+
+
               # get index of inline math to get the corresponding row - unfortunate we have to run the regex again but neither stirngr nor stringi seem to provdie group match access in replacement functions
               ind = as.numeric(stringr::str_extract(x, "========protectedinlinemath([:digit:]+)========", group = 1))
 
