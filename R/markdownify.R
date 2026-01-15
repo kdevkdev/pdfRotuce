@@ -42,7 +42,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
 
-  browser()
+
   # combine runs here. As of now, detailed = True unfortately seems to remove table contents
   doc_summar = combine_runs(doc_summar)
 
