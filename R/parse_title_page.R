@@ -21,9 +21,11 @@ parse_title_page = function(docdat){
     # remove title
   docdat = docdat[-l1_title_ind,]
 
+  # fix na not propagating in cumsum
+  docdat[is.na(paragraph_stylename), paragraph_stylename := ""]
+
   # divide into parts
   docdat[text != "", part_id := cumsum(tolower(paragraph_stylename) == "heading 2")]
-
 
   # prereserver
   retlist[["abstracts"]] = list()
@@ -98,7 +100,7 @@ parse_title_page = function(docdat){
       for(cti in cudoc_tabinds){
 
         ct_dat = cdat[content_type == "table cell" & table_index == cti]
-        ct_tab = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "text")[,-1] # not first
+        ct_tab = data.table::dcast(ct_dat, row_id ~ cell_id, value.var = "text", fun.aggregate =  \(x){ paste(x, collapse = "\n\n")})[,-1] # not first
 
 
         if(NROW(ct_tab) <= 1){
@@ -110,6 +112,7 @@ parse_title_page = function(docdat){
         cn = unlist(ct_tab[1,])
         ct_tab = ct_tab[-1, ] # first row as colnames
         colnames(ct_tab) = trimws(tolower(cn))
+
 
 
         # parse tables - authors and affiliations
@@ -203,13 +206,13 @@ parse_title_page = function(docdat){
           retlist[["statements"]] = l
         }
         else {
-          stop("parseing metadata title page esction: unkown table type. Make sure that you provide the correct header row for all tables in the metadata section. f")
+          stop("parseing metadata title page esction: unkown table type ' " %+% table_type %+%" '. Make sure that you provide the correct header row for all tables in the metadata section. ")
         }
       }
     }
     else{
 
-        stop("unkown title page section (should be metadata or ABSTRACT_XX, where XX corresponds ")
+        stop("unkown title page section " %+% section_heading %+% "(should be metadata or ABSTRACT_XX, where XX corresponds to a supported language acronym ")
     }
   }
   # check if any additional language abstracts have ben specified. If yes, generate a hint text to be place below the main abstract

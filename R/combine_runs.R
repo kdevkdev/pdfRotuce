@@ -1,5 +1,6 @@
 combine_runs = function(doc_summar, tabcollapse = "\n"){
-
+  # delete empty runs
+  doc_summar = doc_summar[!is.na(run_content_text)]
 
   # loop through all doc parts
   res = list()

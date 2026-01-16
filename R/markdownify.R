@@ -43,6 +43,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
 
 
+
   # combine runs here. As of now, detailed = True unfortately seems to remove table contents
   doc_summar = combine_runs(doc_summar)
 
@@ -263,8 +264,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
     # if we need we can take into account the header here (is_header column in doc_summar)
     # aggreagte separated cells by putting a newline in
+    # aggregate.fun is needed since multiple paragraphs in a cell are put on seperate rows
     ct_csv = data.table::dcast.data.table(ct_dat, row_id ~ cell_id, value.var = "mrkdwn",
-                                          fun.aggregate = \(x){paste(x, collapse = "\n", sep = "")})[,-1] # not first
+                                          fun.aggregate = \(x){paste(x, collapse = "\n\n", sep = "")})[,-1] # not first
 
 
 
@@ -545,7 +547,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       # todo potentially parse markdown?
 
       #rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
-      yaml_statements = yaml_statements %+% "\\subsection{" %+%cn %+% "}\n" %+% "\\noindent " %+% cstat
+      yaml_statements = yaml_statements %+% "\\subsection{" %+%cn %+% "}\n" %+% "\\bgroup \\setlength{\\parindent}{0pt} " %+% cstat
 
       # checkstring
       chkstr = trimws(tolower(cn))
@@ -556,7 +558,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
          yaml_statements = paste0(yaml_statements, "\n", indiv_author_contribs) # att this to the setion
 
       }
-      yaml_statements = yaml_statements %+% "\n\n"
+      yaml_statements = yaml_statements %+% "\\egroup \n\n"
     }
 
   }
