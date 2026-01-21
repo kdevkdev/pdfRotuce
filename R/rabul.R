@@ -36,7 +36,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 
   if(xltabular ==T){
 
-    if(!is.null(colaligns)){
+    if(!is.null(colaligns) ){
 
       stopifnot("Number of provided colaligns entries must be the same as number of table columns" = ncol == length(colaligns))
       stopifnot("All colaligns entries must be either be 'l', 'c', or 'r" = all(colaligns %in% c("l", "c", "r")))

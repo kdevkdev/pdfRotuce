@@ -14,14 +14,14 @@
 
 #main .nav-pills > li > a:hover {
   color: #FFFFFF !important;
-  background-color: #9F2042;
+  background-color: #bf3e11;
 }
 
 #main .nav-pills > li.active > a,
 #main .nav-pills > li.active > a:hover,
 #main .nav-pills > li.active > a:focus {
   color: #FFFFFF !important;
-  background-color: #9F2042;
+  background-color: #bf3e11;
 }
 
 /* Chi-squared results */
@@ -87,7 +87,7 @@ img.image-lb {
 h1,h2,h3,h4,h5,h6,legend{
     font-family:"Roboto Slab","ff-tisa-web-pro","Georgia",Arial,sans-serif;
     font-weight:700;
-    color: #9F2042;
+    color: #cb6330;
 }
 
 h1{
@@ -217,7 +217,9 @@ dd{
 
 #main ul li,#content .toctree-wrapper ul li,article ul li{
     list-style:disc;
-    margin-left:24px}
+    margin-left:24px;
+    margin-bottom:16px; 
+}
 
 #main ul li p:last-child,#content .toctree-wrapper ul li p:last-child,article ul li p:last-child{
                                                                                                                                   margin-bottom:0}
@@ -421,7 +423,7 @@ dl dd{
 }
 
 #nav-top span.glyphicon {
-  color: #9F2042;
+  color: #bf3e11;
   font-size: 28px;
 }
 
@@ -737,7 +739,7 @@ hr{
     font-weight:bold;
     text-transform:uppercase;
     font-size:80%;
-    color:#9F2042;
+    color:#bf3e11;;
     white-space:nowrap}
 
 #toc ul{
@@ -826,7 +828,7 @@ hr{
 
 #sidebar h2{
     z-index:200;
-    background-color:#9F2042;
+    background-color:#bf3e11;
     text-align:center;
     padding:0.809em;
     display:block;

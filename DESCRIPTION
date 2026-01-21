@@ -28,4 +28,5 @@ Imports:
     rmarkdown,
     tinytex,
     stringi,
-    yaml
+    yaml,
+    huxtable

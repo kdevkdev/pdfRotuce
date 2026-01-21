@@ -564,8 +564,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   }
 
   # author speciffic contributions not yet put into rmd
-  if(!consumed_indiv_author_contribs) {
+  if(!consumed_indiv_author_contribs && !is.null(indiv_author_contribs) && !is.na(indiv_author_contribs) && is.character(indiv_author_contribs) && indiv_author_contribs != "") {
 
+    browser()
     yaml_statements = yaml_statements %+% "\\subsection{Author contributions}\n\n" %+% indiv_author_contribs %+% "\n\n"
   }
 
@@ -756,6 +757,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     dir.create(xml_outpath)
 
     # check and generatei statements such as Data availability ...
+    xml_statements = NULL
     if(length(xml_metadata$statements) > 0){
       xml_statements = gen_xml_statements(xml_metadata$statements)
     }

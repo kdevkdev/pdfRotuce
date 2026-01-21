@@ -69,19 +69,43 @@ gen_figblock = function(fig_opts, fig_counter){
     lab = paste0("\\label{", fig_label,"}")
   }
 
+  # generate latex output
+  tex_output = ""
+
   # two different environements depending if wide is specified
   if(fig_wide == F)
   {
     # empty phamtom command to trick the lua filter
     # (that does not seem to work if there is nothing in the environment otherwise, but we used a custom latex env to transmit the params)
-    "
-::: {.FigureMC data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
+    tex_output = tex_output %+% "::: {.FigureMC data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
 "%+% lab %+%"
 :::"
   }
   else{
-"::: {.FigureMW data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
+    tex_output = tex_output %+%  "::: {.FigureMW data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
 "%+% lab %+%"
 :::"
   }
+  tex_output = tex_output %+% "\n\n"
+
+
+  # als generate html output. Not meaningful ATM to differenctiate between columns, but make one column figures smaller. Use fenced codeblock
+
+  html_output = "\n\n```{=html}\n\n"
+
+  width = "100%"
+  if(fig_wide == F){
+
+    width = "50%"
+  }
+
+  html_output = html_output %+% "<div class=\"figure\">
+<img src=\"" %+% fig_src %+% "\" width=\"" %+% "\" alt=''>
+<p>" %+% fig_caption %+% "</p>
+</div>\n"
+
+  html_output = html_output %+% "```\n\n"
+
+  return(tex_output %+% "\n\n" %+% html_output)
+
 }

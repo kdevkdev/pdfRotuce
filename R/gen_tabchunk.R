@@ -19,6 +19,11 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   # table captions to return
   tab_capts = list()
 
+  # some table options may depend on the data
+  ncol =  NCOL(ct_csv)
+  nrow = NROW(ct_csv)
+
+
   # table options, captuion, etc need to be in nexts paragraph
   if(!is.vector(tab_opts)) tab_opts = c() # set to empty if invalid (tables withotu table tags are allowed)
 
@@ -77,14 +82,29 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   }
 
   tab_colwidths = NULL
+  tab_colwidths_hux = NA
   if('colwidths' %in% names(tab_opts)){
-    tab_colwidths = tab_opts['colwidths'][[1]] |> dput() |> capture.output()
+    tab_colwidths_hux = tab_colwidths = tab_opts['colwidths'][[1]] |> dput()  |> capture.output()|> paste0(collapse = "")
   }
 
   tab_colaligns = NULL
+  tab_colaligns_hux = rep(NA, ncol) # default values
+
   if('colaligns' %in% names(tab_opts)){
-    tab_colaligns = tab_opts['colaligns'][[1]] |> dput() |> capture.output()
+    tab_colaligns = tab_opts['colaligns'][[1]] |> dput()  |> capture.output() |> paste0(collapse = "")
+    tab_colaligns_hux = ifelse(tab_opts['colaligns'][[1]] == "c", "center",
+                               ifelse(tab_opts['colaligns'][[1]] == "l", "left",
+                                      ifelse(tab_opts['colaligns'][[1]] == "r", "right", rep(NA, ncol))))
   }
+
+  # aligment matrix for huxtable, repeat values in each column
+  rowals = vector("character", ncol)
+  for(i in 1:ncol){
+
+    if(is.na(tab_colaligns_hux[i])) rowals[i] = "set_align(col = " %+% i %+% ", value =  " %+% tab_colaligns_hux[i] %+% " ) |>"
+    else rowals[i]                            = "set_align(col = " %+% i %+% ", value = '" %+% tab_colaligns_hux[i] %+% "') |>"
+  }
+  tab_colspec_call_hux = paste(collapse = "\n" ,rowals)
 
   tab_gridmode = "academicgrid"
   if('fullgrid' %in% tab_opts){
@@ -98,9 +118,14 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
     tab_footnote = escape_caption(tab_opts['footnote'])
   }
 
+  # huxtable border and bold style specifications
+
 
   #print(paste0("Writing table: ", tab_fname))
   data.table::fwrite(ct_csv, tab_fname, col.names = F) # do not write first row of column indexes
+
+# more huxpsecific stuff
+
 
   # manually change spacing
   ctab_chunk = "
@@ -118,7 +143,40 @@ ncol =  NCOL(tab_dat)
               gridmode = '" %+% tab_gridmode %+% "', compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
 cat(tex)
 ```
-```"
+```
+
+```{=html}
+```{r " %+%  tab_chunk_label  %+%"-html,echo=F" %+% ", results = 'asis'}
+
+tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
+ncol =  NCOL(tab_dat)
+nrow = NROW(tab_dat)
+
+
+
+html = huxtable::hux(tab_dat, add_colnames = F) |>
+  huxtable::theme_article() |>
+  huxtable::set_col_width(col = 1:ncol, value= " %+% tab_colwidths_hux %+%") |> \n "%+%
+  tab_colspec_call_hux %+% "
+  huxtable::set_caption(value = '" %+% tab_caption %+%"') |>
+  huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>
+  huxtable::add_footnote(text = '" %+% tab_footnote %+%"') |>
+  huxtable::set_all_padding(value = 4) |>
+  huxtable::set_markdown(TRUE) |>
+  huxtable::print_html()
+
+# infuse more css to fix margins introduced by markdown = T
+html = '<style>
+#content .huxtable-cell > p { margin-bottom:0; }
+.huxtable-cell p:first-child {
+margin-top:0;
+margin-bottom:0;}
+</style>' %+% html
+
+cat(html)
+```
+```
+"
 
   return(list(chunk = ctab_chunk, label = tab_chunk_label))
 }
