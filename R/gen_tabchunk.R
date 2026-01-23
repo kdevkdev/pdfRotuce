@@ -101,10 +101,11 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   rowals = vector("character", ncol)
   for(i in 1:ncol){
 
-    if(is.na(tab_colaligns_hux[i])) rowals[i] = "set_align(col = " %+% i %+% ", value =  " %+% tab_colaligns_hux[i] %+% " ) |>"
-    else rowals[i]                            = "set_align(col = " %+% i %+% ", value = '" %+% tab_colaligns_hux[i] %+% "') |>"
+    if(is.na(tab_colaligns_hux[i])) rowals[i] = "huxtable::set_align(col = " %+% i %+% ", value =  " %+% tab_colaligns_hux[i] %+% " ) |>"
+    else rowals[i]                            = "huxtable::set_align(col = " %+% i %+% ", value = '" %+% tab_colaligns_hux[i] %+% "') |>"
   }
   tab_colspec_call_hux = paste(collapse = "\n" ,rowals)
+
 
   tab_gridmode = "academicgrid"
   if('fullgrid' %in% tab_opts){
@@ -124,10 +125,37 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   #print(paste0("Writing table: ", tab_fname))
   data.table::fwrite(ct_csv, tab_fname, col.names = F) # do not write first row of column indexes
 
-# more huxpsecific stuff
+  # more huxpsecific stuff
+  # gridmode
+  tab_borderspec_call_hux = ""
+  header_inds = which(startsWith(ct_csv[[1]], "#"))
+  tcalls = NULL
+  if(tab_gridmode == "academicgrid"){
 
 
-  # manually change spacing
+    # LOOP  through header inds
+
+
+
+    tcalls = c("huxtable::set_top_border(row =1)",
+      "huxtable::set_bottom_border(row = nrow)")
+
+
+  } else if(tab_gridmode == "fullgrid"){
+    tcalls = c("huxtable::set_all_borders()")
+
+  } else if(tab_gridmode == "topdowngrid"){
+
+    tcalls = c("huxtable::set_top_border(row =1)",
+      "huxtable::set_bottom_border(row = nrow)")
+
+  } else hgl_error("unkwown tab gridmode")
+  tab_borderspec_call_hux = paste(tcalls, collapse = "|>\n")
+
+  # add pipe operator if not epty
+  if(nchar(tab_borderspec_call_hux) > 0) tab_borderspec_call_hux = tab_borderspec_call_hux %+% "|>"
+
+  # genereate rmarkdown chunks
   ctab_chunk = "
 
 ```{=latex}
@@ -156,8 +184,10 @@ nrow = NROW(tab_dat)
 
 html = huxtable::hux(tab_dat, add_colnames = F) |>
   huxtable::theme_article() |>
+  huxtable::set_all_borders(value = 0) |>
   huxtable::set_col_width(col = 1:ncol, value= " %+% tab_colwidths_hux %+%") |> \n "%+%
-  tab_colspec_call_hux %+% "
+  tab_colspec_call_hux %+%
+  tab_borderspec_call_hux %+% "
   huxtable::set_caption(value = '" %+% tab_caption %+%"') |>
   huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>
   huxtable::add_footnote(text = '" %+% tab_footnote %+%"') |>

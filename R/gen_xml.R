@@ -172,15 +172,22 @@ gen_xml_date = function(datetime, tag = "date", attributes = NULL){
 }
 gen_xml_abstracts = function(metadata_abs, base_folder = NULL, xml_filepack_dir = NULL, abstract_picture = NULL){
 
-  # TODO: dont forget handing of picture later
-  res = list()
-  for(cn in names(metadata_abs)){
 
-    ca = metadata_abs[[cn]]
+    # TODO: dont forget handing of picture later
+  res = list()
+
+
+  # flatten list if needed
+  if(!is.null(metadata_abs$sidelangs)) metadata_abs =  c(list(metadata_abs$mainlang), metadata_abs$sidelangs)
+
+
+  for(cli in 1:length(metadata_abs)){
+
+    ca = metadata_abs[[cli]]
     tag = ""
     lan = ""
     picture = ""
-    if(cn == "mainlang"){
+    if(cli == 1){ # first index comes from mainlang
       # WARNING JATS implicitly assumes this is english. should be properly explicitly or is it ok?
       tag = "abstract"
 
@@ -194,7 +201,8 @@ gen_xml_abstracts = function(metadata_abs, base_folder = NULL, xml_filepack_dir 
 
     } else {
       tag = "trans-abstract"
-      lan = paste0("xml:lang='", cn, "'")
+
+      lan = paste0("xml:lang='", ca$lang, "'")
     }
 
     resparts = list()
@@ -225,7 +233,7 @@ gen_xml_abstracts = function(metadata_abs, base_folder = NULL, xml_filepack_dir 
       text = resparts[[1]]
     }
 
-    res[[cn]] = paste0("<", tag, " ", lan, ">",text, "\n", picture,
+    res[[cli]] = paste0("<", tag, " ", lan, ">",text, "\n", picture,
            "\n</", tag, ">")
   }
 

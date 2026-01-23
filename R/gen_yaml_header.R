@@ -47,9 +47,8 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$journalinfo$article_type           = md$article_type
   yml_data$journalinfo$issn                   = md$issn
   yml_data$journalinfo$publisher              = md$publisher
-
   yml_data$abstracts                          = md$abstracts
-  yml_data$keywords                           = md$attributes$keywords
+  yml_data$keywords                           = md$attributes$keywords # put those on the top level in case of no abstracts
   yml_data$authors                            = md$authors
   yml_data$affiliations                       = md$affiliations
   yml_data$correspondingauthor$email          = md$attributes$corresponding_email
@@ -66,7 +65,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$string_contact                     = md$string_contact
   yml_data$string_responsibleeditor           = md$string_responsibleeditor
   yml_data$string_articlehistory              = md$string_articlehistory
-  yml_data$string_keywords                    = md$string_keywords
+  yml_data$string_keywords_heading            = md$string_keywords_heading
   yml_data$string_keywords_spanish            = md$string_keywords_spanish
   yml_data$string_multilang_abstract_title    = md$string_multilang_abstract_title
   yml_data$string_bibliography_title          = md$string_bibliography_title

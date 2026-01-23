@@ -35,21 +35,11 @@ parse_title_page = function(docdat){
 
     cdat = docdat[part_id == cpi]
     section_heading=tolower(trimws(cdat$text[1]))
-    if(section_heading %in%  c("abstract", "abstract_es")) # first is main abstract, then follows additional languages
+    cur_abstract = list()
+    # only allow certain languages. this check  may be removed or rethought in the future
+    if(section_heading %in%  c("abstract", "abstract_es", "abstract_som", "abstract_en")) # first is main abstract, then follows additional languages
     {
-      # detect which abstract language it is (need to list all allowed languages above)
-      if(section_heading == "abstract"){
-        langname = "mainlang" # main language (usually english)
-      }
-      else{
-
-        langname = gsub("abstract_", replacement = "", x = section_heading)
-      }
-
-
       abdat = cdat[-1,] # without first row
-
-
       # check if we have a title
       abstract_title = NA
 
@@ -59,7 +49,9 @@ parse_title_page = function(docdat){
       } else{
         abstract_title = ""
       }
-      retlist[["abstracts"]][[langname]][["title"]] = abstract_title |> yml_qt()
+
+      #retlist[["abstracts"]][[langname]][["title"]] = abstract_title |> yml_qt()
+      cur_abstract[["title"]] = abstract_title |> yml_qt()
 
       # anything left in abdat?
       if(NROW(abdat) > 0){
@@ -77,11 +69,38 @@ parse_title_page = function(docdat){
         abdat[is.na(titles), titles := ""]
 
         tl = apply(MARGIN = 1, FUN =\(x) list(title = x[["titles"]] |> yml_qt(), text = x[['text']] |> yml_qt()), X = abdat, simplify = F)
-        retlist[["abstracts"]][[langname]][["parts"]] = tl
+        cur_abstract[["parts"]] = tl
 
       }else{
-        retlist[["abstracts"]][[langname]][["parts"]] = ""
+        cur_abstract[["parts"]] = ""
       }
+
+      # put in correct place in metadata
+      if(section_heading == "abstract"){
+        retlist[["abstracts"]][["mainlang"]] = cur_abstract
+      }
+      else{
+
+        # only keep langauge ending
+        langname = gsub("abstract_", replacement = "", x = section_heading)
+        cur_abstract$lang = langname |> yml_qt()
+
+        if(!is.list(retlist[["abstracts"]][["sidelangs"]])) retlist[["abstracts"]][["sidelangs"]] = list()
+
+        # put hardcoded keywords heading
+        if(langname == "es") cur_abstract$string_keywords_heading = "Palabras clave:" |> yml_qt()
+        else if(langname == "en") cur_abstract$string_keywords_heading = "Keywords:"|> yml_qt()
+        else if(langname == "som") cur_abstract$string_keywords_heading = "??:"|> yml_qt()
+
+
+        csll = length(retlist[["abstracts"]][["sidelangs"]])
+        retlist[["abstracts"]][["sidelangs"]][[csll+1]] = cur_abstract
+
+
+      }
+
+
+
     }
     else if(section_heading == "metadata"){
 
@@ -215,15 +234,17 @@ parse_title_page = function(docdat){
         stop("unkown title page section " %+% section_heading %+% "(should be metadata or ABSTRACT_XX, where XX corresponds to a supported language acronym ")
     }
   }
-  # check if any additional language abstracts have ben specified. If yes, generate a hint text to be place below the main abstract
-  abside_languages = setdiff(names(retlist$abstracts), "mainlang")
+  # check if any additional language abstracts have been specified. If yes, generate a hint text to be place below the main abstract
+  abside_languages = names(retlist$abstracts$sidelangs)
 
+  # also here manual list of langugeas
   lang_propernames = c(es = "Español", som = "Somali")
 
   # generate hint toext
   if(length(abside_languages) > 0){
     retlist$abstract_sidelangs_hint = paste("Abstract in ", paste(lang_propernames[abside_languages], sep = ", "), "at the end of the article")
   }
+
 
   return(retlist)
 }

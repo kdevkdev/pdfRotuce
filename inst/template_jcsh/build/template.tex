@@ -243,7 +243,7 @@ $for(abstracts.mainlang.parts)$
 $endfor$\\
 \\
 \noindent
-{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}Keywords:} 
+{\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}$string_keywords_heading$:} 
 $for(keywords)$$keywords$$sep$, $endfor$}
 \end{abstract}
 $endif$
@@ -270,25 +270,33 @@ $endif$
 	{\noindent\raggedright $orcids$}
 \end{multicols}
 
-% sidelang abstracts - hardcoded spanish
+% sidelang abstracts 
+
+$if(abstracts.sidelangs)$ 
 \section{$string_multilang_abstract_title$}
 \vspace{2mm}
 %$--${ partials/multilang_abstracts.tex() }
+$for(abstracts.sidelangs)$
 \begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\sffamily
-	{\bfseries $abstracts.es.title$ } 
+	{\bfseries $abstracts.sidelangs.title$ } 
 	\vskip 1mm
-	$for(abstracts.es.parts)$
-        	{\bfseries $it.title$} $it.text$ $sep$\\ 
-     $endfor$
-\vskip 3mm{\raggedright\bfseries $string_keywords_spanish$: }  $abstracts.es.keywords$ 
+	$for(abstracts.sidelangs.parts)$
+
+        	{\bfseries $abstracts.sidelangs.parts.title$} $abstracts.sidelangs.parts.text$ $sep$\\ 
+    $endfor$
+\vskip 3mm{\raggedright\bfseries $abstracts.sidelangs.string_keywords_heading$}  $abstracts.sidelangs.keywords$ 
 \end{tcolorbox}
 \vspace{3mm}
+$endfor$
+$endif$
 
 \begin{multicols}{2}
 	\raggedcolumns
+	$if(refs)$
 	\section{$string_bibliography_title$}	
 \raggedcolumns
 	$refs$
+	$endif$
 \end{multicols}
 
 \end{document}

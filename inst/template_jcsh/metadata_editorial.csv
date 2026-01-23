@@ -10,5 +10,6 @@ string_corresponding,Contact,Text after * that indicates the corresponding autho
 string_bibliography_title,References, Heading of bibliography
 string_multilang_abstract_title,Abstract in Spanish, Heading of side language(s)s abstracts
 string_keywords_spanish,Palabras clave, Heading for spanish keyworsd 
+string_keywords_heading,Keywords:, Heading for mainlang keywords
 string_declarations_title,Declarations, Heading for declarations and statement section
 author_shortname,Muller et al., Author shortname that is used for example for the pageheader

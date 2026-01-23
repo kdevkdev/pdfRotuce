@@ -90,9 +90,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     tvals = pd_tab[[2]]
     names(tvals) = pd_tab[[1]]
 
+
     checkvec = c("volume", "issue", "string_volumeissue",
                  "doi", "has_abstract", "article_type", "author_shortname", "string_corresponding", "string_contact",
-                 "string_responsibleeditor", "string_articleihstory", "string_keywords",
+                 "string_responsibleeditor", "string_articleihstory", "string_keywords_heading",
                  "string_spanish_keywords", "string_declarations_title","string_keywords_spanish",
                  "string_multilang_abstract_title", "string_bibliography_title")
 
@@ -152,18 +153,21 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     # detect langague suffix after '_', or mainlangaugeS
     if(ckwn == "keywords"){
       clan = 'mainlang'
+      metadata$abstracts$mainlang$keywords = ckws
     } else{
       clan = stringr::str_replace_all(string = ckwn, pattern = "keywords_", replacement = "")
-    }
 
-    # check if present
-    if(!is.null(metadata$abstracts[[clan]])){
+      # check if present - find index
+      targ_ind = sapply(metadata$abstracts$sidelangs, \(x) { x$lang== clan})
 
-      metadata$abstracts[[clan]]$keywords = ckws
+      if(sum(targ_ind) ==1){
 
-    } else{
-      # if ever a template requires sidelang keywords without abstracts then att the sidelang abstract here and keywords after.
-      hgl_warn("'" %+% ckwn %+% " provided but no abstract for language '" %+% clan %+% "' present.")
+        metadata$abstracts$sidelangs[[which(targ_ind)]]$keywords = ckws
+
+      } else{
+        # if ever a template requires sidelang keywords without abstracts then att the sidelang abstract here and keywords after.
+        hgl_warn("'" %+% ckwn %+% "' keywords provided but no or more than one abstract for language '" %+% clan %+% "' present.")
+      }
     }
   }
 
@@ -563,10 +567,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   }
 
-  # author speciffic contributions not yet put into rmd
+  # no manual author  contributions found in statements and thos author contribution not yet put into rmd -> put specified roles
   if(!consumed_indiv_author_contribs && !is.null(indiv_author_contribs) && !is.na(indiv_author_contribs) && is.character(indiv_author_contribs) && indiv_author_contribs != "") {
 
-    browser()
     yaml_statements = yaml_statements %+% "\\subsection{Author contributions}\n\n" %+% indiv_author_contribs %+% "\n\n"
   }
 
@@ -576,71 +579,71 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 
   ############ other language abstracts ############
-  yaml_multilang_abstracts = ""
-  if(any(names(metadata$abstracts)!="mainlang")){
-
-    # figure out what additional languages there are (remove mainlang, usually english)
-    side_langs = setdiff(names(metadata$abstracts),"mainlang")
-
-    side_langs_abstracts = metadata$abstracts[side_langs]
-
-
-
-
-    yaml_multilang_abstracts = "\n\\vspace{2mm}"
-    first <- TRUE
-
-    for(can in names(side_langs_abstracts)){
-
-      # all abstracgt parts
-      ca_parts = side_langs_abstracts[[can]]$parts
-
-      # get article title in current language to add to abstract
-      article_lang_title = side_langs_abstracts[[can]]$title
-
-
-      cab_tit = toupper(switch(can, "", "es" = "RESUMEN", "som" = "CINWAAN")) # Resumén. Generate abstract term for each language, default empty
-
-      if(first){ # but horizontal rule
-        #yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
-        yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
-        first <- FALSE
-      }
-
-
-
-      if(!is.null(article_lang_title) && !is.na(article_lang_title) && article_lang_title != ""){
-
-        yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\bfseries \\vskip 0mm" %+% article_lang_title %+% "}\\vskip 3mm"
-      }
-      yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "}\\vskip 1mm"
-
-
-      # go through paragraphs/parts
-      for(cp in ca_parts){
-
-        yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\bfseries " %+% rmd_char_escape(cp$title) %+% "} " %+% rmd_char_escape(cp$text) %+% "\n\n"
-      }
-    }
-
-    csidelang = gsub("abstract_", "", x = can)
-
-    if(!is.null(metadata$attributes[[paste0("keywords_", csidelang)]])){
-
-      keywordstitle = ""
-      if(csidelang == "es"){
-        keywordtitle = "{\\raggedright\\bfseries Palabras clave: }"
-      }
-      yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\vskip 3mm" %+% keywordtitle
-      yaml_multilang_abstracts = yaml_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]
-    }
-
-    yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\n\n"
-
-  }
-
-
-  yaml_multilang_abstracts = yaml::as.yaml(list(multilang_abstracts = yaml_multilang_abstracts))
+  # yaml_multilang_abstracts = ""
+  # if(any(names(metadata$abstracts)!="mainlang")){
+  #
+  #   # figure out what additional languages there are (remove mainlang, usually english)
+  #   side_langs = setdiff(names(metadata$abstracts),"mainlang")
+  #
+  #   side_langs_abstracts = metadata$abstracts[side_langs]
+  #
+  #
+  #
+  #
+  #   yaml_multilang_abstracts = "\n\\vspace{2mm}"
+  #   first <- TRUE
+  #
+  #   for(can in names(side_langs_abstracts)){
+  #
+  #     # all abstracgt parts
+  #     ca_parts = side_langs_abstracts[[can]]$parts
+  #
+  #     # get article title in current language to add to abstract
+  #     article_lang_title = side_langs_abstracts[[can]]$title
+  #
+  #
+  #     cab_tit = toupper(switch(can, "", "es" = "RESUMEN", "som" = "CINWAAN")) # Resumén. Generate abstract term for each language, default empty
+  #
+  #     if(first){ # but horizontal rule
+  #       #yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\noindent\\color{jchsheadercolor}\\rule{\\textwidth}{1.6pt}}\n"
+  #       yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm]\\sffamily\n"
+  #       first <- FALSE
+  #     }
+  #
+  #
+  #
+  #     if(!is.null(article_lang_title) && !is.na(article_lang_title) && article_lang_title != ""){
+  #
+  #       yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\bfseries \\vskip 0mm" %+% article_lang_title %+% "}\\vskip 3mm"
+  #     }
+  #     yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\raggedright\\bfseries " %+% cab_tit %+% "}\\vskip 1mm"
+  #
+  #
+  #     # go through paragraphs/parts
+  #     for(cp in ca_parts){
+  #
+  #       yaml_multilang_abstracts = yaml_multilang_abstracts %+% "{\\bfseries " %+% rmd_char_escape(cp$title) %+% "} " %+% rmd_char_escape(cp$text) %+% "\n\n"
+  #     }
+  #   }
+  #
+  #   csidelang = gsub("abstract_", "", x = can)
+  #
+  #   if(!is.null(metadata$attributes[[paste0("keywords_", csidelang)]])){
+  #
+  #     keywordstitle = ""
+  #     if(csidelang == "es"){
+  #       keywordtitle = "{\\raggedright\\bfseries Palabras clave: }"
+  #     }
+  #     yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\vskip 3mm" %+% keywordtitle
+  #     yaml_multilang_abstracts = yaml_multilang_abstracts %+% metadata$attributes[[paste0("keywords_", csidelang)]]
+  #   }
+  #
+  #   yaml_multilang_abstracts = yaml_multilang_abstracts %+% "\\end{tcolorbox}\\vspace{3mm}\n\n"
+  #
+  # }
+  #
+  #
+  # yaml_multilang_abstracts = yaml::as.yaml(list(multilang_abstracts = yaml_multilang_abstracts))
 
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
@@ -705,8 +708,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                "\n",
                yaml_orcinds,
                "\n",
-               yaml_multilang_abstracts,
-               "\n",
+               #yaml_multilang_abstracts,
+               #"\n",
                res_parse_references$yaml_references, # YAML to store refs in a variable
                "---\n"
                #rmd_statements,
