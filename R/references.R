@@ -649,16 +649,15 @@ refs: |
       # remove dots
       markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
 
-      reftex = "\\small" %+% gen_list(items = refs, label = "{[_]}", markers = markers,
+      reftex = "\\small" %+% gen_list_latex(items = refs, label = "{[_]}", markers = markers,
                                                        options = c("labelindent" = "0em",
                                                                    "labelwidth" = "2.4em",
                                                                    "align" = "left" ,
                                                                    "leftmargin" = "2.7em")) %+% ""
-      #rmd_references = reftex
-
+      refhtml = gen_list_html(items = refs, markers = markers)
 
       #rmd_references =
-      yaml_references = yaml::as.yaml(list(refs = reftex))
+      yaml_references = yaml::as.yaml(list(refs_latex = reftex, refs_html = refhtml))
 
 
       doc_summar = doc_summar[-c(refparind, ref_inds),]

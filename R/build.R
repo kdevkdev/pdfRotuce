@@ -6,7 +6,7 @@
 #' @export
 #'
 #' @examples
-build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", render_only = F, ...){
+build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", render_only = F, outformats = c("html", "pdf", "jats"), ...){
 
   # get basename without file extension
   basename = tools::file_path_sans_ext(basename(src))
@@ -33,6 +33,9 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
   # check if we can find the manuscript
   stopifnot("doc manuscript file not found at specified location" = file.exists(doc_file))
 
+  # if xml not wished
+  if(!("jats" %in% outformats)) xml_outpathO = NULL
+
   # check if we should markdownify
   if(render_only !=T){
 
@@ -48,27 +51,32 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     bckp_tinytexclean <- options(tinytex.clean = FALSE)
     # try to rendr
     # put all rmd, latex related files in build path and manually copy, as far as i understand rmarkdown::render does not allow to specify output_file and output_dir that do not correspond to each other
-    respath_pdf  = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = "bookdown::pdf_document2",  clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
+    # only render if pdf included in outformats
+    respath_pdf = NULL
+    if("pdf" %in% outformats){
+      respath_pdf  = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = "bookdown::pdf_document2",  clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
+    }
     #respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = "bookdown::html_document2", clean = F, output_options = list("keep_md" = T, "keep_tex" = T))
 
     # for some reason the custom template provided in the yaml header of manuscript.Rdm does not work for thehtml_document2,hence specify explicitly heare
+    # only render if html included in outformats
+    respath_html = NULL
+    if("html" %in% outformats){
+      bookdown_frmt = bookdown::html_document2(template = "template.html", clean = F, toc = TRUE, toc_depth = 3,
+                          output_options = list("keep_md" = T, "keep_tex" = T))
 
+      #bookdown_frmt$pandoc$args = c(bookdown_frmt$pandoc$args, "--table-of-contents", "--toc-depth", "3")
+      respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = bookdown_frmt)
+    }
 
-    bookdown_frmt = bookdown::html_document2(template = "template.html", clean = F, toc = TRUE, toc_depth = 3,
-                        output_options = list("keep_md" = T, "keep_tex" = T))
-
-    #bookdown_frmt$pandoc$args = c(bookdown_frmt$pandoc$args, "--table-of-contents", "--toc-depth", "3")
-    respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = bookdown_frmt)
-
-
-    if(file.exists(pdf_outfile)){
+    if(!is.null(respath_pdf) &&  file.exists(pdf_outfile)){
 
       file.copy(from = pdf_outfile, to = pdf_outfileO, overwrite = T)
       #file.copy(from = rmd_outfile, to = rmd_outfileO, overwrite = T) # no longer do this -> depends on tabchnk code
       file.copy(from = paste0(build_path, "/", "references.bib"), to = bib_outfileO, overwrite = T)
 
 
-      hgl_note("Copied PDF (and other output files) successfully to ouput dir")
+      hgl_note("Copied requested PDF output file successfully to ouput dir")
 
     } else{
       hgl_warn("No PDF output file found, could not copy to out directory")

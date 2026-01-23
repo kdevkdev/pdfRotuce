@@ -84,7 +84,7 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   tab_colwidths = NULL
   tab_colwidths_hux = NA
   if('colwidths' %in% names(tab_opts)){
-    tab_colwidths_hux = tab_colwidths = tab_opts['colwidths'][[1]] |> dput()  |> capture.output()|> paste0(collapse = "")
+    tab_colwidths_hux = tab_colwidths = tab_opts['colwidths'][[1]] |> dput()  |> capture.output()|> paste0(collapse = "")%+% "/100"
   }
 
   tab_colaligns = NULL
@@ -101,11 +101,11 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   rowals = vector("character", ncol)
   for(i in 1:ncol){
 
-    if(is.na(tab_colaligns_hux[i])) rowals[i] = "huxtable::set_align(col = " %+% i %+% ", value =  " %+% tab_colaligns_hux[i] %+% " ) |>"
-    else rowals[i]                            = "huxtable::set_align(col = " %+% i %+% ", value = '" %+% tab_colaligns_hux[i] %+% "') |>"
+    if(is.na(tab_colaligns_hux[i])) rowals[i] = "  huxtable::set_align(col = " %+% i %+% ", value =  " %+% tab_colaligns_hux[i] %+% " ) |>"
+    else rowals[i]                            = "  huxtable::set_align(col = " %+% i %+% ", value = '" %+% tab_colaligns_hux[i] %+% "') |>"
   }
   tab_colspec_call_hux = paste(collapse = "\n" ,rowals)
-
+  if(length(rowals) > 0 ) tab_colspec_call_hux = tab_colspec_call_hux %+% "\n" # extra newline at the end if any content
 
   tab_gridmode = "academicgrid"
   if('fullgrid' %in% tab_opts){
@@ -126,34 +126,56 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   data.table::fwrite(ct_csv, tab_fname, col.names = F) # do not write first row of column indexes
 
   # more huxpsecific stuff
-  # gridmode
+  # gridmode- set borders and bold text of headers
   tab_borderspec_call_hux = ""
+  tab_headerboldspec_call_hux = ""
   header_inds = which(startsWith(ct_csv[[1]], "#"))
+
+
+
   tcalls = NULL
+  tbcalls = NULL
+  hux_border_thickness = 2
   if(tab_gridmode == "academicgrid"){
 
 
-    # LOOP  through header inds
+    # generate borders according to through header inds
+    tb_rows = NULL
+    bb_rows = NULL
+    if(length(header_inds) > 0){
+      tb_rows = paste("  huxtable::set_top_border(row = ", header_inds, ", value = "%+% hux_border_thickness %+%")")
+      bb_rows = paste("  huxtable::set_bottom_border(row = ", header_inds, ", value = "%+% hux_border_thickness %+%")")
+      tbcalls = paste("  huxtable::set_bold(row = ", header_inds, ", value = T)")
+    }
 
-
-
-    tcalls = c("huxtable::set_top_border(row =1)",
-      "huxtable::set_bottom_border(row = nrow)")
+    tcalls = c(tb_rows, bb_rows, "  huxtable::set_top_border(row =1, value = "%+% hux_border_thickness %+%")",
+      "  huxtable::set_bottom_border(row = nrow, value = "%+% hux_border_thickness %+%")")
 
 
   } else if(tab_gridmode == "fullgrid"){
-    tcalls = c("huxtable::set_all_borders()")
+    tcalls = c("  huxtable::set_all_borders(value = "%+% hux_border_thickness %+%")")
 
   } else if(tab_gridmode == "topdowngrid"){
 
-    tcalls = c("huxtable::set_top_border(row =1)",
-      "huxtable::set_bottom_border(row = nrow)")
+    tcalls = c("  huxtable::set_top_border(row =1, value = "%+% hux_border_thickness %+%")",
+      "    huxtable::set_bottom_border(row = nrow, value = "%+% hux_border_thickness %+%")")
 
   } else hgl_error("unkwown tab gridmode")
   tab_borderspec_call_hux = paste(tcalls, collapse = "|>\n")
+  tab_headerboldspec_call_hux = paste(tbcalls, collapse = "|>\n")
 
   # add pipe operator if not epty
-  if(nchar(tab_borderspec_call_hux) > 0) tab_borderspec_call_hux = tab_borderspec_call_hux %+% "|>"
+  if(nchar(tab_borderspec_call_hux) > 0)         tab_borderspec_call_hux = tab_borderspec_call_hux %+% "|>\n"
+  if(nchar(tab_headerboldspec_call_hux) > 0) tab_headerboldspec_call_hux = tab_headerboldspec_call_hux %+% "|>\n"
+
+  if(!is.null(tab_footnote))  {
+    tab_footnote_call_hux = "huxtable::add_footnote(text = '" %+% tab_footnote %+%"') |>\n"
+    has_footnote = "TRUE"
+  }
+  else {
+    tab_footnote_call_hux = ""
+    has_footnote = "FALSE"
+  }
 
   # genereate rmarkdown chunks
   ctab_chunk = "
@@ -162,6 +184,8 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
 ```{r " %+%  tab_chunk_label  %+%",echo=F" %+% ", results = 'asis'}
 
 tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
+
+
 ncol =  NCOL(tab_dat)
   tex = pdfRotuce::rabulify(tab_dat, mode = '" %+%  tab_mode %+% "',
               caption = '" %+% tab_caption %+% "',
@@ -179,18 +203,23 @@ cat(tex)
 tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
 ncol =  NCOL(tab_dat)
 nrow = NROW(tab_dat)
+has_footnote = " %+% has_footnote %+% "
 
+# remove starting '#'indicating header_inds. Needs to be done here because not handled inlayer above (markdownify)
+# latex code still needs this info
+
+tab_dat[[1]] = gsub(pattern = '#', replacement = ' ',  x =tab_dat[[1]])
 
 
 html = huxtable::hux(tab_dat, add_colnames = F) |>
   huxtable::theme_article() |>
   huxtable::set_all_borders(value = 0) |>
-  huxtable::set_col_width(col = 1:ncol, value= " %+% tab_colwidths_hux %+%") |> \n "%+%
+  huxtable::set_col_width(col = 1:ncol, value= " %+% tab_colwidths_hux %+%") |> \n"%+%
   tab_colspec_call_hux %+%
-  tab_borderspec_call_hux %+% "
-  huxtable::set_caption(value = '" %+% tab_caption %+%"') |>
-  huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>
-  huxtable::add_footnote(text = '" %+% tab_footnote %+%"') |>
+  tab_borderspec_call_hux %+%
+  tab_headerboldspec_call_hux %+% "  huxtable::set_caption(value = '" %+% tab_caption %+%"') |>
+  huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>" %+%
+  tab_footnote_call_hux %+% "
   huxtable::set_all_padding(value = 4) |>
   huxtable::set_markdown(TRUE) |>
   huxtable::print_html()
@@ -202,6 +231,16 @@ html = '<style>
 margin-top:0;
 margin-bottom:0;}
 </style>' %+% html
+
+if(has_footnote){
+
+  # styling footnote
+html = '<style>
+/* footnote styling */
+ #"%+% tab_chunk_label %+%" tbody > tr:last-child { background-color:#DDDDDD; border-bottom-width:6px; border-top-width:6px; }
+</style>' %+% html
+
+}
 
 cat(html)
 ```

@@ -300,7 +300,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 \ifdef{\theabstract}
 {
 	\vskip2mm
-	\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,breakable]
+	\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,bottom=1mm, breakable]
 	{
 		\noindent
 		{\raggedright\bfseries ABSTRACT\par}
@@ -308,10 +308,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	
 	\noindent
 			
-	{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract\par}
-			
+	{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract}
 	\end{tcolorbox}
-	\vskip3mm
 }{} % if empty ldo not print anything to page
 }
 \begin{center}
