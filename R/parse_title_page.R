@@ -235,14 +235,21 @@ parse_title_page = function(docdat){
     }
   }
   # check if any additional language abstracts have been specified. If yes, generate a hint text to be place below the main abstract
-  abside_languages = names(retlist$abstracts$sidelangs)
+  abside_languages = sapply(retlist$abstracts$sidelangs, \(x) x$lang)
 
   # also here manual list of langugeas
-  lang_propernames = c(es = "Español", som = "Somali")
+  lang_propernames = c(es = "Español", som = "Somali", en = "English")
+
 
   # generate hint toext
   if(length(abside_languages) > 0){
-    retlist$abstract_sidelangs_hint = paste("Abstract in ", paste(lang_propernames[abside_languages], sep = ", "), "at the end of the article")
+
+    sepvec = rep(", ", length(abside_languages))
+    sepvec[length(sepvec)] = ""
+
+    if(length(sepvec) > 2)    sepvec[length(sepvec)-1] = ", and "
+    else if(length(sepvec)==2) sepvec[length(sepvec)-1] = " and "
+    retlist$abstract_sidelangs_hint = paste("Abstract in ", paste(paste(lang_propernames[abside_languages], sepvec), collapse = ""), "at the end of the article")
   }
 
 

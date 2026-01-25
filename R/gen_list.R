@@ -17,11 +17,11 @@ gen_list_latex = function(items, label = "\\textbullet", markers = 1:length(item
 gen_list_html = function(items, tag = "li", markers = 1:length(items)){
 
 
-  html_items  =paste("<", tag ," value='",markers,"'>",items, "</", tag, ">")
-
-
-  paste0("<ol>\n",
+  html_items  =paste("<", tag ," value='",markers,"'>",items, "</", tag, ">", sep = "")
+  # add some css style to make erornously inserted (by pandoc) </br> tags not have line braking effect
+  paste0("<ol class='bibliography_list'>\n",
          paste0(html_items, collapse = "\n"),
-         "</ol>")
+         "</ol><style> .bibliography_list > ", tag, " > br { content:''; display:none; } </style>")
+
 
 }

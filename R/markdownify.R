@@ -524,6 +524,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   ############ statements and declarations ############
   yaml_statements = ''
+  l_statements = list()
 
   # generate author contributions
   tll = list()
@@ -547,11 +548,12 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     #rmd_statements = "\n\n# Declarations\n\n"
     for(cn in names(metadata$statements)){
 
+      cle = list()
       cstat <- metadata$statements[[cn]]
       # todo potentially parse markdown?
+      cle$text = cstat
+      cle$title = cn
 
-      #rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
-      yaml_statements = yaml_statements %+% "\\subsection{" %+%cn %+% "}\n" %+% "\\bgroup \\setlength{\\parindent}{0pt} " %+% cstat
 
       # checkstring
       chkstr = trimws(tolower(cn))
@@ -559,10 +561,13 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       if(stringr::str_detect(string = chkstr, pattern = "author.{1,5}contribution")){
          consumed_indiv_author_contribs = TRUE
 
-         yaml_statements = paste0(yaml_statements, "\n", indiv_author_contribs) # att this to the setion
+         cstat = paste0(cstat, "\n", indiv_author_contribs) # att this to the setion
 
       }
-      yaml_statements = yaml_statements %+% "\\egroup \n\n"
+      #rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
+      #yaml_statements = yaml_statements %+% "\\subsection{" %+%cn %+% "}\n" %+% "\\bgroup \\setlength{\\parindent}{0pt} " %+% cstat
+      #yaml_statements = yaml_statements %+% "\\egroup \n\n"
+      l_statements[[length(l_statements)+1]] = cle
     }
 
   }
@@ -570,12 +575,13 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # no manual author  contributions found in statements and thos author contribution not yet put into rmd -> put specified roles
   if(!consumed_indiv_author_contribs && !is.null(indiv_author_contribs) && !is.na(indiv_author_contribs) && is.character(indiv_author_contribs) && indiv_author_contribs != "") {
 
-    yaml_statements = yaml_statements %+% "\\subsection{Author contributions}\n\n" %+% indiv_author_contribs %+% "\n\n"
+    #yaml_statements = yaml_statements %+% "\\subsection{Author contributions}\n\n" %+% indiv_author_contribs %+% "\n\n"
+    l_statements[[length(l_statements)+1]] = list(title = "Author contributions" , text = indiv_author_contribs)
   }
 
-  yaml_statements = yaml::as.yaml(list(statements = yaml_statements))
+  #yaml_statements = yaml::as.yaml(list(statements = yaml_statements))
 
-
+  yaml_statements =yaml::as.yaml(list(statements = l_statements))
 
   ########################################### postprocessing  & writing file ####################################################
   # replace back protected dollars , @, etc
@@ -594,6 +600,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   })
 
 
+  TODO FiX orcids here and after also fix template code for statements and orcids
   # if any orcids present, put all authors with oricds in a separate section before the references
   yaml_orcinds = ""
   if(!is.null(author_orcinds) && length(author_orcinds) > 0 && any(author_orcinds)){

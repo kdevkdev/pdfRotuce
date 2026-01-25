@@ -151,6 +151,10 @@
 	  margin-left: 0 !important;
       }
     </style>
+    <!-- pdfRotuce / JCSH specific css -->
+    <style type="text/css">
+      .abstract_box { background-color:#fde5d6; padding:2em; }
+    </style>
     
 </head>
 
@@ -193,7 +197,7 @@
    $endif$
 
    
-   $--$if(readthedown)$
+
    <!-- readthedown authors -->
    <div id="sidebar">
     <h2><a href="#content">$title_full$</a></h2>
@@ -219,19 +223,72 @@
       $endif$
     </div>
    </div>
-   $--$endif$  
 
-  
 
+$if(abstracts.mainlang)$
+<div id='abstract_mainlang' class="abstract_box">
+$if(abstract_picture)$
+<img src="$abstract_picture$" style="width:40%; "></img>
+$endif$
+$for(abstracts.mainlang.parts)$
+<p><b>$abstracts.mainlang.parts.title$</b> $abstracts.mainlang.parts.text$</b>	
+$endfor$
+$if(keywords)$
+<br>
+<p style="display:inline;">
+<b>$string_keywords_heading$</b> $for(keywords)$$keywords$$sep$, $endfor$
+</p>
+$endif$
+</div>
+$endif$
+
+$if(abstract_sidelangs_hint)$
+<p style="text-align:center; "><b>$abstract_sidelangs_hint$</b></p>
+$endif$
 
 <!-- Don't indent these lines or it will mess pre blocks indentation --> 
 <div id="main">
 $body$
 
+
+$if(statements)$
+<div id="statements" class="section level1" number="">
+<h1><span>$string_declarations_title$<span></h1>
+$statements$
+$if(orcids)$
+<div id="orcids" class="section level2" number="">
+<h2><span>ORCIDs<span></h2>
+$orcids$
+$endif$
+</div>
+</div>
+$endif$
+
+$if(abstracts.sidelangs)$ 
+<div id="sidelang_abstracts" class="section level1" number="">
+<h1><span>$string_multilang_abstract_title$<span></h1>
+$for(abstracts.sidelangs)$
+<div class="abstract_box">
+<b>$abstracts.sidelangs.title$</b><br style="margin-bottom:1mm;">
+$for(abstracts.sidelangs.parts)$
+<p><b>$abstracts.sidelangs.parts.title$</b> $abstracts.sidelangs.parts.text$</b>
+$endfor$
+$if(abstracts.sidelangs.keywords)$
+<br>
+<p style="display:inline">
+<b>$abstracts.sidelangs.string_keywords_heading$</b>  $for(abstracts.sidelangs.keywords)$$keywords$$sep$, $endfor$
+</p>
+$endif$
+</div><br>
+$endfor$
+</div>
+$endif$
+
+
 $if(refs_html)$
 <div id="references" class="section level1" number="">
 <h1><span class="header-section-number"></span> $string_bibliography_title$</h1>
-$refs$
+$refs_html$
 $endif$
 </div>
 

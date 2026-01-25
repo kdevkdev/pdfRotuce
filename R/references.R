@@ -584,7 +584,9 @@ refs: |
 
 
       # list for safeguarding url from doi parsing
-      refdoi_safeguards = list()
+      refdoi_safeguards_latex = list()
+      refdoi_safeguards_html = list()
+
       if(doi_parsing){
 
 
@@ -594,16 +596,21 @@ refs: |
                                         replacement = function(m){
 
                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                          r  = paste0("\\href{https://doi.org/", r,"}{", r, "}.")
+                                          rl = paste0("\\href{https://doi.org/", r,"}{", r, "}.")
+                                          rh = paste0("<a href='https://doi.org/", r,"'>", r, "</a>.")
 
 
-                                          refdoi_safeguards <<- as.list(r)
+                                          refdoi_safeguards_latex <<- as.list(rl)
+                                          refdoi_safeguards_html <<- as.list(rh)
+
                                           paste0("____________refdoi", 1:length(r), "refdoi____________")
                                            })#"\\\\url{\\0}"
       }
 
       # list for safeguarding url from url parsing
-      refurl_safeguards = list()
+      refurl_safeguards_latex = list()
+      refurl_safeguards_html = list()
+
       if(url_parsing){
 
         # pattern from qdapRegex, second one from stackoverflow
@@ -613,9 +620,13 @@ refs: |
                                         replacement = function(m){
 
                                           r = gsub(pattern = "\\.$", replacement = "", x = m)
-                                          r  = paste0("\\url{", r,"}")
+                                          rl  = paste0("\\url{", r,"}")
+                                          rh  = paste0("<a href='", r,"'>", r,"</a>")
 
-                                          refurl_safeguards <<- as.list(r)
+
+                                          refurl_safeguards_latex <<- as.list(rl)
+                                          refurl_safeguards_html <<- as.list(rh)
+
                                           paste0("____________refurl", 1:length(r), "refurl____________")
 
                                         })#"\\\\url{\\0}"
@@ -625,36 +636,44 @@ refs: |
 
 
 
+
       # put back reference urls
-      if(length(refurl_safeguards) > 0){
-      for(i in 1:length(refurl_safeguards)){
-        # fill back in
-        refs = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards[[i]])
+      if(length(refurl_safeguards_latex) > 0){
+        for(i in 1:length(refurl_safeguards_latex)){
+          # fill back in
+          refs_latex = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards_latex[[i]])
+          refs_html  = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards_html[[i]])
         }
       }
       # put back doi urls
-      if(length(refdoi_safeguards) > 0){
-        for(i in 1:length(refdoi_safeguards)){
+      if(length(refdoi_safeguards_latex) > 0){
+        for(i in 1:length(refdoi_safeguards_latex)){
           # fill back in
-          refs = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refdoi",i,"refdoi____________")), replacement  = refdoi_safeguards[[i]])
+          refs_latex = stringr::str_replace(string = refs_latex, pattern =stringr::fixed(paste0("____________refdoi",i,"refdoi____________")), replacement  = refdoi_safeguards_latex[[i]])
+          refs_html  = stringr::str_replace(string = refs_html, pattern =stringr::fixed(paste0("____________refdoi",i,"refdoi____________")), replacement  = refdoi_safeguards_html[[i]])
         }
       }
 
-      # escape &, _ and [,]
-      refs = stringr::str_replace_all(refs, pattern = "&", replacement = "\\\\&")
-      refs = stringr::str_replace_all(refs, pattern = "\\[", replacement = "{[}")
-      refs = stringr::str_replace_all(refs, pattern = "\\]", replacement = "{]}")
-      refs = stringr::str_replace_all(refs, pattern = "_", replacement = "\\\\_")
+
+      # latex: escape &, _ and [,]
+      refs_latex = stringr::str_replace_all(refs_latex, pattern = "&", replacement = "\\\\&")
+      refs_latex = stringr::str_replace_all(refs_latex, pattern = "\\[", replacement = "{[}")
+      refs_latex = stringr::str_replace_all(refs_latex, pattern = "\\]", replacement = "{]}")
+      refs_latex = stringr::str_replace_all(refs_latex, pattern = "_", replacement = "\\\\_")
+
+      # html - escape chars
 
       # remove dots
       markers <- stringr::str_replace(string = markers, pattern = "\\.", replacement = "")
 
-      reftex = "\\small" %+% gen_list_latex(items = refs, label = "{[_]}", markers = markers,
+      reftex = "\\small" %+% gen_list_latex(items = refs_latex, label = "{[_]}", markers = markers,
                                                        options = c("labelindent" = "0em",
                                                                    "labelwidth" = "2.4em",
                                                                    "align" = "left" ,
                                                                    "leftmargin" = "2.7em")) %+% ""
-      refhtml = gen_list_html(items = refs, markers = markers)
+      refhtml = gen_list_html(items = refs_html, markers = markers)
+
+
 
       #rmd_references =
       yaml_references = yaml::as.yaml(list(refs_latex = reftex, refs_html = refhtml))
