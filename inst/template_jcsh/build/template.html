@@ -250,7 +250,7 @@ $endif$
 
 <!-- authors, affiliations and article dates -->
 <!-- put , properly accounting for sepearor characters (put & in case its a co-author) -->
-<p>$for(authors/first)$
+<p style="font-size:21px;">$for(authors/first)$
 $authors.name$<sup>$authors.affiliation_ids$$if(authors.corresponding)$*$endif$</sup>
 $endfor$
 
@@ -264,7 +264,6 @@ $else$
 $endif$
 $endfor$
 $endif$</p>
-<br>
 
 <p>$for(affiliations)$
 <sup>$affiliations.id$</sup>: $affiliations.address$<br>
