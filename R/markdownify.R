@@ -600,7 +600,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   })
 
 
-  TODO FiX orcids here and after also fix template code for statements and orcids
   # if any orcids present, put all authors with oricds in a separate section before the references
   yaml_orcinds = ""
   if(!is.null(author_orcinds) && length(author_orcinds) > 0 && any(author_orcinds)){
@@ -615,11 +614,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 #    yaml_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
     #yaml_orcinds = yaml_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
 
-    yaml_orcinds = yaml_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
-                                                 td$orcid, "}{",
-                                                 td$orcid,"}"), collapse = "\n\n")
+    #yaml_orcinds = yaml_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
+    #                                             td$orcid, "}{",
+    #                                             td$orcid,"}"), collapse = "\n\n")
 
-    yaml_orcinds = yaml_orcinds
 
     yaml_orcinds = yaml::as.yaml(list(orcids = yaml_orcinds))
     #yaml_orcinds = yaml_orcinds %+% "\n```"
