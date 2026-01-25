@@ -143,7 +143,7 @@ parse_title_page = function(docdat){
           }
           ct_tab = ct_tab[!is.null(author) & is.character(author) &nchar(author) > 0, ]
 
-
+          auth_i = 1 # also store position of author in list
           ta = apply(X = ct_tab, MARGIN = 1, FUN = \(x){
 
               # detect corresponding author
@@ -155,8 +155,13 @@ parse_title_page = function(docdat){
                 corresponding = TRUE
               }
 
-              rl = list(name = x[["author"]] |> yml_qt(), affiliation_ids = x[["affiliation_ids"]] |> yml_qt(), orcid = x[["orcid"]] |> yml_qt(), corresponding = corresponding )
+              rl = list(name = x[["author"]] |> yml_qt(),
+                        affiliation_ids = x[["affiliation_ids"]] |> yml_qt(),
+                        orcid = x[["orcid"]] |> yml_qt(),
+                        position = auth_i,
+                        corresponding = corresponding )
 
+              auth_i <<- auth_i+1
               # see if author has a , or ; (unescaped). If yes, create additional fields for surname and given name
               # this regex should work for with arbitrary number of escape chars
               name = x[['author']]

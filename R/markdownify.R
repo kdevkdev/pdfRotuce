@@ -546,6 +546,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   if(length(metadata$statements) > 0){
 
     #rmd_statements = "\n\n# Declarations\n\n"
+    statement_id = 1
     for(cn in names(metadata$statements)){
 
       cle = list()
@@ -553,7 +554,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       # todo potentially parse markdown?
       cle$text = cstat
       cle$title = cn
+      cle$position = statement_id
 
+      statement_id <- statement_id+1
 
       # checkstring
       chkstr = trimws(tolower(cn))
@@ -572,12 +575,14 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   }
 
+
   # no manual author  contributions found in statements and thos author contribution not yet put into rmd -> put specified roles
   if(!consumed_indiv_author_contribs && !is.null(indiv_author_contribs) && !is.na(indiv_author_contribs) && is.character(indiv_author_contribs) && indiv_author_contribs != "") {
 
     #yaml_statements = yaml_statements %+% "\\subsection{Author contributions}\n\n" %+% indiv_author_contribs %+% "\n\n"
-    l_statements[[length(l_statements)+1]] = list(title = "Author contributions" , text = indiv_author_contribs)
+    l_statements[[length(l_statements)+1]] = list(title = "Author contributions" , text = indiv_author_contribs, position = length(l_statements)+1)
   }
+
 
   #yaml_statements = yaml::as.yaml(list(statements = yaml_statements))
 
@@ -604,12 +609,17 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   yaml_orcinds = ""
   if(!is.null(author_orcinds) && length(author_orcinds) > 0 && any(author_orcinds)){
 
-    td <- metadata$authors[author_orcinds] |> rbindlist(fill = TRUE)
+    #td <- metadata$authors[author_orcinds] |> rbindlist(fill = TRUE)
+    l_orcids  <- metadata$authors[author_orcinds] |> lapply(\(x){
+      list(name = x$name,
+           orcid = x$orcid,
+           position = x$position)})
 
-    plural = ""
-    if(NROW(td)> 1){
-      plural = "s"
-    }
+
+    #plural = ""
+    # if(NROW(td)> 1){
+    #   plural = "s"
+    # }
 
 #    yaml_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
     #yaml_orcinds = yaml_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
@@ -618,8 +628,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     #                                             td$orcid, "}{",
     #                                             td$orcid,"}"), collapse = "\n\n")
 
+    yaml_orcinds = yaml::as.yaml(list(orcids = l_orcids))
 
-    yaml_orcinds = yaml::as.yaml(list(orcids = yaml_orcinds))
+    #yaml_orcinds = yaml::as.yaml(list(orcids = yaml_orcinds))
     #yaml_orcinds = yaml_orcinds %+% "\n```"
   }
 

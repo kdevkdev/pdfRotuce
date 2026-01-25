@@ -14,7 +14,7 @@
 
 #main .nav-pills > li > a:hover {
   color: #FFFFFF !important;
-  background-color: #bf3e11;
+  background-color: ##bf3e11;
 }
 
 #main .nav-pills > li.active > a,
@@ -218,7 +218,7 @@ dd{
 #main ul li,#content .toctree-wrapper ul li,article ul li{
     list-style:disc;
     margin-left:24px;
-    margin-bottom:16px; 
+    margin-bottom:16px;
 }
 
 #main ul li p:last-child,#content .toctree-wrapper ul li p:last-child,article ul li p:last-child{
@@ -673,7 +673,7 @@ label{
     font-size:90%}
 
 a {
-    color:#7B0D1E;
+    color:#bf3e11;
     text-decoration:none;
     cursor:pointer;
 }
@@ -700,10 +700,10 @@ a:hover, a:active{
 }
 
 a:hover{
-    color:#3d1308}
+    color:#3d1308;}
 
 a:visited{
-    color:#3d1308}
+    color:#3d1308;}
 
 #main a.sourceLine {
   color: inherit;

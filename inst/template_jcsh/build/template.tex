@@ -263,11 +263,22 @@ $endif$
   \raggedcolumns
 	%\interlinepenalty=10000
 	$body$
+	
+	
 	$if(statements)$\section{$string_declarations_title$}$endif$
-	{$statements$}
+	$for(statements)$
+\subsection{$statements.title$}
+\bgroup \setlength{\parindent}{0pt}$statements.text$
+\egroup
+
+	$endfor$
 	
 	$if(orcids)$\subsection{ORCIDs}$endif$
-	{\noindent\raggedright $orcids$}
+\bgroup \setlength{\parindent}{0pt}
+	$for(orcids)$
+$orcids.name$\orcidaffil{$orcids.orcid$} \href{https://orcid.org/$orcids.orcid$}{$orcids.orcid$}\\
+	$endfor$
+\egroup
 \end{multicols}
 
 % sidelang abstracts 

@@ -15,16 +15,18 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
   if(endsWith(folder,"/") || endsWith(folder,"\\")) # remove trailing slash
     folder <- substr(folder,1, nchar(folder)-1)
 
-  doc_file      = paste0(folder,"/", src)
-  metacsv_path  = paste0(folder,"/", meta_csv)
-  build_path    = paste0(folder, "/build")
-  out_path      = paste0(folder, "/out")
-  rmd_outfile   = paste0(build_path, "/", basename, ".Rmd")
-  xml_outpathO  = paste0(out_path, "/", "jatsxml_", basename, "/")
-  pdf_outfile   = paste0(build_path, "/", basename, ".pdf")
-  pdf_outfileO  = paste0(out_path, "/", basename, ".pdf")
-  rmd_outfileO  = paste0(out_path, "/", basename, ".Rmd")
-  bib_outfileO  = paste0(out_path, "/", "references.bib")
+  doc_file       = paste0(folder,"/", src)
+  metacsv_path   = paste0(folder,"/", meta_csv)
+  build_path     = paste0(folder, "/build")
+  out_path       = paste0(folder, "/out")
+  rmd_outfile    = paste0(build_path, "/", basename, ".Rmd")
+  xml_outpathO   = paste0(out_path, "/", "jatsxml_", basename, "/")
+  pdf_outfile    = paste0(build_path, "/", basename, ".pdf")
+  pdf_outfileO   = paste0(out_path, "/", basename, ".pdf")
+  html_outfile   = paste0(build_path, "/", basename, ".html")
+  html_outfileO  = paste0(out_path, "/", basename, ".html")
+  rmd_outfileO   = paste0(out_path, "/", basename, ".Rmd")
+  bib_outfileO   = paste0(out_path, "/", "references.bib")
 
   # create directory if fokder does not exist yet
   if(!dir.exists(out_path)) dir.create(out_path)
@@ -69,7 +71,7 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
       respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = bookdown_frmt)
     }
 
-    if(!is.null(respath_pdf) &&  file.exists(pdf_outfile)){
+    if(!is.null(respath_pdf) &&  file.exists(pdf_outfile) && "pdf" %in% outformats){
 
       file.copy(from = pdf_outfile, to = pdf_outfileO, overwrite = T)
       #file.copy(from = rmd_outfile, to = rmd_outfileO, overwrite = T) # no longer do this -> depends on tabchnk code
@@ -81,6 +83,18 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     } else{
       hgl_warn("No PDF output file found, could not copy to out directory")
     }
+
+
+    if(!is.null(respath_html) &&  file.exists(html_outfile) && "html" %in% outformats){
+
+      file.copy(from = html_outfile, to = html_outfileO, overwrite = T)
+      hgl_note("Copied requested PDF output file successfully to ouput dir")
+
+    } else{
+      hgl_warn("No PDF output file found, could not copy to out directory")
+    }
+
+
 
     # restore tinytex.clean option
     options(tinytex.clean = bckp_tinytexclean)
