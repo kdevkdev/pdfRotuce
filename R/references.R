@@ -634,15 +634,15 @@ refs: |
 
       }
 
-
-
+      refs_html = refs
+      refs_latex = refs
 
       # put back reference urls
       if(length(refurl_safeguards_latex) > 0){
         for(i in 1:length(refurl_safeguards_latex)){
           # fill back in
-          refs_latex = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards_latex[[i]])
-          refs_html  = stringr::str_replace(string = refs, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards_html[[i]])
+          refs_latex = stringr::str_replace(string = refs_latex, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards_latex[[i]])
+          refs_html  = stringr::str_replace(string = refs_html, pattern =stringr::fixed(paste0("____________refurl",i,"refurl____________")), replacement  = refurl_safeguards_html[[i]])
         }
       }
       # put back doi urls
@@ -653,7 +653,6 @@ refs: |
           refs_html  = stringr::str_replace(string = refs_html, pattern =stringr::fixed(paste0("____________refdoi",i,"refdoi____________")), replacement  = refdoi_safeguards_html[[i]])
         }
       }
-
 
       # latex: escape &, _ and [,]
       refs_latex = stringr::str_replace_all(refs_latex, pattern = "&", replacement = "\\\\&")
