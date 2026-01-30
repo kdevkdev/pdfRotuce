@@ -88,9 +88,9 @@
       <xsl:text>&#xa;</xsl:text>
     </xsl:template>
     <xsl:template match="code_block">
-      <xsl:text>\begin{verbatim}&#xa;</xsl:text>
+      <xsl:text>\texttt{&#xa;</xsl:text>
         <xsl:value-of select="."/>
-      <xsl:text>\end{verbatim}&#xa;</xsl:text><!-- No further recursions-->
+      <xsl:text>}&#xa;</xsl:text><!-- No further recursions-->
     </xsl:template>
     <xsl:template match="block_quote">
       <xsl:text>\begin{displayquote}&#xa;</xsl:text>

@@ -654,11 +654,12 @@ refs: |
         }
       }
 
-      # latex: escape &, _ and [,]
+      # latex: escape &, _ and [,], # . Some of these require double escaping
       refs_latex = stringr::str_replace_all(refs_latex, pattern = "&", replacement = "\\\\&")
       refs_latex = stringr::str_replace_all(refs_latex, pattern = "\\[", replacement = "{[}")
       refs_latex = stringr::str_replace_all(refs_latex, pattern = "\\]", replacement = "{]}")
       refs_latex = stringr::str_replace_all(refs_latex, pattern = "_", replacement = "\\\\_")
+      refs_latex = stringr::str_replace_all(refs_latex, pattern = "\\#", replacement = "\\\\#")
 
       # html - escape chars
 
