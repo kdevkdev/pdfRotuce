@@ -176,69 +176,72 @@ gen_xml_abstracts = function(metadata_abs, base_folder = NULL, xml_filepack_dir 
     # TODO: dont forget handing of picture later
   res = list()
 
-
   # flatten list if needed
   if(!is.null(metadata_abs$sidelangs)) metadata_abs =  c(list(metadata_abs$mainlang), metadata_abs$sidelangs)
 
+  if(length(metadata_abs) > 0){
 
-  for(cli in 1:length(metadata_abs)){
+    for(cli in 1:length(metadata_abs)){
 
-    ca = metadata_abs[[cli]]
-    tag = ""
-    lan = ""
-    picture = ""
-    if(cli == 1){ # first index comes from mainlang
-      # WARNING JATS implicitly assumes this is english. should be properly explicitly or is it ok?
-      tag = "abstract"
+      ca = metadata_abs[[cli]]
+      tag = ""
+      lan = ""
+      picture = ""
+      if(cli == 1){ # first index comes from mainlang
+        # WARNING JATS implicitly assumes this is english. should be properly explicitly or is it ok?
+        tag = "abstract"
 
-      # also check if picture provided
-      if(!is.null(abstract_picture)){
+        # also check if picture provided
+        if(!is.null(abstract_picture)){
 
-        # only possible in 1.4 -> wait until implemented
-        #pack_xml_file(src = abstract_picture, base_folder =  base_folder,  xml_filepack_dir = xml_filepack_dir)
-        #picture = paste0("<graphic xlink:href='", abstract_picture,"' position='anchor'/>")
-      }
+          # only possible in 1.4 -> wait until implemented
+          #pack_xml_file(src = abstract_picture, base_folder =  base_folder,  xml_filepack_dir = xml_filepack_dir)
+          #picture = paste0("<graphic xlink:href='", abstract_picture,"' position='anchor'/>")
+        }
 
-    } else {
-      tag = "trans-abstract"
-
-      lan = paste0("xml:lang='", ca$lang, "'")
-    }
-
-    resparts = list()
-    for(ccpi in 1:length(ca[['parts']])){
-
-      cctext = ca[['parts']][[ccpi]][['text']]
-      cctitle = ca[['parts']][[ccpi]][['title']]
-
-      tit = ""
-      text = ""
-      if(is.character(cctitle)){
-        tit = paste0("<title>",cctitle|> xe(),"</title>\n")
-      }
-      if(is.character(cctext)){
-        text = paste0("<p>", cctext|> xe(), "</p>")
       } else {
-        stop("Invalid abstrat part, no text in gen_xml_abstracts")
+        tag = "trans-abstract"
+
+        lan = paste0("xml:lang='", ca$lang, "'")
       }
-      resparts[[length(resparts)+1]] = paste0(tit, text)
+
+      resparts = list()
+      for(ccpi in 1:length(ca[['parts']])){
+
+        cctext = ca[['parts']][[ccpi]][['text']]
+        cctitle = ca[['parts']][[ccpi]][['title']]
+
+        tit = ""
+        text = ""
+        if(is.character(cctitle)){
+          tit = paste0("<title>",cctitle|> xe(),"</title>\n")
+        }
+        if(is.character(cctext)){
+          text = paste0("<p>", cctext|> xe(), "</p>")
+        } else {
+          stop("Invalid abstrat part, no text in gen_xml_abstracts")
+        }
+        resparts[[length(resparts)+1]] = paste0(tit, text)
+      }
+
+      if(length(resparts) > 1){
+
+        text = paste("<sec>", resparts,  "</sec>", collapse = "\n", sep = "\n")
+
+      } else if(length(resparts)  == 1){
+
+        text = resparts[[1]]
+      }
+
+      res[[cli]] = paste0("<", tag, " ", lan, ">",text, "\n", picture,
+             "\n</", tag, ">")
     }
 
-    if(length(resparts) > 1){
-
-      text = paste("<sec>", resparts,  "</sec>", collapse = "\n", sep = "\n")
-
-    } else if(length(resparts)  == 1){
-
-      text = resparts[[1]]
-    }
-
-    res[[cli]] = paste0("<", tag, " ", lan, ">",text, "\n", picture,
-           "\n</", tag, ">")
+    ret = paste0(res, collapse = "\n")
+    ret
+  } else {
+    ""
   }
-
-  ret = paste0(res, collapse = "\n")
-  ret
 }
 gen_xml_keywords = function(metadata_kwds){
 

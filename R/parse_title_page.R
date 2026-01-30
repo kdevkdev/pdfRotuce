@@ -234,6 +234,9 @@ parse_title_page = function(docdat){
         }
       }
     }
+    else if(section_heading == ""){
+        hgl_warn("title page section with empty heading" %+% section_heading)
+    }
     else{
 
         stop("unkown title page section " %+% section_heading %+% "(should be metadata or ABSTRACT_XX, where XX corresponds to a supported language acronym ")
