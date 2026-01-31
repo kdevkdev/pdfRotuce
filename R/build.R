@@ -65,7 +65,7 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     respath_html = NULL
     if("html" %in% outformats){
       bookdown_frmt = bookdown::html_document2(template = "template.html", clean = F, toc = TRUE, toc_depth = 3,
-                          output_options = list("keep_md" = T, "keep_tex" = T))
+                          output_options = list("keep_md" = T, "keep_tex" = T), global_numbering = TRUE)
 
       #bookdown_frmt$pandoc$args = c(bookdown_frmt$pandoc$args, "--table-of-contents", "--toc-depth", "3")
       respath_html = rmarkdown::render(input = rmd_outfile, output_dir = build_path, output_format = bookdown_frmt)

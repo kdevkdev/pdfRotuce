@@ -91,7 +91,6 @@ gen_figblock = function(fig_opts, fig_counter){
 
   # als generate html output. Not meaningful ATM to differenctiate between columns, but make one column figures smaller. Use fenced codeblock
 
-  html_output = "\n\n```{=html}\n\n"
 
   width = "100%"
   if(fig_wide == F){
@@ -99,12 +98,17 @@ gen_figblock = function(fig_opts, fig_counter){
     width = "50%"
   }
 
-  html_output = html_output %+% "<div class=\"figure\">
-<img src=\"" %+% fig_src %+% "\" width=\"" %+% "\" alt=''>
-<p>" %+% fig_caption %+% "</p>
-</div>\n"
+  #html_output = "\n\n```{=html}\n\n"
+  #html_output = html_output %+% "<div class=\"figure\">
+#<img src=\"" %+% fig_src %+% "\" width=\"" %+% "\" alt=''>
+#<p>" %+% fig_caption %+% "</p>
+#</div>\n"
 
-  html_output = html_output %+% "```\n\n"
+  #html_output = html_output %+% "```\n\n"
+
+  html_output = "\n\n```{r " %+% fig_label %+% ", fig.cap='" %+% fig_caption %+% "', out.width='" %+% width %+% "', echo=F}\n\n"
+  html_output = html_output %+% "if(knitr::is_html_output()){knitr::include_graphics('" %+% fig_src %+%"')}"
+  html_output = html_output %+% "\n```\n\n"
 
   return(tex_output %+% "\n\n" %+% html_output)
 
