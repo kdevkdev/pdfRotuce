@@ -812,6 +812,8 @@ hr{
     overflow-x: hidden;
     overflow-y: auto;
     flex-grow: 200;
+    width:100%;
+
 }
 
 #sidebar {
@@ -925,7 +927,7 @@ footer p{
 
 #postamble{
     color:#fcfcfc;
-    background:#1f1d1d;
+    background:#211103;
     border-top:solid 10px #211103;
     font-family:"Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
     font-size: 90%;

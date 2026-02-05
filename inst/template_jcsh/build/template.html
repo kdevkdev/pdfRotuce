@@ -57,13 +57,23 @@
 
     <!-- tabsets -->
     <script>
+
+      <!-- add new entries to toc-->
       $$(document).ready(function () {
-	  window.buildTabsets("toc");
-      });
-      $$(document).ready(function () {
-	  $$('.tabset-dropdown > .nav-tabs > li').click(function () {
+	 
+
+      window.buildTabsets("toc");   
+      $$('.tabset-dropdown > .nav-tabs > li').click(function () {
 	      $$(this).parent().toggleClass('nav-tabs-open')
 	  });
+	 });
+      
+    
+      $$(document).ready(function () {
+	  
+      });
+      $$(document).ready(function () {
+	  
       });
     </script>
 
@@ -536,7 +546,7 @@ $body$
 
 $if(statements)$
 <div id="statements" class="section level1" >
-<h1><span></span>$string_declarations_title$</h1>
+<h1><span class="header-section-number"></span>$string_declarations_title$</h1>
 $for(statements)$
 <div class="section level2"  id="statement_$statements.position$">
 <h2  style="margin:0;" ><span></span>$statements.title$</h2>
@@ -574,7 +584,7 @@ $endif$
 
 $if(abstracts.sidelangs)$ 
 <div id="sidelang_abstracts" class="section level1" number="">
-<h1><span>$string_multilang_abstract_title$</span></h1>
+<h1><span class="header-section-number"></span>$string_multilang_abstract_title$</h1>
 $for(abstracts.sidelangs)$
 <div class="abstract_box">
 <b>$abstracts.sidelangs.title$</b><br style="margin-bottom:1mm;">
