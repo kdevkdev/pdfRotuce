@@ -48,7 +48,7 @@ img.image-lb {
 .figure {
     margin: 5px 10px 30px 0px;
     display: table;
-    text-align: center;
+    text-align: left;
 }
 
 .figure img {
@@ -57,7 +57,6 @@ img.image-lb {
 
 .figure p.caption {
     font-style: italic;
-    font-size: 90%;
 }
 
 
@@ -155,6 +154,7 @@ body{
     color:#404040;
     font-family:"Lato","proxima-nova","Helvetica Neue",Arial,sans-serif;
     font-weight:normal;
+    font-size:16px;
     margin:0;
     min-height:100%;
 }
@@ -326,6 +326,10 @@ dl dd{
 
     body {
         margin: 0px;}
+        
+    #mobile_button {
+        display:none;
+    }
 }
 
 
@@ -340,11 +344,14 @@ dl dd{
     #content.shift{
         position:relative;
         min-width:100%;
-        left:75%;
+        left:300px;
         top:0;
         height:100%;
         overflow:hidden}
+        
+    
     #sidebar {
+
         font-size: 120%;
         left: -300px;
         width: 300px;
@@ -352,8 +359,13 @@ dl dd{
     #content.shift #sidebar {
         font-size: 120%;
         left: 0;
-        width: 75%;
+        width: 300px;
     }
+    
+    #mobile_button.hide {
+        display:none;
+    }
+    
     #nav-top {
       display: inline-block;
     }
@@ -363,7 +375,7 @@ dl dd{
     #postamble.shift {
       font-size: 110%;
       left: 0;
-      width: 75%;
+      width: 65%;
     }
     img{
         width:100%;
@@ -395,6 +407,7 @@ dl dd{
     #sidebar {
         left: 0;
         width: 300px;
+        padding-top:5rem;
     }
     #main .nav-pills {
         margin-left: 10px;
@@ -403,6 +416,10 @@ dl dd{
         padding: 3px 12px !important;
         margin-right: 5px !important;
     }
+    #mobile_button, #menu_close_button  {
+        display:none;
+    }
+    
 }
 
 @media screen and (min-width: 1400px){
@@ -422,9 +439,6 @@ dl dd{
     font-weight:700;
 }
 
-#nav-top span.glyphicon {
-  color: #bf3e11;
-  font-size: 28px;
 }
 
 
@@ -509,9 +523,12 @@ code{
 }
 
 table caption{
-    color:#000;
-    font:italic 85%/1 arial,sans-serif;
+    /*color:#000;
+    font:italic 100%/1 arial,sans-serif;*/
+    font-style: italic;
     padding:1em 0;
+    text-align:left;
+    color:#404040;
 }
 
 table:not(.dataTable) tr:nth-child(2n-1) {
@@ -787,7 +804,7 @@ hr{
     color:#b3b3b3;
     font-weight:normal}
 
-#sidebar a{
+#sidebar #toc .nav a{
     display:block;
     line-height:18px;
     padding:0.4045em 1.618em;
@@ -1079,7 +1096,7 @@ div.sourceCode .row div {
 }
 
 #main .nav-tabs li a:hover {
-    color: #333;
+    color: #333;f
 }
 
 
@@ -1087,3 +1104,30 @@ div.sourceCode .row div {
     color: #333;
     border-bottom: 1px solid #fcfcfc;
 }
+
+/* mobile button */
+#mobile_button, #menu_close_button {
+    position:sticky;
+    top:10px;
+    left:85%;
+    z-index:500;
+    width:3rem;
+    height:3rem;
+    padding-top:1rem;
+}
+
+#menu_close_button {
+  top:0px;
+  left:210px;
+  margin-top:1.5rem;
+  margin-bottom:1.5rem;
+  
+}
+
+#mobile_button span.glyphicon , #menu_close_button span.glyphicon {
+  color: #bf3e11;
+  font-size:3rem;
+  background-color:white;
+  position:absolute;
+}
+

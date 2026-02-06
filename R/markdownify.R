@@ -95,7 +95,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                  "doi", "has_abstract", "article_type", "author_shortname", "string_corresponding", "string_contact",
                  "string_responsibleeditor", "string_articleihstory", "string_keywords_heading",
                  "string_spanish_keywords", "string_declarations_title","string_keywords_spanish",
-                 "string_multilang_abstract_title", "string_bibliography_title")
+                 "string_multilang_abstract_title", "string_bibliography_title", "string_abstract_mainlang_title")
 
 
     # whitelist of values to copy

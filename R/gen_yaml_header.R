@@ -70,8 +70,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$string_multilang_abstract_title    = md$string_multilang_abstract_title
   yml_data$string_bibliography_title          = md$string_bibliography_title
   yml_data$string_declarations_title          = md$string_declarations_title
-
-
+  yml_data$string_abstract_mainlang_title     = md$string_abstract_mainlang_title
 
 
 

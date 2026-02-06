@@ -218,6 +218,7 @@ html = huxtable::hux(tab_dat, add_colnames = F) |>
   tab_colspec_call_hux %+%
   tab_borderspec_call_hux %+%
   tab_headerboldspec_call_hux %+% "  huxtable::set_caption(value = '" %+% tab_caption %+%"') |>
+  huxtable::set_caption_pos(value = 'topleft') |>
   huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>" %+%
   tab_footnote_call_hux %+% "
   huxtable::set_all_padding(value = 4) |>

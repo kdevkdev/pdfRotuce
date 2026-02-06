@@ -28,12 +28,11 @@ $( document ).ready(function() {
                 if (!lastLI.length) lastLI = $$("<li/>").appendTo(listStack[listStack.length - 1]);
                 var newUL = $$("<ul/>").appendTo(lastLI);
                 listStack.push(newUL);
-                console.log("going down");
               }
             } else if (currentLevel < navLevel) {
               for (var u = navLevel; u > currentLevel; u--) 
               listStack.pop();
-              console.log("going up");
+
             }
             navLevel= currentLevel;
 
@@ -51,7 +50,6 @@ $( document ).ready(function() {
             
             if(childNodes.length) curHeading = childNodes[0].nodeValue.trim();
             
-            console.log("current_heading: ".concat(curHeading));
             
             var a_id = "toc-".concat(curHeading.replaceAll(" ", "-").toLowerCase());
             
@@ -85,14 +83,26 @@ $( document ).ready(function() {
     // Shift nav in mobile when clicking the menu.
     $(document).on('click', "[data-toggle='wy-nav-top']", function() {
       $("[data-toggle='wy-nav-shift']").toggleClass("shift");
+      $("[data-toggle='wy-nav-top']").toggleClass("hide");
+    
     });
+    $(document).on('click', "[data-toggle='wy-nav-close']", function() {
+      $("[data-toggle='wy-nav-shift']").removeClass("shift");
+      $("[data-toggle='wy-nav-top']").removeClass("hide");
+  
+    });
+    
     // Close menu when you click a link.
     $(document).on('click', "#toc ul li a", function() {
       $("[data-toggle='wy-nav-shift']").removeClass("shift");
+      $("[data-toggle='wy-nav-top']").removeClass("hide");
+
     });
     // Close menu when you click on main content
     $(document).on('click', "#main, #header", function() {
       $("[data-toggle='wy-nav-shift']").removeClass("shift");
+     $("[data-toggle='wy-nav-top']").removeClass("hide");
+
     });
 
     // Make tables responsive

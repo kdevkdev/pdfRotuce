@@ -238,6 +238,7 @@ justification=raggedright, skip = 2pt]{caption}
 \newcommand{\journaltitle}[1]{\def\thejournaltitle{#1}}
 \newcommand{\journaldoi}[1]{\def\thejournaldoi{#1}}
 \newcommand{\journalarticletype}[1]{\def\thejournalarticletype{#1}}
+\newcommand{\abstractmainlangtitle}[1]{\def\theabstractmainlangtitle{#1}}
 
 
 
@@ -303,7 +304,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,bottom=1mm, breakable]
 	{
 		\noindent
-		{\raggedright\bfseries ABSTRACT\par}
+		{\raggedright\bfseries \theabstractmainlangtitle\par}
 	}
 	
 	\noindent
