@@ -416,15 +416,22 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
   # at this point should be already split
   adates = metadata$articledates
 
+  if(!is.null(metadata$articledates_jats)){
+
+    adates = metadata$articledates_jats
+  }
+
   # parse dataes - two  orders allowed: 30 september 2024, 2024 september 30 , september 30 2024
   parsed_adates = lubridate::parse_date_time(x = adates, orders = c("dmy", "ymd", "mdy"))
 
   parsed_adatetypes = stringr::str_match(string = stringr::str_to_lower(adates), pattern = "received|published|accepted")[,1]
 
+
   # mandatory published missing?
   pubdate_i = which(parsed_adatetypes == "published")
   if(length(pubdate_i) != 1){
-    stop("multiple or no 'published' dates in metadata.csv provided")
+    hgl_warn_S("If not using Engish as the main lanuage, make sure that you set 'articledates_jats' value in metadata.csv, with 'accepted', 'published' and 'received' dates. For example 'Received 26 April 2022; Accepted 22 July 2022; Published 22 August 2022' ")
+    hgl_error("multiple or no 'published' dates in metadata.csv provided")
   }
 
   pubpdate = ""
@@ -433,10 +440,11 @@ gen_xml_header = function(metadata, base_folder,  xml_filepack_dir){
   for(j in 1:length(adates)){
 
     if((is.na(parsed_adates[j]) && !(j == pubdate_i && stringr::str_detect(string = stringr::str_to_lower(adates[j]), pattern = "unpublished")))){
-      stop(paste0("invalid date:", adates[j]))
+      hgl_error(paste0("invalid date:", adates[j]))
     }
     if(is.na(parsed_adatetypes[j])){
-      stop(paste0("invalid date type (needs accepted, published or received):", adates[j]))
+      hgl_warn_S("If not using Engish as the main lanuage, make sure that you set 'articledates_jats' value in metadata.csv, with 'accepted', 'published' and 'received' dates. For example 'Received 26 April 2022; Accepted 22 July 2022; Published 22 August 2022' ")
+      hgl_error(paste0("invalid date type (needs accepted, published or received):", adates[j]))
     }
 
     if(tolower(parsed_adatetypes[j]) == "published"){

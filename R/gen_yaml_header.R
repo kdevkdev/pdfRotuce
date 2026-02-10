@@ -55,6 +55,8 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$correspondingauthor$allstring      = md$attributes$corresponding_allstring
   yml_data$responsible_editor                 = md$attributes$responsible_editor
   yml_data$articledates                       = md$articledates
+  yml_data$articledates_jats                       = md$articledates
+
   yml_data$author_shortname                   = md$author_shortname
   yml_data$output                             = md$output
   yml_data$bibliography                       = md$bibliography

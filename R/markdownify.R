@@ -123,7 +123,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     # some more processing
     if(is.element("article_type", names(tvals)))              predef_meta$article_type              = toupper(tvals["article_type"])          else hgl_warn("'article_type' missing in meta csv")
     # split articledates by ';'
-    if(is.element("articledates", names(tvals)))             predef_meta$articledates = stringr::str_split(simplify= T, pattern = ";", string =tvals["articledates"]) |> as.vector() |> trimws() else hgl_warn("'articledates' missing in meta csv")
+    if(is.element("articledates", names(tvals)))              predef_meta$articledates = stringr::str_split(simplify= T, pattern = ";", string =tvals["articledates"]) |> as.vector() |> trimws() else hgl_warn("'articledates' missing in meta csv")
+    if(is.element("articledates_jats", names(tvals)))         predef_meta$articledates_jats = stringr::str_split(simplify= T, pattern = ";", string =tvals["articledates_jats"]) |> as.vector() |> trimws()
 
     if(startsWith(predef_meta$doi,"https://doi.org/") || startsWith(predef_meta$doi,"http://doi.org/")){
 

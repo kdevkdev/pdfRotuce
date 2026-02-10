@@ -10,7 +10,7 @@ hgl_warn = function(text){
 }
 hgl_warn_S = function(text){
 
-  cat("SERIOUS WARNING - PLEASE TAKE ACTION IF NEEDED !!!!!", crayon::white(crayon::bgRed(crayon::bold(crayon::italic(text)))), "\n")
+  cat("SERIOUS WARNING - PLEASE TAKE ACTION !!!!!", crayon::white(crayon::bgRed(crayon::bold(crayon::italic(text)))), "\n")
 }
 
 hgl_note = function(text){
