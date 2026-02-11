@@ -300,7 +300,7 @@ ${ sep };$endfor$
 
 $if(abstracts.mainlang)$
 <div id='abstract_mainlang' class="abstract_box">
-<b>$string_abstract_mainlang_title$</b>
+$if(string_abstract_mainlang_title)$<b>$string_abstract_mainlang_title$</b>$endif$
 $if(abstract_picture)$
 <img src="$abstract_picture$" style="width:40%; "></img>
 $endif$

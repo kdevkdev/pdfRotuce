@@ -98,9 +98,13 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                  "string_multilang_abstract_title", "string_bibliography_title", "string_abstract_mainlang_title")
 
 
+
     # whitelist of values to copy
     for(cn in checkvec){
-      predef_meta[[cn]] = tvals[cn]
+
+      if(!is.na(tvals[cn])){
+        predef_meta[[cn]] = tvals[cn]
+      }
     }
 
     # copy over provided values, uppercase for article typer

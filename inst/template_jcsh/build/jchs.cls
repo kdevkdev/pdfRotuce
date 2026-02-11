@@ -306,7 +306,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=0mm,left=3.8mm,right=2.0mm,bottom=1mm, breakable]
 	{
 		\noindent
-		{\raggedright\bfseries \theabstractmainlangtitle\par}
+		\ifdef{\raggedright\bfseries \theabstractmainlangtitle\par}{}
 	}
 	
 	\noindent
