@@ -41,7 +41,10 @@
 \RequirePackage{fontspec}
 
 % fallbacks in case main font does not contain something
-	\directlua{ luaotfload.add_fallback("fallbacks", { "[fonts/notosanssymbols2/NotoSansSymbols2-Regular.ttf]:style=Regular;" , "[fonts/notosanscherokee/NotoSansCherokee-Regular.ttf]:style=Regular;"   }) }
+	\directlua{ luaotfload.add_fallback("fallbacks", { "[fonts/notosanssymbols2/NotoSansSymbols2-Regular.ttf]:style=Regular;" , 
+	 "[fonts/notosanscherokee/NotoSansCherokee-Regular.ttf]:style=Regular;",  
+     "[fonts/notosanscanadianaboriginal/NotoSansCanadianAboriginal-Regular.ttf]:style=Regular;"  
+	}) }
 
 
 % load font from manual location to enbale embedded shipping
