@@ -40,7 +40,7 @@ parse_references = function(doc_summar, working_folder, reference_parsing,
 
   # find,parse,  and remove references
   l1_inds = which(tolower(doc_summar$paragraph_stylename) == "heading 1")
-  refparind = which(tolower(doc_summar$text) == 'references' & tolower(doc_summar$paragraph_stylename) == "heading 1")
+  refparind = which(tolower(doc_summar$text) %in% c('references', 'referencias') & tolower(doc_summar$paragraph_stylename) == "heading 1")
   ref_inds = NULL
 
 
