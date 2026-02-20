@@ -366,7 +366,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
     if(!is.null(label) && is.character(label)){
 
-      lab  = paste0("\\label{",label,"}")
+      lab  = paste0("\\label{tab:",label,"}")
     }
     tex = paste0(pre_envouter,"\\setlist{nosep}", # use enumitems package to disable list
                  #globalspec ,"\n",

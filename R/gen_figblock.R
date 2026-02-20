@@ -66,7 +66,7 @@ gen_figblock = function(fig_opts, fig_counter){
 
   lab = ""
   if(!is.null(fig_label) & is.character(fig_label)){
-    lab = paste0("\\label{", fig_label,"}")
+    lab = paste0("\\label{fig:", fig_label,"}")
   }
 
   # generate latex output
