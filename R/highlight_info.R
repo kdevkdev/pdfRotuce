@@ -6,11 +6,11 @@ hgl_error = function(text){
 
 hgl_warn = function(text){
 
-  cat("WARN!", crayon::magenta(crayon::bgYellow(crayon::bold(text))), "\n")
+  cat(crayon::red("WARN!"), crayon::yellow(crayon::bgBlue(crayon::bold(text))), "\n")
 }
 hgl_warn_S = function(text){
 
-  cat("SERIOUS WARNING - PLEASE TAKE ACTION !!!!!", crayon::white(crayon::bgRed(crayon::bold(crayon::italic(text)))), "\n")
+  cat(crayon::red(crayon::bold("SERIOUS WARNING - PLEASE TAKE ACTION !!!!!")), crayon::white(crayon::bgRed(crayon::bold(crayon::italic(text)))), "\n")
 }
 
 hgl_note = function(text){

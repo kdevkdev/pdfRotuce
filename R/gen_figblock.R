@@ -19,8 +19,8 @@ gen_figblock = function(fig_opts, fig_counter){
   if('label' %in% names(fig_opts)){
     fig_chunk_label = fig_opts['label']
 
-    if(!grepl(x = fig_chunk_label, pattern = "^[a-zA-Z0-9]{1,}$")){
-      stop(paste0("figure label '", fig_chunk_label, "' contains other chars than letters (A-z) or numbers"))
+    if(!grepl(x = fig_chunk_label, pattern = "^[a-zA-Z0-9:]{1,}$")){
+      hgl_error(paste0("figure label '", fig_chunk_label, "' contains other chars than letters (A-z), ':' or numbers"))
     }
   }
 

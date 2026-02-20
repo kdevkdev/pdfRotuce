@@ -240,6 +240,15 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # xml2::read_xml(paste0("<document>", paste0(hxmltags, collapse = ""), "</document>")) |> xml2::as_list()
   # cbind(headi, hxmltags)
 
+  ############## try to detect illegit figure and tab cross-references
+  noncolon_crefs = stringr::str_extract_all(doc_summar$mrkdwn, pattern = "\\@ref\\([^:]+?\\)", simplify = F) |> unlist()
+
+  if(length(noncolon_crefs) > 0 ){
+    hgl_warn_S("Probable cross-references without 'fig:' or 'tab:' at the start: " %+% paste(collapse = " ", noncolon_crefs))
+
+  }
+
+
   ############## process tables ##############
   cudoc_tabinds = unique(doc_summar[content_type == "table cell"]$table_index)
 
