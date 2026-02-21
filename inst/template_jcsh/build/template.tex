@@ -121,9 +121,7 @@ $if(correspondingauthor.email)$
 $endif$
 
 \articledates{
-	$for(articledates)$
-	$articledates$
-	${ sep };$endfor$ % received, editorial decision, published .. .
+$for(articledates)$$articledates$${ sep }; $endfor$ % received, editorial decision, published .. .
 } % received, editorial decision, published .. .
 
 
