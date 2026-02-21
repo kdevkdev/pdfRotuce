@@ -88,10 +88,10 @@ build <- function(folder, src = "manuscript.docx", meta_csv = "metadata.csv", re
     if(!is.null(respath_html) &&  file.exists(html_outfile) && "html" %in% outformats){
 
       file.copy(from = html_outfile, to = html_outfileO, overwrite = T)
-      hgl_note("Copied requested PDF output file successfully to ouput dir")
+      hgl_note("Copied requested HTML output file successfully to ouput dir")
 
     } else{
-      hgl_warn("No PDF output file found, could not copy to out directory")
+      hgl_warn("No HTML output file found, could not copy to out directory")
     }
 
 
