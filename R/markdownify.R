@@ -330,6 +330,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 ```"
 
+#  tinytex::tlmgr("option repository https://ftp.tu-chemnitz.de/pub/tug/historic/systems/texlive/2020/tlnet-final")
+# tinytex::uninstall_tinytex()
+
   ########################################### command parsing ####################################################
   # data.table for inline math formulas
   d_inlinemath = data.table()
@@ -459,20 +462,39 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
                  # determine spacing based on whether the last pargraph was also a quote
                  if(cii > 1 && command_list[[cii-1]]$command[[1]] == "quote" && command_list[[cii-1]]$index  == c_comi -1){
-                   vskip = "\\vspace{-4mm}"
+                   vskip = "\\vspace{-3mm}"
                  } else {
-                   vskip = "\\vspace{-1mm}"
+                   vskip = "\\vspace{-0mm}"
                  }
 
-                 c_result = vskip %+% "
-::: {.displayquote data-latex=\"{  }\"}
-::: {.enquote data-latex=\"{\\textit{" %+% text %+% "}} " %+% source %+% "\"}
+#                  c_result = vskip %+% "
+# ::: {.displayquote data-latex=\"{  }\"}
+# ::: {.enquote data-latex=\"{\\textit{" %+% text %+% "}} " %+% source %+% "\"}
+# \\phantom{}
+# :::
+# :::
+# \\vspace{-5.5mm}
+# "
+                                  c_result = "\n```{=latex}\n" %+% vskip %+% "
+\\begin{displayquote}{  }
+\\begin{enquote}{\\textit{" %+% text %+%"} " %+% source %+% "}
 \\phantom{}
-:::
-:::
-\\vspace{-5.5mm}
-"
-                 c_result_xml = paste("<disp-quote>",
+\\end{enquote}
+\\end{displayquote}
+\\vspace{-1mm}
+\\
+```\n
+
+```{=html}\n
+<div class='bquotecontainer'>
+<blockquote>
+"%+% text %+%"<br>
+</blockquote>
+<span class='source'>"%+% source %+%"</span>
+</div>
+```\n";
+
+                   c_result_xml = paste("<disp-quote>",
                  "<preformat>",text,"</preformat>",
                  paste0("<attrib>", source, "</attrib>"),
                  "</disp-quote>", sep = "\n")

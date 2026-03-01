@@ -86,6 +86,20 @@ RawFeature={fallback=fallbacks}]
 \RequirePackage{amsmath,amsfonts,amssymb}
 \RequirePackage{graphicx}
 \RequirePackage[table]{xcolor}
+\definecolor{color1}{RGB}{0,0,0} % Color of section headings
+
+\definecolor{themecolor1}{HTML}{ffc000} % color aroiund 'we are a  open access journal'
+\definecolor{urlcolor}{HTML}{0563c1} % url color
+\definecolor{themecolor2}{HTML}{ffe8d9} %{fbe5d6} % abstract background color
+\definecolor{themesectionheadingcolor}{HTML}{ed7d31} % orange title text color
+
+\definecolor{jchshlightgray}{HTML}{d9d9d9}
+
+% help variable so we can conveniently change the color in links )
+\definecolor{varlinkcolor}{RGB}{126,169,105}
+
+
+
 \usepackage{graphicx}
 
 
@@ -190,26 +204,26 @@ justification=raggedright, skip = 2pt]{caption}
 %
 % tableofcontents set-up
 %
-\usepackage{titletoc}
-\contentsmargin{0cm}
-\titlecontents{section}[\tocsep]
-{\addvspace{4pt}\small\bfseries\sffamily}
-{\contentslabel[\thecontentslabel]{\tocsep}}
-{}
-{\hfill\thecontentspage}
-[]
-\titlecontents{subsection}[\tocsep]
-{\addvspace{2pt}\small\sffamily}
-{\contentslabel[\thecontentslabel]{\tocsep}}
-{}
-{\ \titlerule*[.5pc]{.}\ \thecontentspage}
-[]
-\titlecontents*{subsubsection}[\tocsep]
-{\footnotesize\sffamily}
-{}
-{}
-{}
-[\ \textbullet\ ]
+%\usepackage{titletoc}
+%\contentsmargin{0cm}
+%\titlecontents{section}[\tocsep]
+%{\addvspace{4pt}\small\bfseries\sffamily}
+%{\contentslabel[\thecontentslabel]{\tocsep}}
+%{}
+%{\hfill\thecontentspage}
+%[]
+%\titlecontents{subsection}[\tocsep]
+%{\addvspace{2pt}\small\sffamily}
+%{\contentslabel[\thecontentslabel]{\tocsep}}
+%{}
+%{\ \titlerule*[.5pc]{.}\ \thecontentspage}
+%[]
+%\titlecontents*{subsubsection}[\tocsep]
+%{\footnotesize\sffamily}
+%{}
+%{}
+%{}
+%[\ \textbullet\ ]
 
 % no footnote line seperator
 \renewcommand*\footnoterule{}
@@ -276,7 +290,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		{\fontsize{11}{13}\selectfont\textbf{\thejournalarticletype}}}
 \end{minipage}
 \begin{minipage}[t][][t]{0.37\textwidth}% align both the minipage itself and its contents on top
-	\textls[-14]{%
+	%\textls[-14]
+	{%
 	\begin{flushright}%
 		\vspace{-13mm} % somehow vspace etc insert a linebreak in the minipage environment, so we need to work with a minus offset\\
 		\colorlet{varlinkcolor}{blue}%
@@ -292,7 +307,8 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 {% we do not want a intent for the title, and we want it centered
 	\setstretch{1.08}\setlength{\JustifyingParindent}{0pt}%
-	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{themesectionheadingcolor}{\textls[20]{\@title}}\par%
+	%\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{themesectionheadingcolor}{\textls[20]{\@title}}\par%
+	\raggedright \sloppy \bfseries\fontsize{17}{19}\selectfont\color{themesectionheadingcolor}{\@title}\par%
 }
 \vskip3mm
 {  \@author}
@@ -327,17 +343,6 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 
 \setlength{\fboxrule}{0.75pt} % Width of the border around the abstract
 
-\definecolor{color1}{RGB}{0,0,0} % Color of section headings
-
-\definecolor{themecolor1}{HTML}{ffc000} % color aroiund 'we are a  open access journal'
-\definecolor{urlcolor}{HTML}{0563c1} % url color
-\definecolor{themecolor2}{HTML}{ffe8d9} %{fbe5d6} % abstract background color
-\definecolor{themesectionheadingcolor}{HTML}{ed7d31} % orange title text color
-
-\definecolor{jchshlightgray}{HTML}{d9d9d9}
-
-% help variable so we can conveniently change the color in links )
-\definecolor{varlinkcolor}{RGB}{126,169,105}
 
 \newlength{\tocsep}
 \setlength\tocsep{1.5pc} % Sets the indentation of the sections in the table of contents

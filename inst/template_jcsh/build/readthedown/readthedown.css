@@ -186,13 +186,21 @@ p {
 b,strong{
     font-weight:bold}
 
-blockquote{
+.bquotecontainer blockquote{
     background-color: #F0F0F0;
     border-left:5px solid #CCCCCC;
     font-style:italic;
     line-height:24px;
-    margin:0px 0px 24px 0px;
+    margin:0px 0px 2px 0px;
     padding: 6px 20px;
+}
+.bquotecontainer .source {
+    font-style:normal;
+    padding-left:20px;
+    padding-right:20px;
+}
+.bquotecontainer {
+      margin-bottom:24px;
 }
 #content blockquote > p,
 #content blockquote > ul {
@@ -326,7 +334,7 @@ dl dd{
 
     body {
         margin: 0px;}
-        
+
     #mobile_button {
         display:none;
     }
@@ -348,8 +356,8 @@ dl dd{
         top:0;
         height:100%;
         overflow:hidden}
-        
-    
+
+
     #sidebar {
 
         font-size: 120%;
@@ -361,11 +369,11 @@ dl dd{
         left: 0;
         width: 300px;
     }
-    
+
     #mobile_button.hide {
         display:none;
     }
-    
+
     #nav-top {
       display: inline-block;
     }
@@ -419,7 +427,7 @@ dl dd{
     #mobile_button, #menu_close_button  {
         display:none;
     }
-    
+
 }
 
 @media screen and (min-width: 1400px){
@@ -1121,7 +1129,7 @@ div.sourceCode .row div {
   left:210px;
   margin-top:1.5rem;
   margin-bottom:1.5rem;
-  
+
 }
 
 #mobile_button span.glyphicon , #menu_close_button span.glyphicon {

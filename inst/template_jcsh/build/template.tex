@@ -1,4 +1,4 @@
-\RequirePackage[2024/11/01]{latexrelease}
+%\RequirePackage[2024/11/01]{latexrelease}
 \documentclass[twoside]{jchs}
 %\documentclass[twoside,10pt]{jchs}
 
@@ -51,7 +51,7 @@ $if(csl-refs)$
 \setlength{\csllabelwidth}{2.4em}% 3em before
 \newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
 {\begin{list}{}{%
-			\setlength{\itemindent}{0pt}
+				\setlength{\itemindent}{0pt}
 			\setlength{\leftmargin}{0pt}
 			\setlength{\parsep}{0pt}
 			\setlength{\topsep}{0pt}
@@ -196,7 +196,9 @@ $for(articledates)$$articledates$${ sep }; $endfor$ % received, editorial decisi
 \renewcommand{\bottomfraction}{.8}
 \renewcommand{\floatpagefraction}{.8}
 
-
+%\NewDocumentEnvironment{dienquote}{m}	
+%{\begin{displayquote}\begin{enquote}{\textit}}
+%{{\mdseries#1}\end{enquote}\end{displayquote}}
 
 % for multicol  longtblrs
 % https://tex.stackexchange.com/questions/555318/environment-to-balance-a-table-in-a-multicol
