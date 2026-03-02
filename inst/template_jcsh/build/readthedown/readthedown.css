@@ -195,7 +195,7 @@ b,strong{
     padding:0px;
 
 }
-.bquotecontainer .source {
+.bquotecontainer .bquote .source {
     font-style:normal;
 }
 .bquotecontainer {

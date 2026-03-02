@@ -488,9 +488,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 ```{=html}\n
 <div class='bquotecontainer'>
 <blockquote class='bquote'>
-"%+% text %+%"<br>
+"%+% text %+%" <span class='source'>"%+% source %+%"</span>
 </blockquote>
-<span class='source'>"%+% source %+%"</span>
 </div>
 ```\n";
 
