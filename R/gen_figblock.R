@@ -1,5 +1,7 @@
 
-gen_figblock = function(fig_opts, fig_counter){
+gen_figblock = function(fig_opts, fig_counter, fig_type = "fig"){
+
+  # fig type should be shorthand , like the default fig: prefi
 
   # generate label and unique id
   fig_uind = "fig_" %+% fig_counter  %+% "_"  #%+% gsub(x = chapname, pattern = "-|-", replacement = "")
@@ -15,9 +17,10 @@ gen_figblock = function(fig_opts, fig_counter){
     stop("Figure src not provided")
 
 
-  # manual label overrriade?
+  # manual label overrride?
   if('label' %in% names(fig_opts)){
     fig_chunk_label = fig_opts['label']
+    fig_label = fig_opts['label'][[1]]
 
     if(!grepl(x = fig_chunk_label, pattern = "^[a-zA-Z0-9:]{1,}$")){
       hgl_error(paste0("figure label '", fig_chunk_label, "' contains other chars than letters (A-z), ':' or numbers"))
@@ -28,31 +31,20 @@ gen_figblock = function(fig_opts, fig_counter){
   fig_caption = ""
   if('caption' %in% names(fig_opts)){
     fig_caption = fig_opts['caption']
-
     fig_caption <-escape_caption(fig_caption)
   }
-
-  # label provided?
-  fig_label = ""
-  if('label' %in% names(fig_opts)){
-    fig_label = fig_opts['label'][[1]]
-  }
-
 
   fig_wide = F
   if('wide' %in% fig_opts){
     fig_wide = TRUE
   }
 
-
-
-
   #cap = gsub(pattern = "%", x = cap, replacement = "\\\\\\\\%") # enable this code later to enable '%' chars
 
   # figure captions to return
-  fig_capts = list()
+  #fig_capts = list()
   # return later to compose global list
-  fig_capts[paste0("cap",fig_chunk_label)] = paste0("(ref:cap", fig_chunk_label, ") ", fig_caption)
+  #fig_capts[paste0("cap",fig_chunk_label)] = paste0("(ref:cap", fig_chunk_label, ") ", fig_caption)
 
 
 
@@ -66,23 +58,34 @@ gen_figblock = function(fig_opts, fig_counter){
 
   lab = ""
   if(!is.null(fig_label) & is.character(fig_label)){
-    lab = paste0("\\label{fig:", fig_label,"}")
+    lab = paste0("\\label{",fig_type, fig_label,"}")
   }
 
   # generate latex output
   tex_output = ""
+  # some hardcoed fig type replacement string. Possibly replace later with metadata strings
+  ftnn = c("fig"="Figure")
+
+  # put nicer names for figures
+  figtype_string = ""
+  if(fig_type %in% names(ftnn)){
+    figtype_string = ftnn[[fig_type]]
+  } else {
+    figtype_string = fig_type
+  }
+
 
   # two different environements depending if wide is specified
   if(fig_wide == F)
   {
     # empty phamtom command to trick the lua filter
     # (that does not seem to work if there is nothing in the environment otherwise, but we used a custom latex env to transmit the params)
-    tex_output = tex_output %+% "::: {.FigureMC data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
+    tex_output = tex_output %+% "::: {.FigureMC data-latex=\"{" %+% figtype_string %+% " " %+% fig_counter %+% "}{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
 "%+% lab %+%"
 :::"
   }
   else{
-    tex_output = tex_output %+%  "::: {.FigureMW data-latex=\"{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
+    tex_output = tex_output %+%  "::: {.FigureMW data-latex=\"{" %+% figtype_string %+% " " %+% fig_counter %+%"}{"%+% fig_src %+% "}{"%+% fig_caption %+%"}\"}
 "%+% lab %+%"
 :::"
   }
@@ -90,7 +93,6 @@ gen_figblock = function(fig_opts, fig_counter){
 
 
   # als generate html output. Not meaningful ATM to differenctiate between columns, but make one column figures smaller. Use fenced codeblock
-
 
   width = "100%"
   if(fig_wide == F){
@@ -106,9 +108,26 @@ gen_figblock = function(fig_opts, fig_counter){
 
   #html_output = html_output %+% "```\n\n"
 
-  html_output = "\n\n```{r " %+% fig_label %+% ", fig.cap='" %+% fig_caption %+% "', out.width='" %+% width %+% "', echo=F}\n\n"
-  html_output = html_output %+% "if(knitr::is_html_output()){knitr::include_graphics('" %+% fig_src %+%"')}"
-  html_output = html_output %+% "\n```\n\n"
+  # TODO ensure xml capability
+
+  # generally not recommended to put in id, but make exception to stay compatible with late and make crossref handling/writing easier
+  #html_id =  paste0(fig_type,":", fig_label)
+  html_id = fig_label
+
+
+
+  html_output = paste0("\n\n```{=html}\n\n",
+  "<div class='figure'><span style='display:block;' id='", html_id, "'></span>
+<img role='img' aria-label='", fig_caption, "' src='", fig_src,"'  alt='",fig_caption, "' width='", width, "%' />
+<p class='caption'>
+", figtype_string, " " ,fig_counter, ": ", fig_caption, "
+</p>
+</div>",
+"\n```\n\n")
+
+  #html_output = "\n\n```{r " %+% fig_label %+% ", fig.cap='" %+% fig_caption %+% "', out.width='" %+% width %+% "', echo=F}\n\n"
+  #html_output = html_output %+% "if(knitr::is_html_output()){knitr::include_graphics('" %+% fig_src %+%"')}"
+  #html_output = html_output %+% "\n```\n\n"
 
   return(tex_output %+% "\n\n" %+% html_output)
 

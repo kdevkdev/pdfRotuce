@@ -1010,10 +1010,22 @@ gen_xml_table = function(ct_csv, tab_opts, tab_counter,compat_cell_md_parsing = 
 
   table_xml
 }
-gen_xml_figure = function(fig_opts, fig_counter, xml_filepack_dir, base_folder){
+gen_xml_figure = function(fig_opts, fig_counter, xml_filepack_dir, base_folder,
+                          fig_type){
 
   id = paste0( fig_opts['label'], "_", fig_counter)
-  label = paste0("Figure ", fig_counter)
+
+  # some hardcoed fig type replacement string. Possibly replace later with metadata strings
+  ftnn = c("fig"="Figure")
+
+  figtype_string = ""
+  if(fig_type %in% names(ftnn)){
+    figtype_string = ftnn[[fig_type]]
+  } else {
+    figtype_string = fig_type
+  }
+
+  label = paste0(figtype_string, fig_counter)
 
   # caption provided?
   tab_caption = ""
@@ -1133,7 +1145,7 @@ gen_xml_file = function(doc_summar, article_type, xml_meta, xml_references, d_xm
                  xml_meta, sep = "\n")
 
   # get rid of NA entires - could be unsave though in case NAs do not match over rows
-  secpre = doc_summar$xml_pretags
+  secpre  = doc_summar$xml_pretags
   text    = doc_summar$xml_text
   secpos  = doc_summar$xml_postags
 

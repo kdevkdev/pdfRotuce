@@ -241,12 +241,13 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # cbind(headi, hxmltags)
 
   ############## try to detect illegit figure and tab cross-references
-  noncolon_crefs = stringr::str_extract_all(doc_summar$mrkdwn, pattern = "\\@ref\\([^:]+?\\)", simplify = F) |> unlist()
-
-  if(length(noncolon_crefs) > 0 ){
-    hgl_warn_S("Probable cross-references without 'fig:' or 'tab:' at the start: " %+% paste(collapse = " ", noncolon_crefs))
-
-  }
+  # no longer needed as we do the labeling manually now and do nto enforce prefixes
+  # noncolon_crefs = stringr::str_extract_all(doc_summar$mrkdwn, pattern = "\\@ref\\([^:]+?\\)", simplify = F) |> unlist()
+  #
+  # if(length(noncolon_crefs) > 0 ){
+  #   hgl_warn_S("Probable cross-references without 'fig:' or 'tab:' at the start: " %+% paste(collapse = " ", noncolon_crefs))
+  #
+  # }
 
 
   ############## process tables ##############
@@ -256,6 +257,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   # keep track of used chunklabels so that we can generate unique ones (even if there are custom chunk labels)()
   tab_chunk_labels = list()
+  # also for figurs
+  l_fig_counters= list()
+  l_labels = list()
 
   for(cti in cudoc_tabinds){
 
@@ -297,6 +301,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
     ctab_chunk = chunkspec$chunk
     tab_chunk_labels[length(tab_chunk_labels)+1] =chunkspec$label
+
+    l_labels[[length(l_labels)+1]] = data.table(type = "tab", counter = tab_counter, label = chunkspec$label)
 
     ctab_xml = gen_xml_table(ct_csv = ct_csv,
                              tab_opts = tab_opts,
@@ -343,7 +349,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", replacement = "========protecteddollar========\\1========protecteddollar========")]
 
 
-  # not entirely R style, but use global assigment to easily populate list based on regex pattern recognition
+  # not entirely R style, but use global assigment to easily populate list based on regex pattern recognition, starting with inline math
   doc_summar[, xml_temp:= stringr::str_replace_all(string = xml_temp, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]",
                                                    replacement = function(x){
 
@@ -380,7 +386,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   # escape dollar etc in suitable paragraphs
   doc_summar[!startsWith(trimws(mrkdwn), "[[") & !startsWith(trimws(mrkdwn), "```{") ,mrkdwn :=rmd_char_escape(mrkdwn)]
 
-  fig_counter = 1
+
   counter_displaymath = 1
 
   # store commands so we can detect the previous one
@@ -430,20 +436,28 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                  },
                figure={
                  #print("figure detected")
-                 # src = c_command['src']
-                 # cap = c_command['cap']
+                 # detect optional 'type' argument (fig is default)
+                 fig_type = if(!is.null(c_command[['type']])) fig_type = c_command[['type']]
+                               else fig_type = "fig"
+
+                 # do not use this as this is reserved by tables
+                 if(fig_type == "tab") hgl_error("do not use 'tab' as figure type, this is reserved for tales")
 
 
-                 c_result = gen_figblock(fig_opts = c_command, fig_counter = fig_counter)
+
+
+                 # increment counter for the current type
+                 l_fig_counters[[fig_type]] = sum(l_fig_counters[[fig_type]], 1, na.rm = T)
+
+                 # also store labels, counter and type  in a list to create a combined data.table later
+                 l_labels[[length(l_labels)+1]] = data.table(type = fig_type, counter = l_fig_counters[[fig_type]], label = c_command[['label']])
+
+
+                 c_result = gen_figblock(fig_opts = c_command, fig_counter = l_fig_counters[[fig_type]], fig_type = fig_type)
                  c_xml_type = "figure"
-                 c_result_xml = gen_xml_figure(fig_opts = c_command, fig_counter = fig_counter, xml_filepack_dir = path_xml_filepack_dir, base_folder = doc_folder)
-                 fig_counter = fig_counter +1
-                 #
-                 #                  c_result = "```{r "%+% flabel %+%",out.width='100%',echo=F, fig.align='center',fig.cap='(ref:cap" %+% flabel %+%")'}
-                 # knitr::include_graphics(path='" %+% src %+% "')
-                 # ```
-                 # "
-
+                 c_result_xml = gen_xml_figure(fig_opts = c_command, fig_counter = l_fig_counters[[fig_type]],
+                                               xml_filepack_dir = path_xml_filepack_dir, base_folder = doc_folder,
+                                               fig_type = fig_type)
                },
                math={
                  #print("Math detected")
@@ -475,7 +489,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 # :::
 # \\vspace{-5.5mm}
 # "
-                                  c_result = "\n```{=latex}\n" %+% vskip %+% "
+               c_result = "\n```{=latex}\n" %+% vskip %+% "
 \\begin{displayquote}{  }
 \\begin{enquote}{\\textit{" %+% text %+%"} " %+% source %+% "}
 \\phantom{}
@@ -551,6 +565,49 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     }
   }
 
+
+  ######### Cross references ################
+  d_labels = rbindlist(l = l_labels)
+
+  rplcmntfn = function(matches){
+
+
+    # defalt: no replacement
+    replacements = rep("", length(matches))
+    # for now only handle those that we already have in our labels (i.e. only figures not tables)
+    for(k in 1:NROW(matches)){
+
+      cmatch = matches[k]
+      # get label from entire match
+      clabel = stringr::str_match(cmatch, pattern = "\\\\========protectedat========ref\\(([a-zA-Z0-9:]{1,})\\)")[1,2]
+
+      # look for label
+      hits = d_labels[ label == clabel]
+
+
+      # we get the original string index of 'x' in fig_labels as name
+      # and the index s value
+      if(NROW(hits) ==0){
+        hgl_warn("Cross-referencing, no item with this label found: "%+% clabel  )
+        replacement = ""
+      } else if (NROW(hits) > 1){
+        hgl_error("Cross-referencing, cross reference matching multiple target labels: "%+% clabel  )
+      } else{
+
+        typestring = hits[, type]
+        if(hits[, type] == "fig") typestring  = "Figure"
+
+        replacements[k] = paste0("[",hits[, counter],"](#",hits[, label],")")
+      }
+
+    }
+    return(replacements)
+  }
+
+
+  # generate intext citations
+  doc_summar$mrkdwn = stringr::str_replace_all(string = doc_summar$mrkdwn, pattern = "\\\\========protectedat========ref\\([a-zA-Z0-9:]{1,}\\)", replacement = rplcmntfn)
+  doc_summar$xml_temp = stringr::str_replace_all(string = doc_summar$xml_temp, pattern = "\\\\========protectedat========ref\\([a-zA-Z0-9:]{1,}\\)", replacement = rplcmntfn)
 
   # parse to xml  nodes that have not already been prossesd
   doc_summar[is.na(xml_type), `:=`(xml_type = "paragraph", xml_text = gen_xml_paragraphs(xml_temp,d_inlinemath ))]

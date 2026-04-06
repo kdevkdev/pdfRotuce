@@ -210,6 +210,8 @@ has_footnote = " %+% has_footnote %+% "
 
 tab_dat[[1]] = gsub(pattern = '#', replacement = ' ',  x =tab_dat[[1]])
 
+options(huxtable.bookdown = FALSE)
+(huxtable.autolabel = FALSE)
 
 html = huxtable::hux(tab_dat, add_colnames = F) |>
   huxtable::theme_article() |>

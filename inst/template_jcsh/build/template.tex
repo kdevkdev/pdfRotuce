@@ -174,20 +174,22 @@ $for(articledates)$$articledates$${ sep }; $endfor$ % received, editorial decisi
 
 \def\UrlBigBreaks{\do\/\do-\do:}
 
-\newenvironment{FigureMC}[2]
-{\par
+
+
+\newenvironment{FigureMC}[3]
+\par
 \medskip\noindent
 \minipage{\linewidth}
 \centering
-\includegraphics[width=\linewidth]{#1}
-\captionof{figure}{\sffamily\raggedright #2}}
+\includegraphics[width=\linewidth]{#2}
+\captionof{figure}{{\bfseries\sffamily #1.} \sffamily\raggedright #3}}% provide customized nmbering. figure name and nmber disabled in caption package optoins
 {\endminipage\par\medskip}
 
-\newenvironment{FigureMW}[2]
+\newenvironment{FigureMW}[3]
 {\begin{figure*}
-	\centering
-	\includegraphics[width=1\textwidth]{#1}
-	\captionof{figure}{\sffamily\raggedright #2}}
+\centering
+\includegraphics[width=1\textwidth]{#2}
+\captionof{figure}{{\bfseries\sffamily #1.} \sffamily\raggedright #3}}
 {\end{figure*}}
 
 
