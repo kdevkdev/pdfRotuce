@@ -188,11 +188,12 @@ tab_dat<-read.csv('" %+% tab_rmd_fname %+% "', check.names = F, header = F)
 
 ncol =  NCOL(tab_dat)
   tex = pdfRotuce::rabulify(tab_dat, mode = '" %+%  tab_mode %+% "',
-              caption = '" %+% tab_caption %+% "',
+              caption = '"  %+% tab_caption %+% "',
               footnote = '" %+% tab_footnote %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
-              gridmode = '" %+% tab_gridmode %+% "', compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
+              gridmode = '" %+% tab_gridmode %+% "',number_label = 'Table " %+% tab_counter %+%  ". '"  %+% ",
+              compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
 cat(tex)
 ```
 ```
@@ -219,7 +220,7 @@ html = huxtable::hux(tab_dat, add_colnames = F) |>
   huxtable::set_col_width(col = 1:ncol, value= " %+% tab_colwidths_hux %+%") |> \n"%+%
   tab_colspec_call_hux %+%
   tab_borderspec_call_hux %+%
-  tab_headerboldspec_call_hux %+% "  huxtable::set_caption(value = '" %+% tab_caption %+%"') |>
+  tab_headerboldspec_call_hux %+% "  huxtable::set_caption(value = 'Table  " %+% tab_counter %+% ": " %+% tab_caption %+%"') |>
   huxtable::set_caption_pos(value = 'topleft') |>
   huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>" %+%
   tab_footnote_call_hux %+% "

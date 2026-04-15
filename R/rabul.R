@@ -99,6 +99,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NULL, footnote = NULL, label = NULL,  long = F, xltabular = T, colwidths = NULL,
                     colaligns = NULL,
                     gridmode = "academicgrid",
+                    number_label = "",
                     compat_cell_md_parsing = F){
   l_innerspecs = list()
   l_outerspecs = list()
@@ -369,10 +370,13 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
       #lab  = paste0("\\label{tab:",label,"}")
       lab  = paste0("\\label{",label,"}")
     }
+    # insert number label if specified
+    if(number_label != "")  tex_numberlabel = "{\\sffamily\\fontsize{10}{11}\\selectfont\\bfseries " %+% number_label %+% "}"
+
     tex = paste0(pre_envouter,"\\setlist{nosep}", # use enumitems package to disable list
                  #globalspec ,"\n",
                  begin_envinner , "{1\\linewidth}{",colspecs, "}", "\n",
-                 "\\caption{\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
+                 "\\caption{",tex_numberlabel,"\\raggedright\\sffamily\\fontsize{9}{11}\\selectfont ", caption, "}", lab,"\\\\\n",
                  body,
                  lt_footnote,
                  end_envinner,"\n",
