@@ -291,11 +291,10 @@ $if(abstracts.sidelangs)$
 \vspace{2mm}
 %$--${ partials/multilang_abstracts.tex() }
 $for(abstracts.sidelangs)$
-\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm,bottom=1mm]\sffamily
-	{\bfseries $abstracts.sidelangs.title$ } 
+\begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm,bottom=1mm,breakable]\sffamily
+	{\fontsize{11}{14}\selectfont \bfseries $abstracts.sidelangs.title$} 
 	\vskip 1mm
 	$for(abstracts.sidelangs.parts)$
-
         	{\bfseries $abstracts.sidelangs.parts.title$} $abstracts.sidelangs.parts.text$ $sep$\\ 
     $endfor$
 $if(abstracts.sidelangs.keywords)$\vskip 3mm{\raggedright\bfseries $abstracts.sidelangs.string_keywords_heading$}  $abstracts.sidelangs.keywords$ $endif$
@@ -308,7 +307,9 @@ $endif$
 	\raggedcolumns
 	$if(refs_latex)$
 	\section{$string_bibliography_title$}	
+	%black links instead of blue
 \raggedcolumns
+	\hypersetup{colorlinks=false,hidelinks=true}
 	$refs_latex$
 	$endif$
 \end{multicols}

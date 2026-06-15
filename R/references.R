@@ -603,6 +603,7 @@ refs: |
                                           refdoi_safeguards_latex <<- as.list(rl)
                                           refdoi_safeguards_html <<- as.list(rh)
 
+
                                           paste0("____________refdoi", 1:length(r), "refdoi____________")
                                            })#"\\\\url{\\0}"
       }
@@ -617,6 +618,7 @@ refs: |
         refs = stringr::str_replace_all(string = refs,
                                         #pattern = stringr::regex("(((https?|ftps?)://)|(www\\.))(-\\.)?([^\\s/?\\.#-]+\\.?)+(/[^\\s]*)?", ignore_case = T),
                                         pattern = "(((http|ftp|https):\\/\\/)?([\\w_-]+(?:(?:\\.[\\w_-]+)+))([\\w.,@?^=%&:\\/~+#-]*[\\w@?^=%&\\/~+#-]))+", # try another one from  https://stackoverflow.com/questions/6038061/regular-expression-to-find-urls-within-a-string
+                                        # the regex for pattern above seems to not recognize roudn brackets () inside urls
                                         replacement = function(m){
 
                                           r = gsub(pattern = "\\.$", replacement = "", x = m)

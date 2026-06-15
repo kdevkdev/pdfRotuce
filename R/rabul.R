@@ -247,11 +247,19 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
   }
   else {
     # academicgrid
+    rowso = rows
     rows[header_inds] = paste0(rowhline, rows[header_inds] , rowhline)
 
-    body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
+    # check if firsthline/lasthaline is needed (if first row is not a header)
+    fhl_use = ""
+    lhl_use = ""
+    if(!any(header_inds ==1 )) fhl_use = firsthline
+    if(!any(header_inds ==length(rows) )) lhl_use = lasthline
+
+    body = paste0(fhl_use, paste0(rows, collapse = "\n"), lhl_use)
 
   }
+
 
   # here we put global definitiosn for the generated latex enfironment, for exammple setting list separation
   globalspec  = ""

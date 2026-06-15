@@ -331,7 +331,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 	
 	\noindent
 			
-	{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract}
+	{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract}%
 	\end{tcolorbox}
 }{} % if empty ldo not print anything to page
 }
