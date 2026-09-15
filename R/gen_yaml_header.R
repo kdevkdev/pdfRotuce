@@ -21,6 +21,7 @@ gen_hardcoded_meta = function(reference_parsing ){
     md$bibliography              = 'references.bib'  |> yml_qt()
   }
   md$csl                      = 'plos-2020_square_nums.csl'  |> yml_qt()
+  md$mathjaxalt = T |> yml_qt()
 
   return(md)
 }
@@ -73,7 +74,7 @@ gen_yaml_header = function(md, reference_parsing = T){
   yml_data$string_bibliography_title          = md$string_bibliography_title
   yml_data$string_declarations_title          = md$string_declarations_title
   yml_data$string_abstract_mainlang_title     = md$string_abstract_mainlang_title
-
+  yml_data$mathjaxalt                         = md$mathjaxalt
 
 
   if(!is.null(md$attributes$abstract_picture) && !is.na(md$attributes$abstract_picture) && is.character(md$attributes$abstract_picture) && nchar(md$attributes$abstract_picture) > 1)

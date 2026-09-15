@@ -84,6 +84,9 @@ $endfor$
 
 
 
+
+
+
 \journaltitle{$journalinfo.title$}
 \journalvolumestring{$journalinfo.string_volumeissue$}
 \journaldoi{https://doi.org/$journalinfo.doi$}
@@ -104,9 +107,9 @@ $if(authors/rest)$
 
 $for(authors/rest)$
 $if(authors.co_with_prior)$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{\& $authors.name$} 
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{\& $authors.name$}
 $else$
-\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{, $authors.name$} 
+\author[$authors.affiliation_ids$$if(authors.corresponding)$*$endif$]{, $authors.name$}
 $endif$
 $endfor$
 $endif$
@@ -138,15 +141,15 @@ $for(articledates)$$articledates$${ sep }; $endfor$ % received, editorial decisi
 \fancyfoot[C]{\thepage\ } % add back page number
 
 
-\fancypagestyle{lscape}{% 
-\fancyhf{} % clear all header and footer fields 
+\fancypagestyle{lscape}{%
+\fancyhf{} % clear all header and footer fields
 \fancyfoot[LE]{%
 	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$author_shortname$}}\end{textblock}}
 \fancyfoot[LO] {%
 	\begin{textblock}{1}[0.5,0.5](1.5,14.5){\rotatebox{90}{$journalinfo.title_short$}}\end{textblock}}
 \fancyhead[C]{\begin{textblock}{1}[0,0.5](19,14.5){\rotatebox{90}{\thepage}}\end{textblock}}
 
-\renewcommand{\headrulewidth}{0pt} 
+\renewcommand{\headrulewidth}{0pt}
 \renewcommand{\footrulewidth}{0pt}
 }
 
@@ -193,12 +196,39 @@ $for(articledates)$$articledates$${ sep }; $endfor$ % received, editorial decisi
 {\end{figure*}}
 
 
+
+\DeclareCaptionType{icbox}
+\NewDocumentEnvironment{ibox}{ommm}{
+\begin{tcolorbox}[
+	%colback=white!20,
+	colframe=black,
+	colback=white,
+	colbacktitle=white,
+	coltitle=black,
+	fonttitle=\bfseries,
+	enlarge bottom by=-5pt,
+	%rounded corners,
+	%sharp corners=northwest,
+	boxrule=1pt,
+	arc=0pt,
+	%float,
+	breakable,
+	%enhanced,
+	%minipage boxed title*=0cm,
+	%boxed title style={rounded corners=north,sharp corners=south},
+	%attach boxed title to top left,
+	title={#1}]
+\label{#2}}
+{\end{tcolorbox}
+\captionof{icbox}{{\bfseries\sffamily #3.} \sffamily\raggedright #4}}
+%}
+
 % https://tex.stackexchange.com/questions/68516/avoid-that-figure-gets-its-own-page
 \renewcommand{\topfraction}{.8}
 \renewcommand{\bottomfraction}{.8}
 \renewcommand{\floatpagefraction}{.8}
 
-%\NewDocumentEnvironment{dienquote}{m}	
+%\NewDocumentEnvironment{dienquote}{m}
 %{\begin{displayquote}\begin{enquote}{\textit}}
 %{{\mdseries#1}\end{enquote}\end{displayquote}}
 
@@ -242,7 +272,7 @@ $if(abstract_picture)$
 \InsertBoxR{0}{\includegraphics[width=0.4\linewidth]{$abstract_picture$}}
 $endif$
 $for(abstracts.mainlang.parts)$
-{\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\ 	
+{\bfseries $abstracts.mainlang.parts.title$} $abstracts.mainlang.parts.text$ $sep$\\
 $endfor$
 $if(keywords)$\\
 \\
@@ -250,24 +280,24 @@ $if(keywords)$\\
 {\fontsize{10}{12}\selectfont\setstretch{1.14}{\bfseries\color{color1}$string_keywords_heading$} $for(keywords)$$keywords$$sep$, $endfor$}$endif$
 \end{abstract}
 $endif$
-	
-	
+
+
 $if(abstract_sidelangs_hint)$
 \newcommand{\abstracthint}{$abstract_sidelangs_hint$}
 $endif$
-	
+
 \maketitle\thispagestyle{empty} % no page number on first page
-	
-	
-	
+
+
+
 \colorlet{varlinkcolor}{blue}% for the bibliographi use blue links : only works if we actully insert it before all the body parts inlumn, not sure about the reason...
-	
+
 \begin{multicols}{2}
   \raggedcolumns
 	%\interlinepenalty=10000
 	$body$
-	
-	
+
+
 	$if(statements)$\section{$string_declarations_title$}$endif$
 	$for(statements)$
 \subsection{$statements.title$}
@@ -275,7 +305,7 @@ $endif$
 \egroup
 
 	$endfor$
-	
+
 	$if(orcids)$\subsection{ORCIDs}$endif$
 \bgroup \setlength{\parindent}{0pt}
 	$for(orcids)$
@@ -284,18 +314,18 @@ $orcids.name$\orcidaffil{$orcids.orcid$} \href{https://orcid.org/$orcids.orcid$}
 \egroup
 \end{multicols}
 
-% sidelang abstracts 
+% sidelang abstracts
 
-$if(abstracts.sidelangs)$ 
+$if(abstracts.sidelangs)$
 \section{$string_multilang_abstract_title$}
 \vspace{2mm}
 %$--${ partials/multilang_abstracts.tex() }
 $for(abstracts.sidelangs)$
 \begin{tcolorbox}[colframe=themecolor2, colback=themecolor2, sharp corners,boxsep=4mm,top=3.5mm,left=3.8mm,right=2.0mm,bottom=1mm,breakable]\sffamily
-	{\fontsize{11}{14}\selectfont \bfseries $abstracts.sidelangs.title$} 
+	{\fontsize{11}{14}\selectfont \bfseries $abstracts.sidelangs.title$}
 	\vskip 1mm
 	$for(abstracts.sidelangs.parts)$
-        	{\bfseries $abstracts.sidelangs.parts.title$} $abstracts.sidelangs.parts.text$ $sep$\\ 
+        	{\bfseries $abstracts.sidelangs.parts.title$} $abstracts.sidelangs.parts.text$ $sep$\\
     $endfor$
 $if(abstracts.sidelangs.keywords)$\vskip 3mm{\raggedright\bfseries $abstracts.sidelangs.string_keywords_heading$}  $abstracts.sidelangs.keywords$ $endif$
 \end{tcolorbox}
@@ -306,7 +336,7 @@ $endif$
 \begin{multicols}{2}
 	\raggedcolumns
 	$if(refs_latex)$
-	\section{$string_bibliography_title$}	
+	\section{$string_bibliography_title$}
 	%black links instead of blue
 \raggedcolumns
 	\hypersetup{colorlinks=false,hidelinks=true}

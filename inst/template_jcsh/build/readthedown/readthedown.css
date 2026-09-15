@@ -49,6 +49,7 @@ img.image-lb {
     margin: 5px 10px 30px 0px;
     display: table;
     text-align: left;
+    font-style:italic;
 }
 
 .figure img {
@@ -56,6 +57,22 @@ img.image-lb {
 }
 
 .figure p.caption {
+    font-style: italic;
+}
+
+.ibox {
+  border-style:solid;
+  padding:0.5cm;
+  margin-bottom:0.4cm;
+}
+
+.iboxtitle {
+  border-style:solid;
+  border-bottom-style:none;
+  padding:0.5cm;
+}
+
+.ibox p.caption {
     font-style: italic;
 }
 

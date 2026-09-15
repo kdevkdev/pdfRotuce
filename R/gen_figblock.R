@@ -92,7 +92,7 @@ gen_figblock = function(fig_opts, fig_counter, fig_type = "fig"){
   tex_output = tex_output %+% "\n\n"
 
 
-  # als generate html output. Not meaningful ATM to differenctiate between columns, but make one column figures smaller. Use fenced codeblock
+  # als generate html output. Not meaningful ATM to differentiate between columns, but make one column figures smaller. Use fenced codeblock
 
   width = "100%"
   if(fig_wide == F){
@@ -108,7 +108,7 @@ gen_figblock = function(fig_opts, fig_counter, fig_type = "fig"){
 
   #html_output = html_output %+% "```\n\n"
 
-  # TODO ensure xml capability
+  #tex_output = "\n\n```{=latex}\n\n" %+% tex_output %+% "\n```\n\n"
 
   # generally not recommended to put in id, but make exception to stay compatible with late and make crossref handling/writing easier
   #html_id =  paste0(fig_type,":", fig_label)

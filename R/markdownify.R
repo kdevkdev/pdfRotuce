@@ -28,14 +28,12 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                        compat_cell_md_parsing = F){
 
   # a4: 210, 297, 15 mm left/right margin, 12.5 top/bottom
-  type_width = 180
-
-  type_height = 272
+  #type_width = 180
+  #type_height = 272
 
   fig_capts = tab_capts = c()
 
-
-  # read file and backup object
+  # read file and backup original object
   docx = officer::read_docx(src_docx)
   df = officer::docx_summary(docx,preserve = T,remove_fields = T, detailed = T)
 
@@ -43,153 +41,27 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar_o = doc_summar  = data.table::as.data.table(df)
 
 
-
-  # combine runs here. As of now, detailed = True unfortately seems to remove table contents
+  # combine word .docx runs here
   doc_summar = combine_runs(doc_summar)
 
-
-  # copy over stylename from to paragraph stylename (same as if detailed = T)
-  #doc_summar[,paragraph_stylename := style_name]
-
-  #doc_summar[is.na(paragraph_stylename), paragraph_stylename := ""]
+  # save orginal text after run combination
   doc_summar[, texto := text]
 
 
-  # get all l1 headings
-  l1_inds = which(tolower(doc_summar$paragraph_stylename) == "heading 1")
-
-  stopifnot("No level 1 heading style found" = length(l1_inds)>0 )
-
-  title_page_inds = l1_inds[1]:(l1_inds[2]-1)
-
-  # find and parse titele page - first heading 1 up to second heading 1
-  parsed_meta = parse_title_page(doc_summar[title_page_inds,])
-
-  # predefined metadata & metadata for
-  predef_meta  = list()
-  periodical_meta = list()
-
-  # get article specific metadata from csv
-  if(file.exists(paste0(doc_folder, "/metadata0_periodical.csv"))){
-
-    # load periodical metadata
-    pd_mp = read.csv(file = paste0(doc_folder, "/metadata0_periodical.csv"), header = F, fileEncoding = "UTF-8")
-    pmvals = pd_mp[[2]]
-    names(pmvals) = pd_mp[[1]]
-
-    periodical_meta = as.list(pmvals)
-  }
-
-
-  # get article specific metadata from csv
-  if(!is.null(meta_csv) & file.exists(meta_csv)){
-
-    pd_tab = read.csv(file = meta_csv, header = F, fileEncoding = "UTF-8")
-
-    # values to a vector and name to vector names
-    tvals = pd_tab[[2]]
-    names(tvals) = pd_tab[[1]]
-
-
-    checkvec = c("volume", "issue", "string_volumeissue",
-                 "doi", "has_abstract", "article_type", "author_shortname", "string_corresponding", "string_contact",
-                 "string_responsibleeditor", "string_articleihstory", "string_keywords_heading",
-                 "string_spanish_keywords", "string_declarations_title","string_keywords_spanish",
-                 "string_multilang_abstract_title", "string_bibliography_title", "string_abstract_mainlang_title")
-
-
-
-    # whitelist of values to copy
-    for(cn in checkvec){
-
-      if(!is.na(tvals[cn])){
-        predef_meta[[cn]] = tvals[cn]
-      }
-    }
-
-    # copy over provided values, uppercase for article typer
-    # if(is.element("volume", names(tvals)))                    predef_meta$volume                    = tvals["volume"]                         else hgl_warn("'volume' missing in meta csv")
-    # if(is.element("issue",  names(tvals)))                    predef_meta$issue                     = tvals["issue"]                          else hgl_warn("'issue' missing in meta csv")
-    # if(is.element("string_volumeissue",  names(tvals)))       predef_meta$string_volumeissue        = tvals["string_volumeissue"]             else hgl_warn("'string_volumeissue' missing in meta csv")
-    # if(is.element("doi", names(tvals)))                       predef_meta$doi                       = tvals["doi"]                            else hgl_warn("'doi' missing in meta csv")
-    # if(is.element("has_abstract", names(tvals)))              predef_meta$has_abstract              = tvals["has_abstract"]                   else hgl_warn("'has_abstrat' missing in meta csv")
-
-    # if(is.element("author_shortname", names(tvals)))          predef_meta$author_shortname          = tvals["author_shortname"]               else hgl_warn("'author_shortname' missing in meta csv")
-    # if(is.element("string_corresponding", names(tvals)))      predef_meta$string_corresponding      = tvals["string_corresponding"]           else hgl_warn("'string_corresponding' missing in meta csv")
-    # if(is.element("string_contact", names(tvals)))            predef_meta$string_contact            = tvals["string_contact"]                 else hgl_warn("'string_contact missing in meta csv")
-    # if(is.element("string_responsibleeditor", names(tvals)))  predef_meta$string_responsibleeditor  = tvals["string_responsibleeditor"]       else hgl_warn("'string_responsibleeditor' missing in meta csv")
-    # if(is.element("string_articlehistory", names(tvals)))     predef_meta$string_articlehistory     = tvals["string_articlehistory"]          else hgl_warn("'string_articlehistory' missing in meta csv")
-    # if(is.element("string_keywords", names(tvals)))           predef_meta$string_keywords           = tvals["string_keywords"]                else hgl_warn("'string_keywords' missing in meta csv")
-    # if(is.element("string_articlehistory", names(tvals)))     predef_meta$string_articlehistory     = tvals["string_articlehistory"]          else hgl_warn("'string_articlehistory' missing in meta csv")
-    # if(is.element("string_keywords", names(tvals)))           predef_meta$string_keywords           = tvals["string_keywords"]                else hgl_warn("'string_keywords' missing in meta csv")
-
-
-    # some more processing
-    if(is.element("article_type", names(tvals)))              predef_meta$article_type              = toupper(tvals["article_type"])          else hgl_warn("'article_type' missing in meta csv")
-    # split articledates by ';'
-    if(is.element("articledates", names(tvals)))              predef_meta$articledates = stringr::str_split(simplify= T, pattern = ";", string =tvals["articledates"]) |> as.vector() |> trimws() else hgl_warn("'articledates' missing in meta csv")
-    if(is.element("articledates_jats", names(tvals)))         predef_meta$articledates_jats = stringr::str_split(simplify= T, pattern = ";", string =tvals["articledates_jats"]) |> as.vector() |> trimws()
-
-    if(startsWith(predef_meta$doi,"https://doi.org/") || startsWith(predef_meta$doi,"http://doi.org/")){
-
-      # convert form url to doi if needed
-      # for url start
-      predef_meta$doi = stringr::str_replace(string = predef_meta$doi, pattern = "^(https?://)?doi\\.org/", replacement = "")
-
-      # for url end
-      predef_meta$doi = stringr::str_replace(string = predef_meta$doi, pattern = "/$", replacement = "")
-    }
-  }
-  hardcoded_meta = gen_hardcoded_meta(reference_parsing = reference_parsing)
-
-
-  # combine metadata specified in parsed document with metadata provided in CSV
-  metadata = c(predef_meta, parsed_meta, periodical_meta, gen_hardcoded_meta(reference_parsing = reference_parsing))
-
-  # also pack keywords from metadata$atrributes into the respective abstracts
-
-  # find all attrributes starting with keywords
-  kw_names = stringr::str_extract_all(string = names(metadata$attributes), pattern = "^keywords.*") |> unlist()
-
-  for(ckwn in kw_names){
-
-    ckws = metadata$attributes[[ckwn]]
-
-    # detect langague suffix after '_', or mainlangaugeS
-    if(ckwn == "keywords"){
-      clan = 'mainlang'
-      metadata$abstracts$mainlang$keywords = ckws
-    } else{
-      clan = stringr::str_replace_all(string = ckwn, pattern = "keywords_", replacement = "")
-
-      # check if present - find index
-      targ_ind = sapply(metadata$abstracts$sidelangs, \(x) { x$lang== clan})
-
-      if(sum(targ_ind) ==1){
-
-        metadata$abstracts$sidelangs[[which(targ_ind)]]$keywords = ckws
-
-      } else{
-        # if ever a template requires sidelang keywords without abstracts then att the sidelang abstract here and keywords after.
-        hgl_warn("'" %+% ckwn %+% "' keywords provided but no or more than one abstract for language '" %+% clan %+% "' present.")
-      }
-    }
-  }
-
-
+  ################## compile metadata #########################
+  metadata_compilation = compile_metadata(doc_summar, doc_folder, meta_csv, reference_parsing)
+  metadata = metadata_compilation$metadata
 
   yaml_preamble = gen_yaml_header(md =metadata, reference_parsing = reference_parsing)
 
-
-  # delete  title page from document
-  doc_summar = doc_summar[-title_page_inds,]
-
+  # remove title page rows from contents
+  doc_summar = metadata_compilation$doc_summar_wo_title_page
   # remove [empty] headings
   doc_summar = doc_summar[!(startsWith(tolower(paragraph_stylename), "heading") & trimws(tolower(text)) == "[empty]"),]
 
 
-
-  ## @@@@ doc_sumar will contain: text (original word contents), mrkdwn  (processed markedown), xml_temp (intermediate 'working' xml text ), xml_text (final xml conform text
+  ############### prepare doc summary object ########################
+  # doc_sumar will contain: text (original word contents), mrkdwn  (processed markedown), xml_temp (intermediate 'working' xml text ), xml_text (final xml conform text
 
   # create xml nodes list for JATS xml, special format in that it is embedded into the doc dataframe, needs to have same length as NROW
   # that is, each row as a cell/list entry for corresponding xml nodes
@@ -197,7 +69,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar$xml_text = ""
   doc_summar$xml_type = character()
   doc_summar$xml_type = NA
-
 
   # reset xml filepackaging directory
   path_xml_filepack_dir = paste0(working_folder, "/jats_xml_filepacking")
@@ -230,7 +101,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar[tolower(paragraph_stylename) == "heading 5", mrkdwn := paste0("#####  ", mrkdwn)]
   doc_summar[startsWith(tolower(paragraph_stylename),"heading"), xml_type:= "heading"]
 
-
   # parse headings to xml sections and store into doc_summar
   r = gen_xml_sections(doc_summar)
   doc_summar$xml_pretags = r$hxml_pretags
@@ -249,7 +119,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   #
   # }
 
-
   ############## process tables ##############
   cudoc_tabinds = unique(doc_summar[content_type == "table cell"]$table_index)
 
@@ -259,6 +128,8 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   tab_chunk_labels = list()
   # also for figurs
   l_fig_counters= list()
+  i_box_counter = 1
+  l_tab_counters = list()
   l_labels = list()
 
   for(cti in cudoc_tabinds){
@@ -281,6 +152,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     } else{
       tab_opts  = parse_yaml_cmds(trimws(tab_opts_raw$mrkdwn))
     }
+
 
     ct_dat = doc_summar[content_type == "table cell" & table_index == cti]
 
@@ -336,20 +208,17 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
 ```"
 
-#  tinytex::tlmgr("option repository https://ftp.tu-chemnitz.de/pub/tug/historic/systems/texlive/2020/tlnet-final")
-# tinytex::uninstall_tinytex()
-
   ########################################### command parsing ####################################################
   # data.table for inline math formulas
   d_inlinemath = data.table()
 
 
   # inline paragraph commands - do not need escaping
-  # put protected dollar fo rinline mathc(
+  # put protected dollar fo rinline mathc
   doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]", replacement = "========protecteddollar========\\1========protecteddollar========")]
 
 
-  # not entirely R style, but use global assigment to easily populate list based on regex pattern recognition, starting with inline math
+  # not entirely R style, but use global assignment to easily populate list based on regex pattern recognition, starting with inline math
   doc_summar[, xml_temp:= stringr::str_replace_all(string = xml_temp, pattern = "\\[\\[mathinline\\$(.*?)\\$mathinline\\]\\]",
                                                    replacement = function(x){
 
@@ -369,8 +238,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
                                                    })]
 
-
-
   # put protected at for refs
   doc_summar[, mrkdwn:= gsub(x = mrkdwn, pattern = "\\@ref\\((.+?)\\)", replacement = "\\========protectedat========ref(\\1)")]
 
@@ -379,7 +246,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
   doc_summar[, mrkdwn:= gsub(x = trimws(mrkdwn), pattern = "^\\[\\[noindent\\]\\](.?)", replacement = "\\\\noindent \\1")]
   # JATS XML 1.3: indent likely not supported, but up to display tools
 
-  # look for commands whole para tag commands [[]]
+  # look for commands whole paragraph tag commands [[]]
   command_inds =  which(startsWith(trimws(doc_summar$mrkdwn), "[[") & endsWith(trimws(doc_summar$mrkdwn),"]]"))
 
 
@@ -415,24 +282,54 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
       if(length(c_command) > 0 & !inherits(c_command, "error")){
 
         switch(c_command[[1]],
-               interbox={
-                 #print("interbox detected")
-                 title = c_command['title']
-                 text = c_command['text']
-                 iblabel = paste0( "Com", c_comi)
-                 c_result = "
-::: {.interbox data-latex=\"{"%+% title %+% "}{" %+% iblabel %+% "}\"}
-" %+% text %+% "
-:::
+               ibox={
+                 #print("ibox detected")
 
-"
+                 #browser()
+                 title    =  c_command[['title']]
+                 text     =  c_command[['text']]
+                 caption  =  c_command[['caption']]
+                 label     = c_command[['label']]
+                 caption_title = "Box " %+% i_box_counter # hardoced now, possibly use translation string later
+
+
+                 if(is.null(c_command[['label']])) label = "ibox" %+% i_box_counter
+
+                 htmltitle = ""
+                 if(!is.null(title)) htmltitle = "<div class='iboxtitle'>" %+% title %+%"</div>"
+
+                 caption = escape_caption(caption) # escape %, @, $
+
+                 html_output = paste0("\n\n```{=html}\n",htmltitle,
+                                      "<div class='ibox'>",
+                                      "<span style='display:block;' id='", label, "'></span>\n",
+                                       text,
+                                      "<p class='caption'>",
+                                      caption_title, ": ", caption,
+                                      "</p></div>\n",
+                                      "```\n\n")
+
+
+                 #c_result = "\n\n```{=latex}
+              c_result = "\n::: {.ibox data-latex=\"[" %+% title %+% "]{" %+% label %+%  "}{" %+% caption_title %+% "}{"%+% caption %+% "}\"}\n" %+% text %+% "\n:::\n" %+% html_output
+
+
               c_result_xml = paste("<boxed-text position='anchor' content-type='infobox'>",
                                 "<caption>",
-                                 "<title>", title, "</title>",
+                                 "<title>", caption_title, "</title>",
+                                "<p>", caption, "</p>",
                                 "</caption>",
                                 paste0("<p>",text,"</p>"),
-                                paste0( "<xref ref-type='aff' rid='ibox_", iblabel  ,"'/>"),
+                                paste0( "<xref ref-type='aff' rid='", label  ,"'/>"),
                                "</boxed-text>", sep = "\n")
+
+              # also store labels, counter and type  in a list to create a combined data.table later
+              l_labels[[length(l_labels)+1]] = data.table(type = "box", counter = i_box_counter, label = label)
+
+              # increment counter for boxes
+              i_box_counter = i_box_counter+1
+
+
                  },
                figure={
                  #print("figure detected")
@@ -442,9 +339,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
                  # do not use this as this is reserved by tables
                  if(fig_type == "tab") hgl_error("do not use 'tab' as figure type, this is reserved for tales")
-
-
-
+                 if(fig_type == "ibox") hgl_error("do not use 'box' as figure type, this is reserved for boxse")
 
                  # increment counter for the current type
                  l_fig_counters[[fig_type]] = sum(l_fig_counters[[fig_type]], 1, na.rm = T)
@@ -481,6 +376,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                    vskip = "\\vspace{-0mm}"
                  }
 
+# old version
 #                  c_result = vskip %+% "
 # ::: {.displayquote data-latex=\"{  }\"}
 # ::: {.enquote data-latex=\"{\\textit{" %+% text %+% "}} " %+% source %+% "\"}
@@ -526,8 +422,7 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                                    #"\\raggedcolumns",
                                    "```\n")},
                 start_singlecol={
-                    #print("Math detected")
-
+                  #print("Math detected")
                   c_result = paste("\n```{=latex}",
                                      "\\end{multicols}", sep = "\n",
                                      #"\\raggedcolumns",
@@ -537,17 +432,16 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                   },
                 end_singlecol={
                   #print("Math detected")
-
                   c_result = paste("\n```{=latex}",
                                    "\\begin{multicols}{2}", sep = "\n",
                                    #"\\raggedcolumns",
                                    "```\n")
 
-
                 },
 
                {
                  # default
+                 browser()
                    stop(paste0("unkown command '", c_comtext, "'"))
                })
       }
@@ -571,7 +465,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
   rplcmntfn = function(matches){
 
-
     # defalt: no replacement
     replacements = rep("", length(matches))
     # for now only handle those that we already have in our labels (i.e. only figures not tables)
@@ -583,7 +476,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 
       # look for label
       hits = d_labels[ label == clabel]
-
 
       # we get the original string index of 'x' in fig_labels as name
       # and the index s value
@@ -604,14 +496,12 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     return(replacements)
   }
 
-
   # generate intext citations
   doc_summar$mrkdwn = stringr::str_replace_all(string = doc_summar$mrkdwn, pattern = "\\\\========protectedat========ref\\([a-zA-Z0-9:]{1,}\\)", replacement = rplcmntfn)
   doc_summar$xml_temp = stringr::str_replace_all(string = doc_summar$xml_temp, pattern = "\\\\========protectedat========ref\\([a-zA-Z0-9:]{1,}\\)", replacement = rplcmntfn)
 
   # parse to xml  nodes that have not already been prossesd
   doc_summar[is.na(xml_type), `:=`(xml_type = "paragraph", xml_text = gen_xml_paragraphs(xml_temp,d_inlinemath ))]
-
 
 
   ############ statements and declarations ############
@@ -659,9 +549,6 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
          cstat = paste0(cstat, "\n", indiv_author_contribs) # att this to the setion
 
       }
-      #rmd_statements = rmd_statements %+% "## " %+%cn %+% "\n" %+% "\\noindent " %+% cstat
-      #yaml_statements = yaml_statements %+% "\\subsection{" %+%cn %+% "}\n" %+% "\\bgroup \\setlength{\\parindent}{0pt} " %+% cstat
-      #yaml_statements = yaml_statements %+% "\\egroup \n\n"
       l_statements[[length(l_statements)+1]] = cle
     }
 
@@ -696,50 +583,20 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
     grepl(x = gsub(x = x$orcid, pattern = "[^0-9X]", replacement= ""), pattern = "[0-9X]{16}")
   })
 
-
   # if any orcids present, put all authors with oricds in a separate section before the references
   yaml_orcinds = ""
   if(!is.null(author_orcinds) && length(author_orcinds) > 0 && any(author_orcinds)){
 
-    #td <- metadata$authors[author_orcinds] |> rbindlist(fill = TRUE)
     l_orcids  <- metadata$authors[author_orcinds] |> lapply(\(x){
       list(name = x$name,
            orcid = x$orcid,
            position = x$position)})
 
 
-    #plural = ""
-    # if(NROW(td)> 1){
-    #   plural = "s"
-    # }
-
-#    yaml_orcinds =                 "## ORCID" %+% plural %+%"\n\n"
-    #yaml_orcinds = yaml_orcinds %+% "```{=latex}\n{\\noindent\\raggedright\n"
-
-    #yaml_orcinds = yaml_orcinds %+% paste0( paste0(td$name , " \\orcidaffil{", td$orcid, "} \\href{https://orcid.org/",
-    #                                             td$orcid, "}{",
-    #                                             td$orcid,"}"), collapse = "\n\n")
-
     yaml_orcinds = yaml::as.yaml(list(orcids = l_orcids))
-
-    #yaml_orcinds = yaml::as.yaml(list(orcids = yaml_orcinds))
-    #yaml_orcinds = yaml_orcinds %+% "\n```"
   }
 
-  # partials output - enables bigger flexibilty in combination with the latex tempalte
-  #unlink(working_folder %+% "/partials", recursive = T)
-  #dir.create(working_folder %+% "/partials")
-  #write(x = rmd_multilang_abstracts, file = working_folder %+% "/partials/multilang_abstracts.tex")
-  #write(x = rmd_statements, file = working_folder %+% "/partials/rmd_statements.tex")
-  #write(x = res_parse_references$rmd_references, file = working_folder %+% "/partials/rmd_references.tex")
-
-
   rmd_text = c(yaml_preamble, chunk_setup, fig_capts, tab_capts,
-               #"```{=latex}", # maybe sometimes a restart of the column environemnt might be helpful_
-               #"\\begin{multicols}{2}",
-               #"\\raggedcolumns",
-               #"\\interlinepenalty=10000",
-               #"```",
                outmrkdwn,
                "\n",
                "\n",
@@ -748,31 +605,9 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
                "\n",
                yaml_orcinds,
                "\n",
-               #yaml_multilang_abstracts,
-               #"\n",
                res_parse_references$yaml_references, # YAML to store refs in a variable
                "---\n"
-               #rmd_statements,
-               #rmd_orcinds,
-               #"```{=latex}",
-               #"\\end{multicols}",
-               #"```",
-               #"\\raggedbottom",
-               #rmd_multilang_abstracts,
-               #"```{=latex}",
-               #"\\begin{multicols}{2}",
-               #"\\raggedcolumns",
-               #"\\interlinepenalty=10000",
-               #"```",
-
-               #"```{=latex}",
-               #"\\end{multicols}",
-               #"```"
                )
-
-  #[[figure,src: 'figures/Fig4.png', wide, caption: 'Promotores de salud capacitados.', label: 'fig4']]
-
-
 
   # write rmd file if filename provided
   if(!is.null(rmd_outfile)){

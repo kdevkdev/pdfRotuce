@@ -11,15 +11,55 @@ combine_runs = function(doc_summar, tabcollapse = "\n"){
     cdoc_i = unique_docinds[i]
     cdoc_part =doc_summar[doc_index == cdoc_i]
 
-    # todo: insert rmarkdown for some formatting
 
-    # only copy firsts to res list
+    prefixes = suffixes = vector("character", length(cdoc_part$run_content_text))
+
+
+
+    # loop through runs
+    for(j in 1:length(cdoc_part$run_content_text)){
+
+
+      # insert rmarkdown for some formatting
+      # bold
+      # italic
+
+
+      # 1. check if inside of whole paragraph tag -> do not do formatting inside of tags
+      # 2. check if inside inline tag  -> do not do formatting inside of inline tags
+
+      # move it right outside of inline tag so its encapsoluated?
+      # mote it right inside of whole paragraph tag
+
+      # switch on / off formatting such as bold/italic upon between-run boolean change
+      # make sure to close open formatting at paragraph end
+
+      #  if(cdoc_part$bold[j] == TRUE){
+      #     prefixes[j] = paste0(prefixes,"*")
+      #     suffixes[j] = paste0(suffixes,"*")
+      #  }
+      # if(cdoc_part$italic[j] == TRUE){
+      #   prefixes[j] = paste0(prefixes,"**")
+      #   suffixes[j] = paste0(suffixes,"**")
+      # }
+
+    }
+
+
+
+
+
+
+
+
+    # only copy first row to res list in case of multiple runs per doc index
     res[[i]] = cdoc_part[1,]
-    # collapse content text
-    res[[i]]$text = paste0(cdoc_part$run_content_text, collapse = "")
+    # collapse content text for the remaining runs
+    res[[i]]$text = paste0(prefixes, cdoc_part$run_content_text, suffixes, collapse = "")
 
 
   }
+
   r_dt = data.table::rbindlist(l = res)
 
   # also check table cells
@@ -51,7 +91,8 @@ combine_runs = function(doc_summar, tabcollapse = "\n"){
   #     r_dt = r_dt[-slice_inds]
   #   }
   # }
-  # browser()
+
+
 
 
   # remove all unneded columns now

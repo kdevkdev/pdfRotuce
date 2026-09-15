@@ -41,9 +41,9 @@
 \RequirePackage{fontspec}
 
 % fallbacks in case main font does not contain something
-	\directlua{ luaotfload.add_fallback("fallbacks", { "[fonts/notosanssymbols2/NotoSansSymbols2-Regular.ttf]:style=Regular;" , 
-	 "[fonts/notosanscherokee/NotoSansCherokee-Regular.ttf]:style=Regular;",  
-     "[fonts/notosanscanadianaboriginal/NotoSansCanadianAboriginal-Regular.ttf]:style=Regular;"  
+	\directlua{ luaotfload.add_fallback("fallbacks", { "[fonts/notosanssymbols2/NotoSansSymbols2-Regular.ttf]:style=Regular;" ,
+	 "[fonts/notosanscherokee/NotoSansCherokee-Regular.ttf]:style=Regular;",
+     "[fonts/notosanscanadianaboriginal/NotoSansCanadianAboriginal-Regular.ttf]:style=Regular;"
 	}) }
 
 
@@ -78,7 +78,7 @@ RawFeature={fallback=fallbacks}]
 
 \RequirePackage[hang,flushmargin]{footmisc}
 
-\RequirePackage[breakable]{tcolorbox}
+\RequirePackage[breakable,most]{tcolorbox}
 
 
 \RequirePackage{ifpdf}
@@ -183,7 +183,7 @@ justification=raggedright, skip = 2pt]{caption}
 \titleformat{\subsection}
 {\color{themesectionheadingcolor}\bfseries}
 {}
-{-0.5pt} % not sure why needed but otherwise 	subsections sem to have some  indent. 
+{-0.5pt} % not sure why needed but otherwise 	subsections sem to have some  indent.
 {#1}
 []
 \titleformat{\subsubsection}
@@ -282,7 +282,7 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 {\absput[pg-tl, tl, x=1cm, y=-1.2cm,width=1\textwidth]{
 \begin{minipage}{0.13\textwidth}
 	\href{https://journals.ub.umu.se/index.php/jcsh}{\includegraphics[width = 20mm]{jchs.pdf}}
-\end{minipage} 
+\end{minipage}
 \begin{minipage}{0.49\textwidth}
 	{\sffamily\footnotesize\color{black}
 		\thejournaltitle\\
@@ -328,9 +328,9 @@ THE ABSTRACT\vskip12pt}\let\go\relax\fi
 		\noindent
 		\ifdef{\theabstractmainlangtitle}{\raggedright\bfseries \theabstractmainlangtitle\par}{}
 	}
-	
+
 	\noindent
-			
+
 	{\fontsize{10}{12}\selectfont\setstretch{1.14}\theabstract}%
 	\end{tcolorbox}
 }{} % if empty ldo not print anything to page
