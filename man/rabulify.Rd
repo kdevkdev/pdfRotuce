@@ -15,12 +15,10 @@ rabulify(
   xltabular = T,
   colwidths = NULL,
   colaligns = NULL,
-  fullgrid = FALSE,
+  gridmode = "academicgrid",
+  number_label = "",
   compat_cell_md_parsing = F
 )
-}
-\arguments{
-\item{fullgrid}{}
 }
 \description{
 Create latex code for tables

@@ -13,9 +13,6 @@ gen_tabchunk(
   compat_cell_md_parsing = F
 )
 }
-\arguments{
-\item{folder}{}
-}
 \description{
 Title
 }

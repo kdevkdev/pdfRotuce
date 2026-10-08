@@ -9,11 +9,9 @@ build(
   src = "manuscript.docx",
   meta_csv = "metadata.csv",
   render_only = F,
+  outformats = c("html", "pdf", "jats"),
   ...
 )
-}
-\arguments{
-\item{src}{}
 }
 \description{
 Title

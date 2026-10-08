@@ -4,10 +4,11 @@
 \alias{parse_yaml_cmds}
 \title{Parses YAML command tags in word documents}
 \usage{
-parse_yaml_cmds(c_comtext, convert_straight_singlequote = T)
-}
-\arguments{
-\item{c_comtext}{}
+parse_yaml_cmds(
+  c_comtext,
+  convert_straight_singlequote = T,
+  escape_newlines_for_rmarkdown_propagation = T
+)
 }
 \description{
 Parses YAML command tags in word documents

@@ -387,9 +387,10 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 # "
                c_result = "\n```{=latex}\n" %+% vskip %+% "
 \\begin{displayquote}{  }
-\\begin{enquote}{\\textit{" %+% text %+%"} " %+% source %+% "}
+\\begin{enquote}{\\textit{" %+% text %+%"}}
 \\phantom{}
 \\end{enquote}
+" %+% source %+% "
 \\end{displayquote}
 \\vspace{-1mm}
 \\
