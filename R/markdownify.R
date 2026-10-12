@@ -385,12 +385,14 @@ markdownify = function(src_docx, doc_folder, working_folder = ".",
 # :::
 # \\vspace{-5.5mm}
 # "
+
+                 # reduce horizontal spacing after enquote to remove some distance between quote and source
                c_result = "\n```{=latex}\n" %+% vskip %+% "
 \\begin{displayquote}{  }
 \\begin{enquote}{\\textit{" %+% text %+%"}}
 \\phantom{}
 \\end{enquote}
-" %+% source %+% "
+\\hspace{-10.5pt}" %+% source %+% "
 \\end{displayquote}
 \\vspace{-1mm}
 \\
