@@ -17,7 +17,7 @@ parse_cellmd_latex = function(md){
   rt
 }
 
-gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, colaligns= NULL, gridmode  = "academicgrid"){
+gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, colaligns= NULL, gridmode  = "academicgrid",grid_vspec = NULL){
 
   # scheme not yet used
   nfillcols = ncol - 1
@@ -51,10 +51,22 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 
     colsepc = ""
 
-    colvline = ""
+    colvlines = rep("", ncol + 1) # last right border is extra index
     if(gridmode == "fullgrid"){
-      colvline = "|"
+      colvlines = colvlines[1:length(colvlines)] = " | "
     }
+
+    if(!is.null(grid_vspec) && length(grid_vspec) > 0 ){
+      if( all(grid_vspec >= 1) & all(grid_vspec <= ncol+1)){
+
+        colvlines[grid_vspec] =  " | "
+      }
+      else {
+        stop("gen_colspec: invalid colvilines")
+      }
+
+    }
+
 
     if(!is.null(colwidths)){
       # calcuate colwith
@@ -67,12 +79,14 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
       rws = ncol * colwidths / sum(colwidths)
 
 
-      colspec = paste0(">{", aligns,"\\hsize=", rws, "\\hsize\\linewidth=\\hsize}X") |> paste0(collapse = colvline)
+      colspec = paste0(colvlines[1:ncol], ">{", aligns,"\\hsize=", rws, "\\hsize\\linewidth=\\hsize}X") |> paste0(collapse = "")
 
-    }else
-      colspec = paste0(rep("X", ncol), collapse = colvline)
+    }else {
 
-    colspec = paste0(colvline, colspec, colvline) # add outer left right borders
+      colspec = paste0(colvlines[1:ncol], rep("X", ncol), collapse = "")
+    }
+
+    colspec = paste0(colspec, colvlines[ncol+1]) # add outer  right border
     return(colspec)
   }
   else
@@ -100,7 +114,9 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
                     colaligns = NULL,
                     gridmode = "academicgrid",
                     number_label = "",
-                    compat_cell_md_parsing = F){
+                    compat_cell_md_parsing = F,
+                    grid_vspec = NULL,
+                    grid_hspec = NULL){
   l_innerspecs = list()
   l_outerspecs = list()
 
@@ -237,28 +253,69 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   # https://sv.overleaf.com/learn/latex/Errors/Misplaced_%5Cnoalign - all hlines after first haline need to be preceeded with \\ (escape needed)s
   rowhline = "\n \\hline "
-  firsthline = "\n \\hline "
 
-  lasthline = "\n \\hline"
+  topborder_hlines_use = rep("", length(rows)+1) # an additional 'ghost' idnex for the last bottom border
+
   if(gridmode == "fullgrid"){
-    body = paste0(firsthline, paste0(rows, rowhline, collapse = "\n"))
-  } else if(gridmode == "topdowngrid"){
-    body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
-  }
-  else {
-    # academicgrid
-    rowso = rows
-    rows[header_inds] = paste0(rowhline, rows[header_inds] , rowhline)
+
+    topborder_hlines_use[1:(length(rows)+1)] = rowhline # set all rows plus last one
+  } else if(gridmode == "topwdowngrid"){
+
+    topborder_hlines_use[1] = rowhline     # first and last row bordder
+    topborder_hlines_use[length(rows)+1] = rowhline
+
+  } else if(gridmode == "academicgrid"){
+
+    # only borders at header lines
+    topborder_hlines_use[header_inds] = rowhline
+    topborder_hlines_use[header_inds+1] = rowhline
 
     # check if firsthline/lasthaline is needed (if first row is not a header)
-    fhl_use = ""
-    lhl_use = ""
-    if(!any(header_inds ==1 )) fhl_use = firsthline
-    if(!any(header_inds ==length(rows) )) lhl_use = lasthline
-
-    body = paste0(fhl_use, paste0(rows, collapse = "\n"), lhl_use)
-
+    if(!any(header_inds ==1 ))            topborder_hlines_use[header_inds]   = rowhline
+    #if(!any(header_inds ==length(rows) ))
+    topborder_hlines_use[length(rows)+1]  = rowhline # always set bottom bodre
   }
+
+
+
+  # set custom defined horizontalborders
+  if(!is.null(grid_hspec) && length(grid_hspec) > 0 ){
+    if(all(grid_hspec >= 1) & all(grid_hspec <= length(rows)+1)){
+
+
+      topborder_hlines_use[grid_hspec] = rowhline
+
+    } else{
+      stop("Grid hspec invalid")
+    }
+  }
+
+  # compose table body - handle bottom brode accordingly
+  body = paste0(paste(topborder_hlines_use[1:length(rows)], rows,sep = "\n", collapse = "\n"), topborder_hlines_use[length(rows)+1])
+
+
+
+
+  #firsthline = "\n \\hline "
+  # if(gridmode == "fullgrid"){
+  #   body = paste0(firsthline, paste0(rows, rowhline, collapse = "\n"))
+  # } else if(gridmode == "topdowngrid"){
+  #   body = paste0(firsthline, paste0(rows, collapse = "\n"), lasthline)
+  # }
+  # else {
+  #   # academicgrid
+  #   rowso = rows
+  #   rows[header_inds] = paste0(rowhline, rows[header_inds] , rowhline)
+  #
+  #   # check if firsthline/lasthaline is needed (if first row is not a header)
+  #   fhl_use = ""
+  #   lhl_use = ""
+  #   if(!any(header_inds ==1 )) fhl_use = firsthline
+  #   if(!any(header_inds ==length(rows) )) lhl_use = lasthline
+  #
+  #   body = paste0(fhl_use, paste0(rows, collapse = "\n"), lhl_use)
+  #
+  # }
 
 
   # here we put global definitiosn for the generated latex enfironment, for exammple setting list separation
@@ -268,7 +325,7 @@ rabulify = function(d, linesep = "\newline", mode  = "twocolumn" , caption = NUL
 
   row_specspan = paste0("1-",NROW(d))
 
-  colspecs = gen_colspecs(ncol= ncol(tab), scheme = "twocol", xltabular = xltabular, colwidths = colwidths, colaligns = colaligns, gridmode = gridmode)
+  colspecs = gen_colspecs(ncol= ncol(tab), scheme = "twocol", xltabular = xltabular, colwidths = colwidths, colaligns = colaligns, gridmode = gridmode, grid_vspec =  grid_vspec)
 
   #l_innerspecs[["colspec"]] = paste0("colspec = {", paste0(rep("X", times = NCOL(tab)), collapse = ""), "}")
   l_innerspecs[["colspec"]] = paste0("colspec = {",colspecs , "}")

@@ -97,6 +97,9 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
                                       ifelse(tab_opts['colaligns'][[1]] == "r", "right", rep(NA, ncol))))
   }
 
+
+
+
   # aligment matrix for huxtable, repeat values in each column
   rowals = vector("character", ncol)
   for(i in 1:ncol){
@@ -107,11 +110,15 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   tab_colspec_call_hux = paste(collapse = "\n" ,rowals)
   if(length(rowals) > 0 ) tab_colspec_call_hux = tab_colspec_call_hux %+% "\n" # extra newline at the end if any content
 
+
+
   tab_gridmode = "academicgrid"
   if('fullgrid' %in% tab_opts){
     tab_gridmode = "fullgrid"
   } else if('topdowngrid' %in% tab_opts){
     tab_gridmode = "topdowngrid"
+  } else if('nogrid' %in% tab_opts){
+    tab_gridmode = "nogrid"
   }
 
   tab_footnote = NULL
@@ -149,7 +156,7 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
     }
 
     tcalls = c(tb_rows, bb_rows, "  huxtable::set_top_border(row =1, value = "%+% hux_border_thickness %+%")",
-      "  huxtable::set_bottom_border(row = nrow, value = "%+% hux_border_thickness %+%")")
+      "  huxtable::set_bottom_border(row = " %+% nrow %+% ", value = "%+% hux_border_thickness %+%")")
 
 
   } else if(tab_gridmode == "fullgrid"){
@@ -158,12 +165,57 @@ gen_tabchunk = function(ct_csv, tab_opts, tab_counter, folder ="", chunklabels =
   } else if(tab_gridmode == "topdowngrid"){
 
     tcalls = c("  huxtable::set_top_border(row =1, value = "%+% hux_border_thickness %+%")",
-      "    huxtable::set_bottom_border(row = nrow, value = "%+% hux_border_thickness %+%")")
+      "    huxtable::set_bottom_border(row =  " %+% nrow %+% ", value = "%+% hux_border_thickness %+%")")
+
+  } else if(tab_gridmode == "nogrid"){
+
+    # do nothing
 
   } else hgl_error("unkwown tab gridmode")
+
   tab_borderspec_call_hux = paste(tcalls, collapse = "|>\n")
   tab_headerboldspec_call_hux = paste(tbcalls, collapse = "|>\n")
 
+
+  tab_grid_vspec = NULL
+  tab_grid_hspec = NULL
+  hux_grid_vspec = NULL
+  hux_grid_hspec = NULL
+  if('grid_vspec' %in% names(tab_opts) && length(tab_opts['grid_vspec'][[1]])>0){
+
+
+    tab_grid_vspec =  tab_opts['grid_vspec'][[1]] |> dput()  |> capture.output() |> paste0(collapse = "")
+    lborder_is = tab_opts['grid_vspec'][[1]]
+    rborder_is = lborder_is[lborder_is == ncol+1]
+    lborder_is = lborder_is[lborder_is <= ncol]
+
+
+    vspec =lborder_is |> dput()  |> capture.output() |> paste0(collapse = "")
+
+
+    hux_grid_vspec = "huxtable::set_left_border(col = " %+% vspec %+% ", value = " %+% hux_border_thickness %+%") |>"
+
+    # set right border if wished
+    hux_grid_vspec = hux_grid_vspec %+%  "\nhuxtable::set_right_border(col = " %+% as.character(ncol) %+% ", value = " %+% hux_border_thickness %+%") |>"
+
+
+  }
+  if('grid_hspec' %in% names(tab_opts) && length(tab_opts['grid_hspec'][[1]])>0){
+
+    # detect if bottom border is also set
+    tab_grid_hspec =  tab_opts['grid_hspec'][[1]] |> dput()  |> capture.output() |> paste0(collapse = "")
+    tborder_is = tab_opts['grid_hspec'][[1]]
+    bborder_is = tborder_is[tborder_is == nrow+1]
+    tborder_is = tborder_is[tborder_is <= nrow]
+
+    hspec = tborder_is |> dput()  |> capture.output() |> paste0(collapse = "")
+    hux_grid_hspec = "huxtable::set_top_border(row = " %+% hspec %+% ", value = " %+% hux_border_thickness %+%") |>"
+
+    # set bottom border if wished
+    hux_grid_hspec = hux_grid_hspec %+%  "\nhuxtable::set_bottom_border(row = " %+% as.character(nrow) %+% ", value = " %+% hux_border_thickness %+%") |>"
+
+
+  }
   # add pipe operator if not epty
   if(nchar(tab_borderspec_call_hux) > 0)         tab_borderspec_call_hux = tab_borderspec_call_hux %+% "|>\n"
   if(nchar(tab_headerboldspec_call_hux) > 0) tab_headerboldspec_call_hux = tab_headerboldspec_call_hux %+% "|>\n"
@@ -192,7 +244,8 @@ ncol =  NCOL(tab_dat)
               footnote = '" %+% tab_footnote %+% "',
               label = '" %+% tab_chunk_label %+%"' , long = '" %+% tab_long %+% "',
               colwidths = " %+%tab_colwidths%+% ", colaligns = " %+% tab_colaligns %+% ",
-              gridmode = '" %+% tab_gridmode %+% "',number_label = 'Table " %+% tab_counter %+%  ". '"  %+% ",
+              gridmode = '" %+% tab_gridmode %+% "', grid_vspec = " %+% tab_grid_vspec %+% ", grid_hspec = " %+% tab_grid_hspec %+% ",
+              number_label = 'Table " %+% tab_counter %+%  ". '"  %+% ",
               compat_cell_md_parsing =  "%+%compat_cell_md_parsing  %+% ")
 cat(tex)
 ```
@@ -220,6 +273,8 @@ html = huxtable::hux(tab_dat, add_colnames = F) |>
   huxtable::set_col_width(col = 1:ncol, value= " %+% tab_colwidths_hux %+%") |> \n"%+%
   tab_colspec_call_hux %+%
   tab_borderspec_call_hux %+%
+  hux_grid_vspec %+%
+  hux_grid_hspec %+%
   tab_headerboldspec_call_hux %+% "  huxtable::set_caption(value = 'Table  " %+% tab_counter %+% ": " %+% tab_caption %+%"') |>
   huxtable::set_caption_pos(value = 'topleft') |>
   huxtable::set_label(value = '" %+% tab_chunk_label %+%"') |>" %+%
