@@ -53,7 +53,7 @@ gen_colspecs = function(ncol, scheme = "twcol", xltabular = T, colwidths= NULL, 
 
     colvlines = rep("", ncol + 1) # last right border is extra index
     if(gridmode == "fullgrid"){
-      colvlines = colvlines[1:length(colvlines)] = " | "
+      colvlines[1:length(colvlines)] = " | "
     }
 
     if(!is.null(grid_vspec) && length(grid_vspec) > 0 ){
